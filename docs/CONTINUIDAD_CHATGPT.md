@@ -37,3 +37,6 @@ Nueva rama `feature/base-freeshow-diseno-ja` derivada de `docs/fase0-gobernanza-
 
 ## Cambios recientes — instalador con versionado individual
 En `feature/base-freeshow-diseno-ja` se añadieron `scripts/ja/prepare-version.cjs` y pasos a `.github/workflows/validate-ja-base.yml` para crear instalador Windows `JA-Proyecciones-2-2.0.<número>-x64.exe` diferente en cada ejecución y reintento. No declarar éxito hasta CI de empaquetado. Los cambios de versión se aplican temporalmente en CI, sin llenar Git de commits de versión. El PR #2 sigue en borrador; no fusionar sin autorización.
+
+## CI optimizado
+El workflow de Windows ahora corre una vez por push de código a `feature/base-freeshow-diseno-ja`, omite cambios documentales, cancela runs obsoletos de la rama y permite ejecución manual. No se modificó el versionado de instaladores. Confirmar CI del HEAD antes de considerar la compilación válida.
