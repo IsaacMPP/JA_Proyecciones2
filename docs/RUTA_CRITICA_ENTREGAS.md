@@ -19,3 +19,9 @@ Una fase solo pasa a «completa» con evidencia en código, CI y, cuando se trat
 - **Fase 2–3:** clic normal únicamente principal con audio; secundarios por selección explícita, sin audio ni sobrescritura de los demás.
 - **Fase 3–4:** controles independientes por salida y estado en tiempo real, conservando integraciones nativas de FreeShow.
 - **Todas las fases:** Configuración debe reflejar inmediatamente cada capacidad agregada; prueba de funcionamiento del ajuste, no solo visualización. Mantener ajustes avanzados nativos intactos.
+
+## Subhito prioritario anterior al Himnario — Biblia en vivo
+- Navegación: flechas simples al proyectar, sin robar teclas a entradas de texto ni duplicar avances; verificar límites de capítulo/libro y regresión general.
+- Estilos: editar fuente, tamaño, color, alineación y fondo mientras se proyecta; la vista previa y la salida activa deben coincidir sin re-proyectar manualmente.
+- Persistencia: cambios de estilo aplicables a todos los siguientes versículos, capítulos y libros, y después de reiniciar, sin alterar involuntariamente otras salidas/plantillas.
+- Validación: CI Windows, prueba real durante proyección y documentación de resultados antes del Himnario.
