@@ -85,3 +85,7 @@ Se inspeccionaron localmente (sin incorporarlos a Git) seis archivos: RVC, TLA, 
 **Pendientes:** CI de Windows, importación real de los seis archivos, persistencia al cerrar/reabrir, colisiones de IDs y verificación de licencias de uso. El editor/estilo vivo permanece pendiente. No confundir implementación del diálogo con la importación efectiva en Windows.
 
 **Actualización posterior:** `e2041e5` invoca el guardado nativo al importar FSB válidos, para conservar biblias en `scripturesCache` al reiniciar; falta validar persistencia real en Windows y posible impacto en tamaño del perfil.
+
+## 2026-10-26 — Inicio de sincronización de plantilla bíblica en vivo
+**Cambio:** `src/frontend/components/drawer/bible/Scripture.svelte` observa el objeto de la plantilla bíblica elegida en el store original de FreeShow. Si esa plantilla cambia mientras se proyectan Escrituras, solicita refrescar el versículo proyectado tras 160 ms de agrupación; no interviene cuando no hay proyección bíblica y libera la suscripción al desmontar el componente. Commit `aea39a6`.
+**Alcance:** cambios guardados en el objeto de plantilla pueden reflejarse en el versículo actual y seguir en los versículos posteriores porque estos se generan desde la misma plantilla. No constituye aún editor visual de texto real ni control completo de fondo de color/imagen, y la actualización recurre a la regeneración nativa de la proyección. **CI y Windows por verificar**; especialmente evitar parpadeos, historial duplicado, comportamiento con plantillas de salida y multisalidas.
