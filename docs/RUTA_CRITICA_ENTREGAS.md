@@ -12,3 +12,10 @@
 
 ## Reglas de avance
 Una fase solo pasa a «completa» con evidencia en código, CI y, cuando se trate de hardware, prueba física. Los fallos bloqueantes se resuelven antes de añadir funciones. No se fusionan PR sin permiso.
+
+## Criterios adicionales de aceptación acordados
+- **Fase 0:** auditoría explícita de capacidades y ajustes nativos de FreeShow para evitar retirar funciones operativas.
+- **Fase 1–2:** sin proyector principal, intentar proyectar abre el selector de salidas, permite identificar, escoger y guardar principal; cancelar no envía. Si está desconectado, reconectar explícitamente.
+- **Fase 2–3:** clic normal únicamente principal con audio; secundarios por selección explícita, sin audio ni sobrescritura de los demás.
+- **Fase 3–4:** controles independientes por salida y estado en tiempo real, conservando integraciones nativas de FreeShow.
+- **Todas las fases:** Configuración debe reflejar inmediatamente cada capacidad agregada; prueba de funcionamiento del ajuste, no solo visualización. Mantener ajustes avanzados nativos intactos.
