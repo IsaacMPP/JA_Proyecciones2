@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
     <head>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>FreeShow - Loading</title>
+        <title>JA Proyecciones 2 — Iniciando</title>
 
         <link rel="stylesheet" href="global.css" />
 
@@ -16,8 +16,8 @@
 
             main {
                 /* background-color: var(--primary); */
-                background-color: #28276d;
-                background: linear-gradient(140deg, #28276d 20%, #150f30);
+                background-color: #071b32;
+                background: linear-gradient(115deg, rgba(7, 27, 50, 0.94), rgba(11, 42, 73, 0.88)), url("./ja-hero.jpg") center / cover no-repeat;
                 width: 100%;
                 height: 100%;
                 border-radius: var(--radius);
@@ -34,9 +34,10 @@
 
             img {
                 height: calc(100% - var(--loader-height));
-                width: 42%;
-                object-fit: cover;
-                object-position: top left;
+                width: 40%;
+                object-fit: contain;
+                object-position: center;
+                padding: 8px;
 
                 left: 0;
                 /* max-width: 40%; */
@@ -50,7 +51,7 @@
             .text {
                 position: absolute;
                 right: 0;
-                width: 58%;
+                width: 60%;
 
                 text-align: center;
             }
@@ -61,8 +62,8 @@
             }
 
             h1 {
-                font-size: 3em;
-                background: -webkit-linear-gradient(340deg, var(--secondary), #ef4684);
+                font-size: 2.7em;
+                background: -webkit-linear-gradient(340deg, #fff, #88cbee);
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -87,7 +88,7 @@
                 content: "";
                 position: absolute;
                 height: 100%;
-                background-color: var(--secondary);
+                background-color: #76cfff;
                 animation: first 1.8s infinite ease-out;
             }
 
@@ -95,7 +96,7 @@
                 content: "";
                 position: absolute;
                 height: 100%;
-                background-color: var(--secondary);
+                background-color: #76cfff;
                 animation: second 1.8s infinite ease-in;
             }
 
@@ -128,11 +129,11 @@
         </div>
 
         <main>
-            <img src="./assets/startup.webp" alt="Loading..." draggable="false" />
+            <img src="./ja-logo.png" alt="Emblema de JA Proyecciones" draggable="false" />
 
             <div class="text">
-                <h1>FreeShow</h1>
-                <p class="v">v<span class="version">0.0.0</span></p>
+                <h1>JA Proyecciones</h1>
+                <p class="v">Iniciando · v<span class="version">0.0.0</span></p>
             </div>
         </main>
 
