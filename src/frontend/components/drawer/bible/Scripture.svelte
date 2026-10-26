@@ -899,6 +899,18 @@
             return
         }
 
+        // JA: when Scripture owns the live projection, plain arrow keys move
+        // the visible verse. Never take navigation keys from editable fields,
+        // focused controls or element editing. Ctrl+arrows remain available.
+        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && isActiveInOutput && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            const target = e.target as HTMLElement | null
+            if (target?.closest("input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']") || $activeEdit.items.length) return
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            void _moveSelection(e.key === "ArrowLeft")
+            return
+        }
+
         if (!e.ctrlKey && !e.metaKey) return
 
         const ctrlKey = e.shiftKey || e.altKey ? "" : getNormalizedKey(e)
