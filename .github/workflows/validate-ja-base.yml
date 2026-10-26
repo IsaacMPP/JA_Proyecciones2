@@ -1,0 +1,31 @@
+name: Validar base FreeShow JA
+on:
+  push:
+    branches:
+      - feature/base-freeshow-diseno-ja
+  pull_request:
+    branches:
+      - docs/fase0-gobernanza-arquitectura
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Compilar FreeShow con marca JA
+        run: npm run build
+      - name: Verificar archivo gráfico y componente
+        shell: bash
+        run: |
+          test -s public/ja-logo.png
+          test -s public/ja-hero.jpg
+          grep -q 'class="ja-brand"' src/frontend/components/main/Top.svelte
