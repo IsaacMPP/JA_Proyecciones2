@@ -88,3 +88,5 @@ El usuario verificó con capturas RV1909 funcionando y proyectándose. Actions #
 
 ## Continuidad: importación de FSB propios (26-oct-2026)
 Archivos locales recibidos y revisados en sesión: RVC, TLA, DHH94I, NBLA, NTV, NVI, FSB JSON compatibles estructuralmente; DHH94I contiene 75 libros. Sus textos no se subieron a GitHub ni se añadieron al instalador. Cambios en rama `feature/base-freeshow-diseno-ja`: validación FSB y errores de importación en `src/frontend/converters/bible.ts`, indicaciones de importación múltiple en `ImportScripture.svelte`. CI actualizado y pruebas Windows todavía pendientes. **Siguiente:** verificar workflow, comprobar las seis importaciones y si sobreviven al reinicio; corregir el almacenamiento nativo si falla. También sigue pendiente la sincronización de estilo en vivo y persistencia entre versículos. PR #2 permanece draft; no comenzar Himnario.
+
+**Actualización posterior:** `e2041e5` invoca el guardado nativo al importar FSB válidos, para conservar biblias en `scripturesCache` al reiniciar; falta validar persistencia real en Windows y posible impacto en tamaño del perfil.
