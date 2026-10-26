@@ -93,3 +93,6 @@ Archivos locales recibidos y revisados en sesión: RVC, TLA, DHH94I, NBLA, NTV, 
 
 ## Última intervención: primer enlace plantilla → salida activa
 Commit de código `aea39a6` modifica `Scripture.svelte` para escuchar cambios del store `templates` de la plantilla bíblica actualmente configurada y solicitar actualización de la proyección activa usando el motor FreeShow; debounce 160ms, cancelación y limpieza al desmontar. **No declarar editor en vivo completo**: se usa regeneración de versículo; aún faltan vista previa real, panel de fondo/texto, guardar/recuperar estilo personalizado y prueba de que no hay saltos, doble historial ni interferencia con pantallas. Comprobar CI del último commit, resultados Windows y atender errores antes de Himnario. Importación FSB continúa pendiente de aceptación manual.
+
+## Plan de trabajo actualizado
+Seguir las entregas E0-E5 definidas en docs/RUTA_CRITICA_ENTREGAS.md. Actualmente se trabaja en E1: Biblia. Revisar los criterios de cierre antes de cambiar de modulo.
