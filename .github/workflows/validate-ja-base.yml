@@ -3,9 +3,14 @@ on:
   push:
     branches:
       - feature/base-freeshow-diseno-ja
-  pull_request:
-    branches:
-      - docs/fase0-gobernanza-arquitectura
+    paths-ignore:
+      - "docs/**"
+      - "design/README.md"
+      - "**/*.md"
+  workflow_dispatch:
+concurrency:
+  group: ja-windows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
