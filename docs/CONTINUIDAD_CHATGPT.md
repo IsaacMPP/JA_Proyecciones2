@@ -49,3 +49,6 @@ También se personalizó `public/loading.html` con arte y textos JA conservando 
 
 ## Ajustes JA recientes
 Se modificó la paleta del tema predeterminado a azul/amarillo JA, encabezado de 68px, splash nativo y título; se desactivaron los dos update checkers de FreeShow, sin introducir aún canal JA; se añadió aprovisionamiento de carpetas de contenido en Documentos por arranque de Electron. Las carpetas NO están aún asociadas a los navegadores de Biblia/Himnario/medios. Verificar última compilación Windows antes de descargar. PR #2 borrador, sin merge.
+
+## Corrección de paleta persistida
+El fucsia del tema guardado original FreeShow persistía en la instalación. Se modificó `public/global.css` y la migración de `src/frontend/utils/updateSettings.ts` para aplicar paleta JA a tema default stock heredado, sin sobrescribir temas personalizados. Validar nueva build con instalación anterior, y comprobar que tabs/iconos/botones dejan de ser magenta.
