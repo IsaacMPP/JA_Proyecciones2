@@ -52,3 +52,6 @@ Se modificó la paleta del tema predeterminado a azul/amarillo JA, encabezado de
 
 ## Corrección de paleta persistida
 El fucsia del tema guardado original FreeShow persistía en la instalación. Se modificó `public/global.css` y la migración de `src/frontend/utils/updateSettings.ts` para aplicar paleta JA a tema default stock heredado, sin sobrescribir temas personalizados. Validar nueva build con instalación anterior, y comprobar que tabs/iconos/botones dejan de ser magenta.
+
+## Integración de carpetas JA en Configuración
+Se añadió el registro `getJAContentFolders()`, el IPC `Main.JA_CONTENT_FOLDERS` y la sección en Configuración > Archivos con rutas reales y opción de abrir cada carpeta. FreeShow conserva sus bibliotecas nativas. No hay indexación automática todavía. Pendiente validar CI Windows y uso en la app.
