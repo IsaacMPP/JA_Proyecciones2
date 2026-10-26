@@ -37,3 +37,8 @@
 **Implementado:** se añadieron los archivos fuente de FreeShow a rama `feature/base-freeshow-diseno-ja`, sin modificar `main`, documentos maestros ni código heredado multipantalla; pequeño script idempotente `scripts/ja/apply-ja-theme.py` cambia exclusivamente la marca y CSS del encabezado `Top.svelte`; logos originales recuperados desde el repositorio JA anterior (commit `0bced037`).
 **Validación:** acción de importación `40369975943` exitosa; inspección remota confirmó `package.json` 1.6.7 y marcador `ja-brand`. **No equivale a prueba de compilación o funcionalidad en Windows**.
 **Pendientes:** crear y validar CI de compilación y pruebas de interfaz; revisar distribución visual completa de portada, Biblia e Himnario; no implementar enrutamiento multipantalla antes de definir contratos.
+
+## 2026-10-26 — Identidad y versión de instalador por modificación
+**Solicitud:** distinguir cada versión instalada y cada nueva compilación de JA Proyecciones 2.
+**Cambios:** `scripts/ja/prepare-version.cjs` genera una versión exclusiva por ejecución/intento de GitHub Actions y archivo de procedencia; workflow `validate-ja-base.yml` añade empaquetado Windows NSIS con artefacto descargable, usando una configuración temporal que sustituye marca, appId y firma de FreeShow. Los originales `package.json` y `electron-builder.yaml` se conservan sin cambios permanentes.
+**Pruebas:** CI de Windows en curso; no se ha verificado aún el instalador en hardware. Pendiente confirmar archivo .exe, nombre/versionado y arranque antes de completar fase.
