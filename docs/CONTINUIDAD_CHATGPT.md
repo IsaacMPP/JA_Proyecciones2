@@ -43,3 +43,6 @@ El workflow de Windows ahora corre una vez por push de código a `feature/base-f
 
 ## Última recuperación visual
 Se reemplazó sólo el componente de bienvenida `src/frontend/components/main/Splash.svelte` por la versión JA original, reutilizando logo y hero. Hay generación de icono e imágenes NSIS mediante `scripts/ja/create-installer-art.py`, conectada al workflow de Windows. Validar compilación/instalador de la versión más reciente y revisar en Windows la bienvenida y el asistente. El inicio de Electron no tiene aún una ventana de splash personalizada distinta de la portada. No fusionar PR #2 sin autorización.
+
+## Actualización de pantalla de carga
+También se personalizó `public/loading.html` con arte y textos JA conservando IPC de versión. A diferencia de `Splash.svelte`, ésta sí es la ventana de carga nativa de Electron. Validar ambas por separado en Windows.
