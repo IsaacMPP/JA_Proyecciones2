@@ -310,6 +310,17 @@ function importFiles(data: { id: string; paths: string[] }) {
 
 // BIBLE
 export function loadScripture(msg: { id: string; name: string }) {
+    if (msg.id === "ja-rv1909") {
+        try {
+            const file = path.join(app.getAppPath(), "public", "ja-bibles", "rv1909.fsb")
+            const content = JSON.parse(readFileSync(file, "utf8"))
+            if (!Array.isArray(content) || content[0] !== "ja-rv1909" || content[1]?.books?.length !== 66) throw new Error("Biblia incompleta")
+            return { id: msg.id, content: content as [string, import("json-bible/lib/Bible").Bible] }
+        } catch (error) {
+            console.error("JA RV1909 bundled asset unavailable", error)
+            return { id: msg.id, error: "not_found" }
+        }
+    }
     const bibleFolder: string = getDataFolderPath("scriptures")
     let filePath: string = path.join(bibleFolder, msg.name + ".fsb")
 
