@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { registerJARV1909 } from "../bible/jaBundledBible"
-    import { JA_SPANISH_EDITIONS } from "../bible/jaSpanishBibles"
+    import { JA_SPANISH_EDITIONS, findSpanishEdition } from "../bible/jaSpanishBibles"
     import { setDrawerTabData } from "../../helpers/historyHelpers"
     import { activePopup, activeScripture, drawerTabsData, labelsDisabled, openScripture, scriptures } from "../../../stores"
     import { getAccess } from "../../../utils/profile"
@@ -59,7 +59,7 @@
         })
     }
     function chooseEdition(code: string) {
-        const found = Object.entries($scriptures).find(([_, v]) => (v.name || "").toLowerCase().includes(code.toLowerCase()))
+        const found = Object.entries($scriptures).find(([_, v]) => findSpanishEdition(v.name || "") === code)
         if (found) setDrawerTabData("scripture", found[0])
         else activePopup.set("import_scripture")
     }
