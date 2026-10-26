@@ -15,84 +15,70 @@ const bibleTypes = {
     opensong: { name: "OpenSong", func: convertOpenSongBible }
 }
 
+/** A local FSB is a [id, bible] JSON tuple. Never accept arbitrary JSON as a Bible. */
+export function validateLocalFSB(content: string): { id: string; bible: any } | null {
+    try {
+        const parsed = JSON.parse(content)
+        if (!Array.isArray(parsed) || parsed.length !== 2 || typeof parsed[0] !== "string" || !parsed[0].trim()) return null
+        const bible = parsed[1]
+        if (!bible || typeof bible.name !== "string" || !Array.isArray(bible.books) || bible.books.length < 1 || bible.books.length > 100) return null
+        if (!bible.books.every((book: any) => book && typeof book.name === "string" && Array.isArray(book.chapters) && book.chapters.length > 0 &&
+            book.chapters.every((chapter: any) => Array.isArray(chapter.verses) && chapter.verses.length > 0 &&
+                chapter.verses.every((verse: any) => Number.isInteger(verse.number) && verse.number >= 0 && typeof verse.text === "string")))) return null
+        return { id: parsed[0], bible }
+    } catch (err) {
+        console.warn("Invalid local FSB format", err)
+        return null
+    }
+}
+
 export function importBibles(data: any[]) {
     alertMessage.set("popup.importing")
     activePopup.set("alert")
 
-    // timeout to allow popup to display
     setTimeout(() => {
-        const success: { [key: string]: number } = {}
-        const unsupported: { [key: string]: number } = {}
-
+        let imported = 0
+        const failed: string[] = []
         data.forEach((file) => {
-            let type = file.type
-            if (type === "fsb" || !type) type = "freeshow"
-
-            if (bibleTypes[type]) {
-                const name = bibleTypes[type].name
-                if (!success[name]) success[name] = 0
-                success[name]++
-                bibleTypes[type].func([file])
-            } else {
-                const id = type || file.name
-                if (!unsupported[id]) unsupported[id] = 0
-                unsupported[id]++
+            const type = file.type === "fsb" || !file.type ? "freeshow" : file.type
+            const converter = bibleTypes[type as keyof typeof bibleTypes]
+            if (!converter) {
+                failed.push(file.name || "Formato desconocido")
+                return
             }
+            // The FreeShow import returns only the count of valid files.
+            const result = converter.func([file])
+            if (result === false || result === 0) failed.push(file.name || "Archivo no válido")
+            else imported++
         })
 
-        let message = ""
-        if (Object.keys(success).length) {
-            message += translateText("✓ actions.imported")
-            Object.entries(success).forEach(([key, count]) => {
-                message += `<br>• ${key}`
-                if (count > 1) message += ` <span style="opacity: 0.5;">(${count})</span>`
-            })
-        }
-        if (Object.keys(unsupported).length) {
-            if (Object.keys(success).length) message += "<br><br>"
-
-            message += translateText("✕ error.import")
-            Object.entries(unsupported).forEach(([key, count]) => {
-                message += `<br>• ${key}`
-                if (count > 1) message += ` <span style="opacity: 0.5;">(${count})</span>`
-            })
-
-            // add link to Bible Converter
-            message += `<br><br>Try another version or use this link#bible-converter!`
-        }
-
+        let message = imported ? `✓ ${imported} Biblia(s) importada(s)` : "No se importó ninguna Biblia."
+        if (failed.length) message += `<br><br>Archivos no importados:<br>${failed.map((name) => "• " + name.replace(/[<>&"]/g, "")).join("<br>")}`
         alertMessage.set(message)
     }, 200)
 }
 
-export function importFSB(data: any[]) {
+export function importFSB(data: any[]): number {
+    let count = 0
     data.forEach(({ content, name }) => {
-        let bible: any = null
-        try {
-            bible = JSON.parse(content)
-        } catch (err) {
-            console.error(err)
-        }
+        const parsed = validateLocalFSB(content)
+        if (!parsed) return
 
-        if (!bible) return
-
-        const id: string = bible[0] || uid()
-        bible = bible[1] || bible
-
+        const { id, bible } = parsed
         scripturesCache.update((a) => {
             a[id] = bible
             return a
         })
 
-        name = formatToFileName(bible.name || name)
-
+        const safeName = formatToFileName(bible.name || name)
         scriptures.update((a) => {
-            a[id] = { name, id }
+            a[id] = { name: safeName, id }
             return a
         })
-
         setActiveScripture(id)
+        count++
     })
+    return count
 }
 
 export function setActiveScripture(tabId: string) {
