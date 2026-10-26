@@ -69,3 +69,7 @@ Se añadió `jaMediaFolders.ts`: al terminar de restaurar los ajustes se consult
 
 ## 2026-10-26 — Primera integración de Biblia española
 Se recuperó del proyecto anterior el generador RV1909 de eBible.org (dominio público, descarga con SHA256 fijo), el registro idempotente de la Biblia y el catálogo informativo de ediciones españolas. Se conectó el archivo instalado `public/ja-bibles/rv1909.fsb` al canal BIBLE de FreeShow, manteniendo su lector original, y la navegación de Biblia registra RV1909 al abrirse. GitHub Actions genera el recurso y comprueba 66 libros antes de construir. Las traducciones RVR1960/RVR1995/NVI y otras permanecen solo como opciones de importación legal, sin contenido protegido incluido. Pendiente: compilación Windows y prueba de proyección en el instalador.
+
+## 2026-10-26 — Cierre de conversación / transferencia a nuevo chat
+**Verificación:** PR #2 abierto/draft; HEAD previo `917201e5`; CI de Biblia #40393505056 en ejecución, sin resultado aún. **Acción:** se consolidó el punto de continuidad en `docs/CONTINUIDAD_CHATGPT.md`. **Alcance:** únicamente documentación; NO se cambió lógica RV1909 ni se fusionó nada.
+**Próximas pruebas:** CI/instalador, RV1909 presente, 66 libros, navegación, proyección, uso sin red y regresión FreeShow. Luego Himnario Adventista. La documentación del estado debe actualizarse con el resultado real de CI cuando se conozca.
