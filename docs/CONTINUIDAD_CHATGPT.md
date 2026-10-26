@@ -25,3 +25,6 @@ PR #1: https://github.com/IsaacMPP/JA_Proyecciones2/pull/1 — borrador document
 
 ## Requisitos definitivos confirmados por el usuario
 FreeShow 1.6.7 es la base seleccionada. Recuperar diseño JA anterior, Biblia en español, Himnario y tres modos multimedia, pero rehacer selección multipantalla desde cero. OBS es referencia sólo para nombres/modelos y detección de monitores. Principal de proyección elegido por operador recibe los clics normales con audio; auxiliares sólo contenido visual, sin interferencias. Código de los archivos ZIP de referencia no ha sido importado. Ver JA_MASTER y ARQUITECTURA_MULTIPANTALLA para detalles.
+
+## Último acuerdo de alcance (26-oct-2026)
+Preservar completamente los controles y configuración funcionales de FreeShow. Si el operador proyecta por primera vez sin una salida principal, abrir asistente de elección de pantalla, permitir identificar y guardar principal en vez de enviar a todas o mostrar un error. Las secundarias son destinos independientes sin audio por defecto. Todas las capacidades nuevas deben tener su contraparte funcional en Configuración → Pantallas/salidas, con ajustes avanzados originales conservados. Fase 0 documental; aún sin importación del motor.
