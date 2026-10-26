@@ -100,6 +100,7 @@ import {
     videoMarkers
 } from "./../stores"
 import { checkForUpdates } from "./checkForUpdates"
+import { registerJAMediaFolders } from "./jaMediaFolders"
 import { isMainWindow, startAutosave } from "./common"
 import { setLanguage } from "./language"
 import { startRemoteController } from "./remoteController"
@@ -201,6 +202,8 @@ export function updateSettings(data: any) {
     // loadShows(Object.keys(get(shows)))
 
     loaded.set(true)
+    // Populate native media/audio tabs once user state is restored.
+    void registerJAMediaFolders()
 
     window.api.send("LOADED")
 }
