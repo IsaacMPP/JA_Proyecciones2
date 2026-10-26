@@ -182,7 +182,11 @@ export function updateSettings(data: any) {
         // update colors (pre 0.9.2 or 1.4.9)
         const pre092 = currentTheme.colors.secondary?.toLowerCase() === "#e6349c"
         const pre149 = currentTheme.colors.primary?.toLowerCase() === "#292c36"
-        if (data.theme === "default" && (pre092 || pre149)) {
+        // Also migrate a persisted, unmodified FreeShow default accent to JA.
+        // Preserve custom palettes and every non-default theme chosen by users.
+        const oldFreeShowAccent = currentTheme.colors.secondary?.toLowerCase() === "#f0008c"
+        const oldFreeShowBase = ["#242832", "#0b2a49"].includes(currentTheme.colors.primary?.toLowerCase() || "")
+        if (data.theme === "default" && (pre092 || pre149 || (oldFreeShowAccent && oldFreeShowBase))) {
             themes.update((a) => {
                 a.default = clone(defaultThemes.default)
                 currentTheme = a.default
