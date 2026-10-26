@@ -42,3 +42,6 @@
 **Solicitud:** distinguir cada versión instalada y cada nueva compilación de JA Proyecciones 2.
 **Cambios:** `scripts/ja/prepare-version.cjs` genera una versión exclusiva por ejecución/intento de GitHub Actions y archivo de procedencia; workflow `validate-ja-base.yml` añade empaquetado Windows NSIS con artefacto descargable, usando una configuración temporal que sustituye marca, appId y firma de FreeShow. Los originales `package.json` y `electron-builder.yaml` se conservan sin cambios permanentes.
 **Pruebas:** CI de Windows en curso; no se ha verificado aún el instalador en hardware. Pendiente confirmar archivo .exe, nombre/versionado y arranque antes de completar fase.
+
+## 2026-10-26 — Optimización de CI Windows
+Se corrigió `.github/workflows/validate-ja-base.yml`: sólo activa automáticamente con `push` a la rama de trabajo; se eliminó el disparador PR que duplicaba compilaciones. `paths-ignore` excluye cambios exclusivamente Markdown y `docs/**`; `concurrency` cancela ejecuciones reemplazadas por una versión más reciente de la misma rama. `workflow_dispatch` permite compilar manualmente cuando sea necesario. El identificador de versión por ejecución permanece intacto. Pendiente validar la nueva ejecución completa y el instalador.
