@@ -21,7 +21,7 @@ let config = original
     .replace(/^artifactName:.*$/m, "artifactName: JA-Proyecciones-2-${version}-${arch}.${ext}")
 // FreeShow's Azure signing identity belongs to its upstream maintainers.
 config = config.replace(/^    icon: build\/public\/icon.png$/m, "    icon: build/public/ja-icon.ico")
-config += "\\nnsis:\\n    installerSidebar: build/public/ja-installer-sidebar.bmp\\n    installerHeader: build/public/ja-installer-header.bmp\\n"
+config += `\nnsis:\n    installerSidebar: build/public/ja-installer-sidebar.bmp\n    installerHeader: build/public/ja-installer-header.bmp\n`
 config = config.replace(/^    azureSignOptions:\s*\n(?:        [^\n]*\n)+/m, "")
 const out = path.join(__dirname, "../../config/building/ja-windows.generated.yaml")
 fs.writeFileSync(out, config)
