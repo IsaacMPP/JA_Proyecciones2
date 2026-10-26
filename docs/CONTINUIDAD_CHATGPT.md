@@ -40,3 +40,6 @@ En `feature/base-freeshow-diseno-ja` se añadieron `scripts/ja/prepare-version.c
 
 ## CI optimizado
 El workflow de Windows ahora corre una vez por push de código a `feature/base-freeshow-diseno-ja`, omite cambios documentales, cancela runs obsoletos de la rama y permite ejecución manual. No se modificó el versionado de instaladores. Confirmar CI del HEAD antes de considerar la compilación válida.
+
+## Última recuperación visual
+Se reemplazó sólo el componente de bienvenida `src/frontend/components/main/Splash.svelte` por la versión JA original, reutilizando logo y hero. Hay generación de icono e imágenes NSIS mediante `scripts/ja/create-installer-art.py`, conectada al workflow de Windows. Validar compilación/instalador de la versión más reciente y revisar en Windows la bienvenida y el asistente. El inicio de Electron no tiene aún una ventana de splash personalizada distinta de la portada. No fusionar PR #2 sin autorización.
