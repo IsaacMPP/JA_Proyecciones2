@@ -51,3 +51,6 @@ Se corrigió `.github/workflows/validate-ja-base.yml`: sólo activa automáticam
 **Fuente:** se restauró `src/frontend/components/main/Splash.svelte` desde la última referencia visual aprobada del antiguo `IsaacMPP/Ja_Proyeccion`, conservando las acciones nativas de FreeShow. Reutiliza `public/ja-logo.png` y `public/ja-hero.jpg` recuperados previamente.
 **Instalador:** `scripts/ja/create-installer-art.py` genera icono de Windows `.ico` y panel/encabezado de NSIS desde los activos originales; `scripts/ja/prepare-version.cjs` los enlaza en configuración temporal de electron-builder. `.github/workflows/validate-ja-base.yml` prepara las imágenes antes de empaquetar.
 **Alcance:** imagen de la pantalla de bienvenida de FreeShow (`Splash.svelte`) ya personalizada; esto no introduce otra ventana de arranque nativa de Electron. Sin modificaciones de salidas, audio ni navegación. No se garantiza resultado del instalador hasta CI verde y prueba manual en Windows.
+
+## 2026-10-26 — Pantalla de arranque Electron
+**Cambio:** personalización mínima de `public/loading.html`: nombre del programa, marca y recursos JA, colores y leyenda de inicio; se preservó el IPC existente que obtiene la versión y las animaciones de progreso. **Validación pendiente:** verificar que la ventana nativa carga imágenes y versión en Windows.
