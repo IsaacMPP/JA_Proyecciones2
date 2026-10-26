@@ -34,3 +34,6 @@ Se extrajo kit presentacional del encabezado anterior a `design/JAHeader.svelte`
 
 ## Estado efectivo después de la importación (26-oct-2026)
 Nueva rama `feature/base-freeshow-diseno-ja` derivada de `docs/fase0-gobernanza-arquitectura`. FreeShow v1.6.7 importado por GitHub Actions run `40369975943`, con encabezado JA y `public/ja-logo.png`, `public/ja-hero.jpg`. Antes de avanzar: revisar HEAD, workflow, CI de compilación y los documentos maestros. No copiar el enrutamiento fallido del repositorio anterior; no fusionar ramas sin aprobación.
+
+## Cambios recientes — instalador con versionado individual
+En `feature/base-freeshow-diseno-ja` se añadieron `scripts/ja/prepare-version.cjs` y pasos a `.github/workflows/validate-ja-base.yml` para crear instalador Windows `JA-Proyecciones-2-2.0.<número>-x64.exe` diferente en cada ejecución y reintento. No declarar éxito hasta CI de empaquetado. Los cambios de versión se aplican temporalmente en CI, sin llenar Git de commits de versión. El PR #2 sigue en borrador; no fusionar sin autorización.
