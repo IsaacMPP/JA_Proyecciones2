@@ -64,3 +64,6 @@ En rama `feature/base-freeshow-diseno-ja`, FreeShow oficial v1.6.7 ya está inco
 
 ### Pantalla de carga nativa JA — implementación posterior
 Se localizó y personalizó `public/loading.html` (ventana de arranque real de Electron): fondo de `ja-hero.jpg`, emblema `ja-logo.png`, marca JA y indicador/versión. Esta acción reemplaza el pendiente de pantalla de carga nativa indicado anteriormente. Sigue pendiente comprobar la representación en Windows.
+
+## Estado de transición de conversación (26-oct-2026)
+**Módulo RV1909 incorporado en código, todavía no validado en Windows.** Fuente eBible dominio público con verificación SHA, recurso FSB sin conexión, registro y lector FreeShow conservados. Workflow #40393505056 se encontraba en ejecución durante esta actualización; revisar último run del HEAD, no asumir éxito. Tras comprobar 66 libros, navegación, proyección y offline, pasar al Himnario Adventista. El plan completo y normas están consolidados en `docs/CONTINUIDAD_CHATGPT.md`. PR #2 sigue draft, `main` sin fusionar.
