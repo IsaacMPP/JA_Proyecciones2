@@ -74,3 +74,5 @@ Las capturas del operador muestran que RV1909 se selecciona y proyecta en Window
 
 ## Biblia — importación de archivos locales del operador
 Se reconocieron seis FSB de origen aportado por el usuario, sin publicación de su contenido: RVC, TLA, DHH94I (75 libros), NBLA, NTV y NVI. Se habilita y explica el flujo nativo de importación múltiple local `.fsb` y se valida su estructura. No se deben restringir todas las traducciones a 66 libros, ni redistribuir textos protegidos en releases. Falta probar instalación, importación real y persistencia entre sesiones, además de completar el editor bíblico en vivo y su estilo persistente.
+
+**Actualización posterior:** `e2041e5` invoca el guardado nativo al importar FSB válidos, para conservar biblias en `scripturesCache` al reiniciar; falta validar persistencia real en Windows y posible impacto en tamaño del perfil.
