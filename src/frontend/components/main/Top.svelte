@@ -160,9 +160,9 @@
 <style>
 
     /* JA branding: visual only, original navigation/output controls retained. */
-    .ja-brand { display:flex; align-items:center; gap:9px; width:100%; height:58px; padding:2px 12px; white-space:nowrap; }
-    .ja-brand img {height:51px; width:70px; object-fit:cover;}
-    .ja-name {color:var(--text);font-size:1.5em;font-weight:750;letter-spacing:-.035em;}
+    .ja-brand { display:flex; align-items:center; gap:9px; width:100%; height:68px; padding:2px 16px; white-space:nowrap; }
+    .ja-brand img {height:52px; width:60px; object-fit:contain;}
+    .ja-name {color:var(--text);font-size:1.4em;font-weight:750;letter-spacing:-.035em;}
     .ja-name strong {color:var(--secondary);font-weight:780;}
     .top { background:linear-gradient(100deg,#0b2a49 0%,#071b32 70%,#081a30 100%); border-bottom:1px solid #1a496c; }
     @media(max-width:940px){.ja-name{font-size:1.08em}.ja-brand img{height:42px;width:57px}}
@@ -172,8 +172,8 @@
         display: flex;
         justify-content: space-between;
         z-index: 30;
-        min-height: 40px;
-        height: 40px;
+        min-height: 68px;
+        height: 68px;
 
         box-shadow: 0 0 4px rgb(0 0 0 / 0.4);
 
@@ -182,7 +182,10 @@
     }
     .top span {
         display: flex;
+        align-items: center;
     }
+    .top :global(button) { min-height: 44px; border-radius: 8px; }
+    .top :global(button:hover) { background: rgba(242,195,0,.12); }
 
     .top.drag {
         -webkit-app-region: drag;
@@ -257,7 +260,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        height: calc(40px - 4px);
+        height: calc(68px - 4px);
 
         display: flex;
         align-items: center;
