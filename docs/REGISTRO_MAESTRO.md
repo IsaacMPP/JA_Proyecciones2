@@ -25,3 +25,9 @@
 **Decisión:** conservar flujos y ajustes funcionales originales, incluido selector de salida cuando todavía no existe. El primer envío de JA sin proyector principal debe abrir asistente de selección y guardarlo; el resto son auxiliares independientes. Configuración se actualiza de forma integral y comparte el mismo registro del centro de control.
 **Cambios:** actualización documental JA_MASTER, ARQUITECTURA_MULTIPANTALLA y RUTA_CRITICA_ENTREGAS. **No se modificó aplicación ni se importó FreeShow**.
 **Pruebas:** revisión y guardado documental en GitHub. Falta prueba de funcionamiento cuando exista el motor.
+
+## 2026-10-26 — Inicio de recuperación de diseño
+**Origen auditado:** antiguo `Top.svelte`, navegación Himnario y Biblia y recursos `ja-logo.png`, `ja-hero.jpg`.
+**Modificaciones:** nuevo encabezado Svelte presentacional `design/JAHeader.svelte` y hoja de estilo `design/ja-theme.css`; inventario y guía `design/README.md`.
+**Decisión:** conservar jerarquía visual y estilo, sin copiar el controlador de pantallas ni audio del prototipo. El motor FreeShow no está todavía importado; PNG/JPG originales por transferir.
+**Validación:** archivos creados en rama documental; pendiente compilación visual cuando exista proyecto base.
