@@ -49,3 +49,9 @@ Se añadió `design/ja-theme.css`, `design/JAHeader.svelte` y `design/README.md`
 
 ## Hito: base FreeShow importada (26-oct-2026)
 En rama `feature/base-freeshow-diseno-ja`, FreeShow oficial v1.6.7 ya está incorporado como código fuente. Se reintrodujo **únicamente** la marca del encabezado JA y sus recursos originales; salidas, audio, ventanas, configuración y navegación permanecen nativas de FreeShow. Este hito reemplaza el estado anterior «sin aplicación» sólo para esta rama; no confundir importación exitosa con compilación verificada. Pendientes el resto de la portada/identidad y recuperar Biblia/Himnario por fases, sin parches históricos. No fusionar a main sin aprobación.
+
+## Versionado automático de Windows (26-oct-2026)
+- El código sigue versionado sobre FreeShow 1.6.7 como base, pero cada ejecución de instalador JA utiliza **versión exclusiva de compilación** `2.0.<run_number*100+attempt>`, calculada con el número global del flujo GitHub Actions y su intento. Un nuevo commit que active el workflow genera un número nuevo; reejecutar una compilación también produce un número diferente.
+- `scripts/ja/prepare-version.cjs` modifica temporalmente `package.json` sólo en el agente de CI y crea `ja-build-info.json` (versión, commit, ejecución). No genera commits de cambio de versión ni afecta el lockfile antes de `npm ci`.
+- El instalador NSIS se configura como `JA Proyecciones 2`, appId `mx.japroy.proyecciones2`, artefacto `JA-Proyecciones-2-<version>-<arch>.exe`. Se elimina la configuración de firma Azure de FreeShow de la configuración **generada**, sin modificar el original.
+- La primera tarea es confirmar **compilación y empaquetado**, no asumir éxito por disponer de un workflow. No se declara instalador funcional hasta CI verde y prueba en Windows. La pantalla «Acerca de» debe mostrar la versión del package empaquetado; se puede ampliar después con SHA.
