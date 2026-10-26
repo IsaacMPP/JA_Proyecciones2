@@ -46,3 +46,6 @@ Se reemplazó sólo el componente de bienvenida `src/frontend/components/main/Sp
 
 ## Actualización de pantalla de carga
 También se personalizó `public/loading.html` con arte y textos JA conservando IPC de versión. A diferencia de `Splash.svelte`, ésta sí es la ventana de carga nativa de Electron. Validar ambas por separado en Windows.
+
+## Ajustes JA recientes
+Se modificó la paleta del tema predeterminado a azul/amarillo JA, encabezado de 68px, splash nativo y título; se desactivaron los dos update checkers de FreeShow, sin introducir aún canal JA; se añadió aprovisionamiento de carpetas de contenido en Documentos por arranque de Electron. Las carpetas NO están aún asociadas a los navegadores de Biblia/Himnario/medios. Verificar última compilación Windows antes de descargar. PR #2 borrador, sin merge.
