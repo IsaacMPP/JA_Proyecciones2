@@ -1,4 +1,8 @@
 <script lang="ts">
+    import { onMount } from "svelte"
+    import { registerJARV1909 } from "../bible/jaBundledBible"
+    import { JA_SPANISH_EDITIONS } from "../bible/jaSpanishBibles"
+    import { setDrawerTabData } from "../../helpers/historyHelpers"
     import { activePopup, activeScripture, drawerTabsData, labelsDisabled, openScripture, scriptures } from "../../../stores"
     import { getAccess } from "../../../utils/profile"
     import { keysToID } from "../../helpers/array"
@@ -6,6 +10,8 @@
     import T from "../../helpers/T.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import NavigationSections from "./NavigationSections.svelte"
+
+    onMount(() => { void registerJARV1909() })
 
     const profile = getAccess("scripture")
     $: readOnly = profile.global === "read"
@@ -52,6 +58,11 @@
             return a
         })
     }
+    function chooseEdition(code: string) {
+        const found = Object.entries($scriptures).find(([_, v]) => (v.name || "").toLowerCase().includes(code.toLowerCase()))
+        if (found) setDrawerTabData("scripture", found[0])
+        else activePopup.set("import_scripture")
+    }
 </script>
 
 <NavigationSections {sections} active={activeSubTab} on:rename={updateName}>
@@ -85,3 +96,18 @@
         {/if}
     </div>
 </NavigationSections>
+<section class="ja-editions">
+    <h3>Biblias en español</h3>
+    <p>RV1909 incluida sin conexión. Otras versiones requieren una fuente autorizada.</p>
+    {#each JA_SPANISH_EDITIONS as edition (edition.code)}
+        <button type="button" on:click={() => chooseEdition(edition.code)} disabled={readOnly}>
+            {edition.short} — {edition.name}
+        </button>
+    {/each}
+</section>
+<style>
+    .ja-editions { padding: 12px; color: var(--text); background: var(--primary-darker); border-top: 1px solid var(--primary-lighter); }
+    .ja-editions h3 { color: var(--secondary); margin-bottom: 8px; }
+    .ja-editions p { font-size: .85em; opacity: .8; margin-bottom: 8px; }
+    .ja-editions button { display: block; padding: 7px 9px; width: 100%; text-align: left; border: 1px solid var(--primary-lighter); background: var(--primary); color: var(--text); border-radius: 6px; margin-bottom: 4px; }
+</style>
