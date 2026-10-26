@@ -167,7 +167,7 @@
         <HRule />
     {/if}
 
-    <p style="font-size: 1.1em;"><T id="scripture.supported_formats" /></p>
+    <p style="font-size: 1.1em;"><T id="scripture.supported_formats" /></p>\n    <p style="font-size: 0.9em;opacity: 0.85;">Puedes seleccionar varios archivos .fsb a la vez (RVC, TLA, DHH, NBLA, NTV, NVI, etc.). Se importan localmente, sin enviarlos a Internet. Utiliza únicamente textos para los que tengas autorización de uso.</p>
     <ul style="list-style: inside;">
         <li>
             <span style="font-size: 0.9em;font-weight: bold;">XML</span>
