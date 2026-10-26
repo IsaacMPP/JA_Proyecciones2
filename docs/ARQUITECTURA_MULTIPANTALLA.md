@@ -33,3 +33,19 @@ Base tecnológica y modelo exacto de reproductores por salida; mecanismo de nomb
 - Pantalla **principal de Windows** = escritorio del operador; **proyector principal de JA** = pantalla externa seleccionada. No son intercambiables.
 - Al iniciar un video con clic normal, sólo proyector principal recibe el medio **con audio**, independientemente de cuantos monitores estén activos; auxiliares conservan su imagen/video actual y quedan sin sonido. Modos «Solo video» y «Solo audio» requieren contrato separado sin efectos sobre pantallas ajenas.
 - Validación de identidad: EDID/nombre amigable si Windows ofrece datos; fallback etiqueta más resolución e identificación física; no prometer modelo exacto para HDMI inalámbrico ni spacedesk si su controlador no lo comunica.
+
+## Contrato UX integrado con ajustes (26-oct-2026)
+**Preservación:** inventariar primero componentes, flujos y ajustes nativos de FreeShow; ninguna simplificación debe eliminar capacidades funcionales como selección inicial de pantalla, salidas avanzadas, mezcladores o audio routing.
+
+**Estados del inicio de proyección**
+1. Sin salida configurada / sin proyector principal: invocar selector de dispositivos, identificar pantalla real, elegir proyector principal y preparar su salida mediante mecanismos existentes. Cancelar no proyecta nada.
+2. Principal configurado y disponible: clic normal envía solo a principal con audio por defecto para video; demás salidas no se modifican.
+3. Principal configurado pero desconectado/identidad ambigua: avisar, mostrar asistente de reconexión/reasignación; nunca redirigir silenciosamente.
+4. Enviar a secundaria: destino explícito, contenido visual sin audio; no alterar contenido o estado de transporte de otras salidas.
+
+**Centro Configuración → Pantallas y salidas**
+- Vista básica: inventario real con etiqueta de Windows, resolución y «Identificar»; principal seleccionado, asignación por monitor, estados conectado/asignado/en proyección; audio del principal y auxiliares; acciones comprobables.
+- Vista avanzada: conservar ajustes originales FreeShow (salidas lógicas, ventana, NDI, streaming, resolución, estilos, audio routing y demás); no duplicar almacenes de estado.
+- Sincronización bidireccional: cambios en asistente, configuración y centro de control reflejan el mismo registro de salidas; no crean reglas contradictorias.
+
+**Controles independientes:** operar por ID de salida y sesión; probar dos videos distintos y mismo video en dos destinos para determinar si FreeShow comparte audio/tiempo antes de decidir implementación. Conservar su motor mientras se diagnostica.
