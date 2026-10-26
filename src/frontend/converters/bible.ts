@@ -48,7 +48,7 @@ export function importBibles(data: any[]) {
             }
             // The FreeShow import returns only the count of valid files.
             const result = converter.func([file])
-            if (result === false || result === 0) failed.push(file.name || "Archivo no válido")
+            if (type === "freeshow" && result === 0) failed.push(file.name || "Archivo no válido")
             else imported++
         })
 
