@@ -29,3 +29,17 @@ jobs:
           test -s public/ja-logo.png
           test -s public/ja-hero.jpg
           grep -q 'class="ja-brand"' src/frontend/components/main/Top.svelte
+      - name: Preparar versión única del instalador
+        run: node scripts/ja/prepare-version.cjs
+      - name: Construir instalador Windows sin firma de FreeShow
+        run: npx electron-builder --config config/building/ja-windows.generated.yaml --win nsis --x64 --publish never
+      - name: Publicar instalador y manifiesto
+        uses: actions/upload-artifact@v4
+        with:
+          name: JA-Proyecciones-Windows-build-${{ github.run_number }}-intento-${{ github.run_attempt }}
+          path: |
+            dist/*.exe
+            release/*.exe
+            ja-build-info.json
+          if-no-files-found: error
+          retention-days: 30
