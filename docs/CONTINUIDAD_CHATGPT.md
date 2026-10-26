@@ -19,3 +19,6 @@
 - Verificar PR y CI del arranque documental.
 - Decidir arquitectura de reproducción, monitorización y persistencia antes de importar FreeShow o escribir componentes nuevos.
 - Preparar pruebas físicas con laptop, televisor HDMI inalámbrico e iPad vía spacedesk; comparar nombres devueltos por Windows.
+
+## Pull Request activo
+PR #1: https://github.com/IsaacMPP/JA_Proyecciones2/pull/1 — borrador documental, no fusionar sin autorización.
