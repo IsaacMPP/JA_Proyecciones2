@@ -60,3 +60,6 @@ Se corrigió `.github/workflows/validate-ja-base.yml`: sólo activa automáticam
 
 ## 2026-10-26 — Corrección de tema persistido FreeShow
 **Evidencia:** instalación JA 2.0.2701 conserva fucsia en tabs, iconos y botones pese a edición de `defaultThemes.ts`. **Causa verificada:** `public/global.css` aún declara `--secondary: #f0008c` y `updateSettings.ts` restaura tema default guardado del usuario sin migración de la paleta stock FreeShow. **Corrección:** variables CSS iniciales a azules/amarillo JA y migración selectiva del tema default con acento original FreeShow, preservando los temas personalizados y otros presets. **Validación pendiente:** compilación Windows y comprobar tras arrancar sobre datos persistidos.
+
+## 2026-10-26: Carpeta JA y panel de configuración
+Se extendió la creación inicial de carpetas con un registro consultable por IPC tipado `Main.JA_CONTENT_FOLDERS`. Configuración > Archivos muestra las rutas calculadas para el usuario y permite abrir cada carpeta con el mecanismo original de FreeShow. No se alteran bibliotecas existentes. Pendiente: asociar las carpetas a los módulos, CI Windows y prueba del panel.
