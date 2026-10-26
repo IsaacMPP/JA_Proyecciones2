@@ -46,3 +46,6 @@ Cerrar fase 0: elección de base tecnológica, contrato de identificación/selec
 
 ## Recuperación visual iniciada (26-oct-2026)
 Se añadió `design/ja-theme.css`, `design/JAHeader.svelte` y `design/README.md` en el PR documental. Conservan el encabezado azul de JA Proyección anterior y preparan integración sin importar fallos multipantalla. **No hay todavía motor FreeShow ni UI ejecutable.** Los recursos binarios `ja-logo.png`/`ja-hero.jpg` siguen pendientes de traslado. No confundir kit visual con interfaz funcional.
+
+## Hito: base FreeShow importada (26-oct-2026)
+En rama `feature/base-freeshow-diseno-ja`, FreeShow oficial v1.6.7 ya está incorporado como código fuente. Se reintrodujo **únicamente** la marca del encabezado JA y sus recursos originales; salidas, audio, ventanas, configuración y navegación permanecen nativas de FreeShow. Este hito reemplaza el estado anterior «sin aplicación» sólo para esta rama; no confundir importación exitosa con compilación verificada. Pendientes el resto de la portada/identidad y recuperar Biblia/Himnario por fases, sin parches históricos. No fusionar a main sin aprobación.
