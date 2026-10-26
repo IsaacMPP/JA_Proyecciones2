@@ -22,3 +22,6 @@
 
 ## Pull Request activo
 PR #1: https://github.com/IsaacMPP/JA_Proyecciones2/pull/1 — borrador documental, no fusionar sin autorización.
+
+## Requisitos definitivos confirmados por el usuario
+FreeShow 1.6.7 es la base seleccionada. Recuperar diseño JA anterior, Biblia en español, Himnario y tres modos multimedia, pero rehacer selección multipantalla desde cero. OBS es referencia sólo para nombres/modelos y detección de monitores. Principal de proyección elegido por operador recibe los clics normales con audio; auxiliares sólo contenido visual, sin interferencias. Código de los archivos ZIP de referencia no ha sido importado. Ver JA_MASTER y ARQUITECTURA_MULTIPANTALLA para detalles.
