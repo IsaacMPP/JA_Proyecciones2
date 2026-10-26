@@ -58,3 +58,6 @@ Se añadió el registro `getJAContentFolders()`, el IPC `Main.JA_CONTENT_FOLDERS
 
 ## Biblioteca multimedia JA
 `src/frontend/utils/jaMediaFolders.ts` registra rutas JA en `mediaFolders`/`audioFolders` despues de restaurar estado desde `updateSettings.ts`, manteniendo carpetas ya existentes y sin copiar archivos. Fondos/Imagenes/Videos en Multimedia; Audio/Cantos Juveniles en Audio. Aun no hay indexador especial ni integra Biblias/Himnario. Verificar GitHub Actions y comportamiento Windows.
+
+## Módulo Biblia española — avance
+Rama activa `feature/base-freeshow-diseno-ja`. Añadidos `build_rv1909.py`, `jaBundledBible.ts`, `jaSpanishBibles.ts`, registro desde `ScriptureTabs.svelte` y lectura RV1909 desde respuestas IPC. CI descarga archivo fuente eBible con SHA fijo y verifica 66 libros antes de empaquetar. No asegurar funcionamiento hasta CI y prueba real Windows. Ediciones con derechos de autor no incluidas. Continuar con validación y navegación bíblica antes de Himnario.
