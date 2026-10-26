@@ -2,6 +2,7 @@ import { uid } from "uid"
 import { formatToFileName } from "../components/helpers/show"
 import { activePopup, alertMessage, drawerTabsData, scriptures, scripturesCache } from "../stores"
 import { translateText } from "../utils/language"
+import { save } from "../utils/save"
 import { convertBebliaBible } from "./bebliaBible"
 import { convertOpenSongBible } from "./opensong"
 import { convertOSISBible } from "./osisBible"
@@ -78,6 +79,7 @@ export function importFSB(data: any[]): number {
         setActiveScripture(id)
         count++
     })
+    if (count) save()
     return count
 }
 
