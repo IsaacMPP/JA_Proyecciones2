@@ -63,3 +63,6 @@ Se corrigió `.github/workflows/validate-ja-base.yml`: sólo activa automáticam
 
 ## 2026-10-26: Carpeta JA y panel de configuración
 Se extendió la creación inicial de carpetas con un registro consultable por IPC tipado `Main.JA_CONTENT_FOLDERS`. Configuración > Archivos muestra las rutas calculadas para el usuario y permite abrir cada carpeta con el mecanismo original de FreeShow. No se alteran bibliotecas existentes. Pendiente: asociar las carpetas a los módulos, CI Windows y prueba del panel.
+
+## 2026-10-26 — Registro automático de bibliotecas JA
+Se añadió `jaMediaFolders.ts`: al terminar de restaurar los ajustes se consultan las ubicaciones de JA mediante IPC y se registran Fondos Personalizados, Imagenes y Videos en las carpetas multimedia nativas y Audio y Cantos Juveniles en las de audio. No copia archivos, no borra bibliotecas existentes y evita duplicados por ruta. Se reutiliza el lector de carpetas y el explorador de FreeShow. No se incluyen aun el Himnario ni Biblias en esos exploradores. Validar build y UI.
