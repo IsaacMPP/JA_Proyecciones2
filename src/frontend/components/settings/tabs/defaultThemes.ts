@@ -9,15 +9,15 @@ export const defaultThemes: { [key: string]: Themes } = {
             size: "1em"
         },
         colors: {
-            primary: "#242832",
-            "primary-lighter": "#2f3542",
-            "primary-darker": "#191923",
-            "primary-darkest": "#12121c",
+            primary: "#0B2A49",
+            "primary-lighter": "#173A61",
+            "primary-darker": "#071B32",
+            "primary-darkest": "#051326",
             text: "#f0f0ff",
             textInvert: "#131313",
             "secondary-text": "#f0f0ff",
-            secondary: "#F0008C",
-            "secondary-opacity": "rgba(240, 0, 140, 0.5)",
+            secondary: "#F2C300",
+            "secondary-opacity": "rgba(242, 195, 0, 0.5)",
             hover: "rgb(255 255 255 / 0.05)",
             focus: "rgb(255 255 255 / 0.1)"
         }
