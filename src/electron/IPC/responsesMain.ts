@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/electron/main"
 import type { BrowserWindow, DesktopCapturerSource } from "electron"
 import { app, desktopCapturer, screen, shell, systemPreferences } from "electron"
+import { getJAContentFolders } from "../utils/jaContentFolders"
 import os from "os"
 import path from "path"
 import { getMainWindow, isProd, mainWindow, maximizeMain, setGlobalMenu } from ".."
@@ -48,6 +49,7 @@ import { sendToMain } from "./main"
 
 // no need to await Promise returns here
 export const mainResponses: MainResponses = {
+    [Main.JA_CONTENT_FOLDERS]: () => getJAContentFolders(),
     // DEV
     [Main.LOG]: (data) => console.info(data),
     [Main.IS_DEV]: () => !isProd,
