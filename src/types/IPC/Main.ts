@@ -28,6 +28,7 @@ export enum Main {
     LOG = "LOG",
     IS_DEV = "IS_DEV",
     GET_CACHE_PATH = "GET_CACHE_PATH",
+    JA_CONTENT_FOLDERS = "JA_CONTENT_FOLDERS",
     // APP
     VERSION = "VERSION",
     GET_OS = "GET_OS",
@@ -309,6 +310,7 @@ export interface MainSendPayloads {
 }
 
 export interface MainReturnPayloads {
+    [Main.JA_CONTENT_FOLDERS]: { base: string; folders: Record<string, string> }
     // DEV
     [Main.IS_DEV]: boolean
     [Main.GET_CACHE_PATH]: string
