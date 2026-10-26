@@ -34,6 +34,11 @@ jobs:
           test -s public/ja-logo.png
           test -s public/ja-hero.jpg
           grep -q 'class="ja-brand"' src/frontend/components/main/Top.svelte
+      - name: Crear imágenes JA para el instalador
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python scripts/ja/create-installer-art.py
       - name: Preparar versión única del instalador
         run: node scripts/ja/prepare-version.cjs
       - name: Construir instalador Windows sin firma de FreeShow
