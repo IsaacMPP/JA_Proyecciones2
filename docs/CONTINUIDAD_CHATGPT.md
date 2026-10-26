@@ -55,3 +55,6 @@ El fucsia del tema guardado original FreeShow persistía en la instalación. Se 
 
 ## Integración de carpetas JA en Configuración
 Se añadió el registro `getJAContentFolders()`, el IPC `Main.JA_CONTENT_FOLDERS` y la sección en Configuración > Archivos con rutas reales y opción de abrir cada carpeta. FreeShow conserva sus bibliotecas nativas. No hay indexación automática todavía. Pendiente validar CI Windows y uso en la app.
+
+## Biblioteca multimedia JA
+`src/frontend/utils/jaMediaFolders.ts` registra rutas JA en `mediaFolders`/`audioFolders` despues de restaurar estado desde `updateSettings.ts`, manteniendo carpetas ya existentes y sin copiar archivos. Fondos/Imagenes/Videos en Multimedia; Audio/Cantos Juveniles en Audio. Aun no hay indexador especial ni integra Biblias/Himnario. Verificar GitHub Actions y comportamiento Windows.
