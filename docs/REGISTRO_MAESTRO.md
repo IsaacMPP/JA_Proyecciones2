@@ -45,3 +45,9 @@
 
 ## 2026-10-26 — Optimización de CI Windows
 Se corrigió `.github/workflows/validate-ja-base.yml`: sólo activa automáticamente con `push` a la rama de trabajo; se eliminó el disparador PR que duplicaba compilaciones. `paths-ignore` excluye cambios exclusivamente Markdown y `docs/**`; `concurrency` cancela ejecuciones reemplazadas por una versión más reciente de la misma rama. `workflow_dispatch` permite compilar manualmente cuando sea necesario. El identificador de versión por ejecución permanece intacto. Pendiente validar la nueva ejecución completa y el instalador.
+
+## 2026-10-26 — Recuperación de portada original y diseño de instalación
+**Solicitud:** completar el diseño del instalador, pantalla de bienvenida/carga visual y portada JA antes de entregar una versión para pruebas.
+**Fuente:** se restauró `src/frontend/components/main/Splash.svelte` desde la última referencia visual aprobada del antiguo `IsaacMPP/Ja_Proyeccion`, conservando las acciones nativas de FreeShow. Reutiliza `public/ja-logo.png` y `public/ja-hero.jpg` recuperados previamente.
+**Instalador:** `scripts/ja/create-installer-art.py` genera icono de Windows `.ico` y panel/encabezado de NSIS desde los activos originales; `scripts/ja/prepare-version.cjs` los enlaza en configuración temporal de electron-builder. `.github/workflows/validate-ja-base.yml` prepara las imágenes antes de empaquetar.
+**Alcance:** imagen de la pantalla de bienvenida de FreeShow (`Splash.svelte`) ya personalizada; esto no introduce otra ventana de arranque nativa de Electron. Sin modificaciones de salidas, audio ni navegación. No se garantiza resultado del instalador hasta CI verde y prueba manual en Windows.
