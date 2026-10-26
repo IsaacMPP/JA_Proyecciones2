@@ -67,6 +67,7 @@
     //     })
     // }
 
+    let jaContent: { base: string; folders: Record<string, string> } | null = null
     let mediaFolderPath = ""
     async function updateMediaFolderPath(e: any) {
         mediaFolderPath = e.detail || ""
@@ -83,6 +84,7 @@
 
     let updater: NodeJS.Timeout | null = null
     onMount(async () => {
+        jaContent = (await requestMain(Main.JA_CONTENT_FOLDERS)) || null
         checkTimes()
         updater = setInterval(checkTimes, 1000)
 
@@ -265,6 +267,20 @@
         }
     }
 </script>
+
+<Title label="Biblioteca de JA Proyecciones 2" icon="folder" />
+<p style="margin: 8px 0; opacity: .8;">Carpetas propias de JA, independientes de las bibliotecas y proyectos existentes de FreeShow.</p>
+{#if jaContent}
+    <p style="margin-bottom: 12px; overflow-wrap: anywhere;"><strong>Ubicación:</strong> {jaContent.base}</p>
+    {#each Object.entries(jaContent.folders) as [name, folderPath]}
+        <InputRow>
+            <span style="flex: 1; padding: 8px 0;">{name}</span>
+            <MaterialButton on:click={() => sendMain(Main.OPEN_FOLDER_PATH, folderPath)}>Abrir carpeta</MaterialButton>
+        </InputRow>
+    {/each}
+{:else}
+    <p>Las carpetas se mostrarán cuando el sistema complete la inicialización.</p>
+{/if}
 
 <MaterialDropdown label="settings.autosave{autosaveInfo}" value={$autosave} defaultValue="15min" options={autosaveList} on:change={updateAutosave} />
 <MaterialDropdown label="settings.auto_backup{autoBackupInfo}" value={autoBackup} defaultValue="weekly" options={autobackupList} on:change={(e) => updateSpecial(e.detail, "autoBackup")} />
