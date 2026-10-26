@@ -61,3 +61,6 @@ En rama `feature/base-freeshow-diseno-ja`, FreeShow oficial v1.6.7 ya está inco
 - Portada/bienvenida visual original recuperada en `src/frontend/components/main/Splash.svelte` (fondo JA, logo, lema, versión y controles nativos de búsqueda/proyecto/presentación).
 - Identidad del instalador NSIS e icono Windows generados mediante `scripts/ja/create-installer-art.py` y configuración específica en `scripts/ja/prepare-version.cjs`.
 - **Pendiente validación de empaquetado y prueba visual de instalación**. La pantalla de carga nativa separada del proceso Electron no ha sido personalizada por separado; la pantalla de bienvenida de la aplicación sí.
+
+### Pantalla de carga nativa JA — implementación posterior
+Se localizó y personalizó `public/loading.html` (ventana de arranque real de Electron): fondo de `ja-hero.jpg`, emblema `ja-logo.png`, marca JA y indicador/versión. Esta acción reemplaza el pendiente de pantalla de carga nativa indicado anteriormente. Sigue pendiente comprobar la representación en Windows.
