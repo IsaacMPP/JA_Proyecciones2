@@ -2,6 +2,7 @@
 // This is the electron entry point
 
 import type { Rectangle } from "electron"
+import { ensureJAContentFolders } from "./utils/jaContentFolders"
 import { BrowserWindow, Menu, app, ipcMain, powerSaveBlocker, protocol, screen } from "electron"
 import { AUDIO, BLACKMAGIC, CLOUD, EXPORT, MAIN, NDI, OMT, OUTPUT, STARTUP } from "../types/Channels"
 import { Main } from "../types/IPC/Main"
@@ -105,6 +106,7 @@ protocol.registerSchemesAsPrivileged([
 // start when ready
 if (RECORD_STARTUP_TIME) console.time("Full startup")
 app.on("ready", async () => {
+    ensureJAContentFolders()
     // getGPUFeatureStatus() at app-ready is premature (GPU process still initializing, reports
     // disabled_software defaults) — only the delayed re-logs reflect the real state
     logGpuStatus("t=0")
