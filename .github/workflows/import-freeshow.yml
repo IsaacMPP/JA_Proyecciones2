@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ChurchApps/FreeShow
-          ref: 1.6.7
+          ref: v1.6.7
           path: _freeshow_source
           persist-credentials: false
       - name: Verificar fuente y copiar sin sobrescribir documentación
