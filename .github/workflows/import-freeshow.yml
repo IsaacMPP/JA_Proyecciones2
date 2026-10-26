@@ -1,8 +1,5 @@
 name: Importar FreeShow 1.6.7 limpio
 on:
-  push:
-    branches:
-      - feature/base-freeshow-diseno-ja
   workflow_dispatch:
 permissions:
   contents: write
