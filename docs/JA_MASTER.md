@@ -79,3 +79,6 @@ Se reconocieron seis FSB de origen aportado por el usuario, sin publicación de 
 
 ## Sincronización incremental de estilo de Escrituras
 El lector bíblico ahora escucha cambios en su plantilla persistente y puede solicitar actualización del versículo actualmente proyectado reutilizando `playScripture`. No crea estilos por versículo ni reproductores nuevos. Es un primer paso, no una implementación completa del editor visual compartido: quedan pendientes prueba Windows, vista previa del versículo real dentro del editor, actualización fina sin recrear toda la diapositiva, cambios de fondo al retirar imágenes y salida específica multipantalla.
+
+## Plan operativo vigente
+Se reorganizó el desarrollo en entregas E0–E5, definidas en `docs/RUTA_CRITICA_ENTREGAS.md`. La entrega E1 (Biblia) es la unidad activa. Las tareas nuevas se clasifican y se incorporan al plan sin interrumpir arbitrariamente la entrega. El cierre exige pruebas, registro de defectos y validación Windows.
