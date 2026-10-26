@@ -31,3 +31,6 @@ Preservar completamente los controles y configuración funcionales de FreeShow. 
 
 ## Último avance de diseño
 Se extrajo kit presentacional del encabezado anterior a `design/JAHeader.svelte` y `design/ja-theme.css`, con inventario de referencias en `design/README.md`. La base FreeShow todavía NO está importada y no hay aplicación ejecutable. No reutilizar cambios multipantalla antiguos. Recursos gráficos binarios pendientes.
+
+## Estado efectivo después de la importación (26-oct-2026)
+Nueva rama `feature/base-freeshow-diseno-ja` derivada de `docs/fase0-gobernanza-arquitectura`. FreeShow v1.6.7 importado por GitHub Actions run `40369975943`, con encabezado JA y `public/ja-logo.png`, `public/ja-hero.jpg`. Antes de avanzar: revisar HEAD, workflow, CI de compilación y los documentos maestros. No copiar el enrutamiento fallido del repositorio anterior; no fusionar ramas sin aprobación.
