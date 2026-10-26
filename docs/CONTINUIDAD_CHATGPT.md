@@ -61,3 +61,24 @@ Se añadió el registro `getJAContentFolders()`, el IPC `Main.JA_CONTENT_FOLDERS
 
 ## Módulo Biblia española — avance
 Rama activa `feature/base-freeshow-diseno-ja`. Añadidos `build_rv1909.py`, `jaBundledBible.ts`, `jaSpanishBibles.ts`, registro desde `ScriptureTabs.svelte` y lectura RV1909 desde respuestas IPC. CI descarga archivo fuente eBible con SHA fijo y verifica 66 libros antes de empaquetar. No asegurar funcionamiento hasta CI y prueba real Windows. Ediciones con derechos de autor no incluidas. Continuar con validación y navegación bíblica antes de Himnario.
+
+## Punto de continuidad consolidado — 2026-10-26 (rama de conversación)
+**Repositorio:** https://github.com/IsaacMPP/JA_Proyecciones2 · **Rama:** `feature/base-freeshow-diseno-ja` · **PR:** #2 draft (base `docs/fase0-gobernanza-arquitectura`, no fusionar). HEAD comprobado antes de esta actualización: `917201e55889ac18044cb36269e669b8268f56d5`. Releer HEAD después de los commits documentales.
+
+### Implementado en código, aún no necesariamente validado en Windows
+- FreeShow v1.6.7 como motor conservando funciones nativas, identidad JA azul/amarillo, portada, pantalla de carga, instalador NSIS con numeración por ejecución y bloqueo del actualizador heredado FreeShow.
+- Creación de carpetas JA en Documentos; Configuración → Archivos consulta rutas mediante IPC; registro inicial de Fondos Personalizados/Imagenes/Videos en Multimedia y Audio/Cantos Juveniles en Audio sin duplicar bibliotecas FreeShow.
+- **Biblia en español RV1909**: generación desde fuente de dominio público eBible verificada por hash, recurso empaquetado `public/ja-bibles/rv1909.fsb`, registro idempotente y lector/proyección original de FreeShow. Catálogo informativo para otras traducciones; **RVR1960, RVR1995 y NVI NO incluidas** por derechos de uso. La incorporación de RV1909 no equivale aún a prueba funcional de todos los libros.
+
+### Validación bloqueante
+Workflow Windows https://github.com/IsaacMPP/JA_Proyecciones2/actions/runs/40393505056 para SHA `d2d29b98b0a322bd58f42e4fd70a7fa6c7f5f167`: última consulta: **in_progress**, paso de instalación de dependencias. Antes de probar instalador, confirmar el último run correspondiente al nuevo HEAD y sus artifacts; revisar logs si falla. No atribuir éxito a un run cancelado ni a un SHA antiguo.
+
+### Prueba de aceptación de la Biblia
+Instalar la build actual válida; verificar que RV1909 aparece en selector, se leen los 66 libros completos, se cambia libro/capítulo/versículo, se proyectan correctamente, funciona sin Internet y no se altera el lector original ni configuraciones FreeShow. Registrar errores con versión exacta del instalador.
+
+### Orden estricto de continuación
+1. Revisar Github HEAD, PR y CI, y resolver fallos si existen.
+2. Verificar funcionalidad RV1909 en Windows; corregir defectos de raíz, no parches.
+3. Después de validarla, integrar Himnario Adventista (carpeta propia, buscador por número/nombre, miniaturas persistentes optimizadas y reproducción).
+4. Mantener futuros trabajos multipantalla bajo arquitectura separada: principal con audio, auxiliares sin audio, enrutamiento/control independientes, sin quitar funciones originales de FreeShow.
+5. Tras **cada** modificación actualizar `JA_MASTER.md`, `REGISTRO_MAESTRO.md`, `CONTINUIDAD_CHATGPT.md`, y la ruta crítica cuando cambie el plan; mantener PR draft y `main` intacta.
