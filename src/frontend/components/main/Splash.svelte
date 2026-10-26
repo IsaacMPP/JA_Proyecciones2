@@ -46,104 +46,161 @@
     })
 </script>
 
-<Center class="context #splash">
-    <h1>FreeShow</h1>
-    <p style="opacity: 0.7;">v{$version}</p>
+<Center class="context #splash ja-splash" style="background: radial-gradient(ellipse at 52% 1%, rgba(40,144,222,.42), transparent 46%), linear-gradient(180deg, rgba(3,23,46,.08), rgba(3,17,36,.72)), url('./ja-hero.jpg') center / cover no-repeat, #061e37;">
+    <div class="ja-welcome">
+        <img src="./ja-logo.png" alt="Emblema JA" draggable={false} />
+        <h1>JA <span>Proyección</span></h1>
+        <p class="ja-subtitle">Presentaciones que inspiran, para una generación que sirve.</p>
+        <p class="ja-version">v{$version}</p>
+    </div>
     {#if $special.splashText}
-        <p style="padding-top: 30px">
+        <div class="ja-custom-message">
             {@html extractLinksAndCleanText($special.splashText)}
-            <span class="links" style="display: flex;flex-direction: column;align-items: center;">
+            <span class="links" style="display: flex;flex-direction: column;align-items:center;">
                 {#each links as link}
-                    <Link url={link}>
-                        {link.replace(/^(https?:\/\/)/, "")}
-                        <Icon id="launch" white />
-                    </Link>
+                    <Link url={link}>{link.replace(/^(https?:\/\/)/, "")}<Icon id="launch" white /></Link>
                 {/each}
             </span>
-        </p>
-    {:else if Object.keys($shows).length < 20}
-        <!-- shows up for new users (can be found in "About" menu) -->
-        <p style="padding-top: 30px">
-            <Link url="https://freeshow.app/docs">
-                <T id="main.docs" />
-                <Icon id="launch" white />
-            </Link>
-        </p>
-    {:else if votd}
-        <p class="votd" style="padding-top: 30px" data-title="Verse of the Day [votd.org]">
-            <Link url="https://votd.org/">
-                {votd}
-            </Link>
-        </p>
+        </div>
+    {:else if votd && Object.keys($shows).length >= 20}
+        <p class="votd"><Link url="https://votd.org/">{votd}</Link></p>
     {/if}
 
-    <span style="padding-top: 30px" class="buttons">
-        <MaterialButton icon="search" title="main.quick_search" on:click={() => quickSearchActive.set(true)}>
-            <T id="main.quick_search" />
-        </MaterialButton>
-        <MaterialButton icon="project" title="tooltip.project" on:click={createProject}>
-            <T id="new.project" />
-        </MaterialButton>
-        <MaterialButton
-            icon="add"
-            title="tooltip.show"
-            on:click={(e) => {
-                if (e.detail.ctrl) {
-                    history({ id: "UPDATE", newData: { remember: { project: $activeProject } }, location: { page: "show", id: "show" } })
-                } else activePopup.set("show")
-            }}
-        >
-            <T id="new.show" />
-        </MaterialButton>
+    <span class="buttons">
+        <div class="ja-main-action">
+            <MaterialButton icon="search" title="main.quick_search" on:click={() => quickSearchActive.set(true)}>
+                <T id="main.quick_search" />
+            </MaterialButton>
+        </div>
+        <div class="ja-minor-action">
+            <MaterialButton icon="project" title="tooltip.project" on:click={createProject}>
+                <T id="new.project" />
+            </MaterialButton>
+        </div>
+        <div class="ja-minor-action">
+            <MaterialButton
+                icon="add"
+                title="tooltip.show"
+                on:click={(e) => {
+                    if (e.detail.ctrl) {
+                        history({ id: "UPDATE", newData: { remember: { project: $activeProject } }, location: { page: "show", id: "show" } })
+                    } else activePopup.set("show")
+                }}
+            >
+                <T id="new.show" />
+            </MaterialButton>
+        </div>
     </span>
 </Center>
 
+
 <style>
-    h1 {
-        font-size: 4em;
-        overflow: initial;
+    :global(.ja-splash) {
+        position: relative;
+        padding: 16px;
+        isolation: isolate;
+        overflow-y: auto;
     }
-
-    p {
-        overflow: initial;
+    .ja-welcome {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        max-width: min(95%, 680px);
+        margin: 0 auto;
+        padding: 5px 12px 0;
+        text-align: center;
     }
-
+    .ja-welcome img {
+        height: clamp(150px, 27vh, 205px);
+        width: min(275px, 40vw);
+        max-width: 80%;
+        object-fit: cover;
+        object-position: center;
+        filter: drop-shadow(0 7px 15px rgba(1, 9, 19, 0.28));
+    }
+    .ja-welcome h1 {
+        font-size: clamp(2.4em, 4.25vw, 4.3em);
+        color: var(--text);
+        line-height: 1.12;
+        letter-spacing: -0.055em;
+        font-weight: 760;
+        overflow: visible;
+        margin-top: 2px;
+        text-shadow: 0 2px 12px rgba(2, 16, 40, 0.48);
+    }
+    .ja-welcome h1 span {
+        color: #ffcb2c;
+    }
+    .ja-welcome .ja-subtitle {
+        font-size: clamp(0.78em, 1.15vw, 1.06em);
+        color: #d1dfef;
+        opacity: 0.93;
+        overflow: visible;
+        white-space: normal;
+    }
+    .ja-welcome .ja-version {
+        margin-top: 3px;
+        font-size: 0.78em;
+        color: #c8d1dd;
+        opacity: 0.82;
+    }
     .buttons {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 9px;
+        width: min(280px, 75vw);
+        margin-top: 15px;
     }
-
+    .buttons .ja-main-action,
+    .buttons .ja-minor-action {
+        display: flex;
+        width: 100%;
+    }
     .buttons :global(button) {
-        justify-content: start;
-        padding: 8px 12px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 10px 15px;
+        border: 1px solid #2c83c4;
+        border-radius: 24px;
+        min-height: 41px;
+        background: linear-gradient(90deg, rgba(9, 47, 82, 0.96), rgba(3, 45, 84, 0.96));
+        color: #f7fbff;
+        font-weight: 600;
+        font-size: 0.94em;
+        box-shadow: 0 4px 12px rgba(0, 8, 22, 0.14);
+        transition: border-color 0.15s ease, background-color 0.15s ease;
     }
-
-    .votd {
-        padding: 0 10px;
-        max-width: 580px;
+    .buttons .ja-main-action :global(button) {
+        color: #0a1a30;
+        background: linear-gradient(180deg, #ffe04b, #f8b71a);
+        border: 1px solid #f4d02b;
+        font-weight: 760;
+    }
+    .buttons :global(button:hover) {
+        border-color: #f6bf19;
+        filter: brightness(1.12);
+    }
+    .ja-custom-message, .votd {
+        max-width: 600px;
+        padding: 10px 16px;
+        margin-top: 10px;
+        text-align: center;
+        font-size: 0.82em;
+        background: rgba(2, 20, 38, 0.55);
+        border-radius: 8px;
         white-space: normal;
-        text-align: left;
-        font-style: italic;
-        font-size: 0.9em;
     }
-    .votd :global(a) {
-        text-decoration: none;
+    .votd :global(a) { text-decoration: none; }
+    @media (max-height: 650px) {
+        .ja-welcome img { height: clamp(96px, 20vh, 150px); width: min(210px, 40vw); }
+        .ja-welcome h1 { font-size: clamp(2em, 3.8vw, 3.3em); }
+        .buttons { margin-top: 8px; gap: 6px; }
+        .buttons :global(button) { min-height: 35px; padding: 7px 12px; }
     }
-
-    @media screen and (max-height: 500px) {
-        h1 {
-            font-size: 3em;
-        }
-    }
-    @media screen and (max-height: 400px) {
-        h1 {
-            font-size: 2em;
-        }
-    }
-    @media screen and (max-width: 800px) {
-        h1 {
-            font-size: 2em;
-        }
+    @media (max-width: 680px) {
+        .ja-welcome h1 { font-size: 2.1em; }
+        .ja-welcome img { height: 112px; width: 160px; max-width: 60vw; }
     }
 </style>
