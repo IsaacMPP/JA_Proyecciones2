@@ -3,9 +3,10 @@
     import { ApiBible } from "json-bible/lib/api"
     import type { Verse } from "json-bible/lib/Bible"
     import type { VerseReference } from "json-bible/lib/reference"
-    import { onMount } from "svelte"
+    import { onMount, onDestroy } from "svelte"
+    import { get } from "svelte/store"
     import { defaultBibleBookNames } from "../../../converters/bebliaBible"
-    import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureMode, scriptures, scriptureSettings, selected } from "../../../stores"
+    import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureMode, scriptures, scriptureSettings, selected, templates } from "../../../stores"
     import { escapeRegExp, wait } from "../../../utils/common"
     import { translateText } from "../../../utils/language"
     import { getNormalizedKey } from "../../../utils/shortcuts"
@@ -23,6 +24,33 @@
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
     import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, sanitizeVerseText, scriptureRangeSelect, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
+
+    // JA: refresh the current projected verse when its active Scripture template
+    // changes. The template is stored once and reused for subsequent verses.
+    // Avoid firing while Scripture is not being projected, or on unrelated templates.
+    let liveStyleTimer: ReturnType<typeof setTimeout> | undefined
+    let liveStyleReady = false
+    let lastLiveStyle = ""
+    const unsubscribeLiveStyle = templates.subscribe((all) => {
+        const templateId = get(scriptureSettings).template || ""
+        const signature = JSON.stringify(templateId ? all[templateId] || null : null)
+        if (!liveStyleReady) {
+            lastLiveStyle = signature
+            liveStyleReady = true
+            return
+        }
+        if (signature === lastLiveStyle) return
+        lastLiveStyle = signature
+        if (liveStyleTimer) clearTimeout(liveStyleTimer)
+        if (!templateId || !outputIsScripture(get(outputs))) return
+        liveStyleTimer = setTimeout(() => {
+            if (outputIsScripture(get(outputs))) void playScripture()
+        }, 160)
+    })
+    onDestroy(() => {
+        unsubscribeLiveStyle()
+        if (liveStyleTimer) clearTimeout(liveStyleTimer)
+    })
 
     export let active: string | null
     export let searchValue: string
