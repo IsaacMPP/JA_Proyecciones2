@@ -31,3 +31,9 @@
 **Modificaciones:** nuevo encabezado Svelte presentacional `design/JAHeader.svelte` y hoja de estilo `design/ja-theme.css`; inventario y guía `design/README.md`.
 **Decisión:** conservar jerarquía visual y estilo, sin copiar el controlador de pantallas ni audio del prototipo. El motor FreeShow no está todavía importado; PNG/JPG originales por transferir.
 **Validación:** archivos creados en rama documental; pendiente compilación visual cuando exista proyecto base.
+
+## 2026-10-26 — Importación efectiva FreeShow 1.6.7 y cabecera JA
+**Origen:** etiqueta oficial `ChurchApps/FreeShow@v1.6.7` (GPL-3.0), reproducible mediante `.github/workflows/import-freeshow.yml`. Se validaron versión y licencia antes de copiar el árbol del programa.
+**Implementado:** se añadieron los archivos fuente de FreeShow a rama `feature/base-freeshow-diseno-ja`, sin modificar `main`, documentos maestros ni código heredado multipantalla; pequeño script idempotente `scripts/ja/apply-ja-theme.py` cambia exclusivamente la marca y CSS del encabezado `Top.svelte`; logos originales recuperados desde el repositorio JA anterior (commit `0bced037`).
+**Validación:** acción de importación `40369975943` exitosa; inspección remota confirmó `package.json` 1.6.7 y marcador `ja-brand`. **No equivale a prueba de compilación o funcionalidad en Windows**.
+**Pendientes:** crear y validar CI de compilación y pruebas de interfaz; revisar distribución visual completa de portada, Biblia e Himnario; no implementar enrutamiento multipantalla antes de definir contratos.
