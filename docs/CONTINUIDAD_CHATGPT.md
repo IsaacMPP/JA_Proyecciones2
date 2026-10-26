@@ -28,3 +28,6 @@ FreeShow 1.6.7 es la base seleccionada. Recuperar diseño JA anterior, Biblia en
 
 ## Último acuerdo de alcance (26-oct-2026)
 Preservar completamente los controles y configuración funcionales de FreeShow. Si el operador proyecta por primera vez sin una salida principal, abrir asistente de elección de pantalla, permitir identificar y guardar principal en vez de enviar a todas o mostrar un error. Las secundarias son destinos independientes sin audio por defecto. Todas las capacidades nuevas deben tener su contraparte funcional en Configuración → Pantallas/salidas, con ajustes avanzados originales conservados. Fase 0 documental; aún sin importación del motor.
+
+## Último avance de diseño
+Se extrajo kit presentacional del encabezado anterior a `design/JAHeader.svelte` y `design/ja-theme.css`, con inventario de referencias en `design/README.md`. La base FreeShow todavía NO está importada y no hay aplicación ejecutable. No reutilizar cambios multipantalla antiguos. Recursos gráficos binarios pendientes.
