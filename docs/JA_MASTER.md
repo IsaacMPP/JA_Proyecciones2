@@ -103,3 +103,6 @@ Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elem
 
 ## 2026-10-26 — Corrección de vista previa
 E1: corrección de referencia de array de ítems del versículo y visualización de fondo original sin exigir miniatura. La salida proyectada ya se veía en captura; fallaba solo el lienzo de edición. Aún sin aceptación Windows.
+
+## E1 — Placa de lectura
+Panel contextual vinculado al fondo del cuadro de texto seleccionado, usando estilos y controles FreeShow sin añadir capas de dibujo nuevas. Alternancia, color/opacidad y redondez registrados en la plantilla; falta validación de CI y prueba visual real. La referencia puede configurarse seleccionando su propio cuadro.
