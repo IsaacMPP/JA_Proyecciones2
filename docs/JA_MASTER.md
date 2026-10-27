@@ -91,3 +91,6 @@ Editor de plantillas bíblicas con dos paneles al activar vista en vivo: plantil
 
 ## 2026-10-26 — Corrección de vista bíblica ausente
 E1: corregida detección de plantillas bíblicas predeterminadas para que la vista real no dependa de configurar una plantilla personalizada. Código `81e00ed`, sin aceptación Windows aún.
+
+## E1 — Lienzo único de Escrituras
+Sustituida la vista doble por lienzo único que muestra versículo proyectado sin tokens visibles; la plantilla interna sigue siendo la fuente de los estilos. Controles nativos de FreeShow para fondo de color e imagen ya existen y se conservan. Cambios de código pendientes de CI/aceptación Windows, sin declarar terminada E1.
