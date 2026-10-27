@@ -71,6 +71,22 @@
         updatePlate("background-color", enabled ? previousPlateColor : "")
     }
 
+    function resetBibleBackground() {
+        if (!bibleMode || !activeId) return
+        if (!window.confirm("¿Restablecer el fondo de Escrituras?")) return
+        const settings = { ...($templates[activeId]?.settings || {}), backgroundColor: "", backgroundPath: "" }
+        history({ id: "UPDATE", newData: { key: "settings", data: settings }, oldData: { id: activeId }, location: { page: "edit", id: "template_settings", override: activeId } })
+    }
+    function resetPlate() {
+        if (!plateItem || !activeId) return
+        if (!window.confirm("¿Restablecer el fondo de lectura seleccionado?")) return
+        const styles = getStyles(plateItem.style)
+        delete styles.background
+        delete styles["background-color"]
+        delete styles["border-radius"]
+        const data = Object.entries(styles).map(([name, value]) => name + ":" + value + ";").join("")
+        history({ id: "UPDATE", newData: { key: "items", indexes: [plateIndex], subkey: "style", data: [data] }, oldData: { id: activeId }, location: { page: "edit", id: "template_items", override: "ja_reset_plate#" + activeId + "#" + plateIndex } })
+    }
     $: activeId = $activeEdit.id || ""
     $: activeSlide = $activeEdit.slide ?? -1
 
@@ -457,6 +473,7 @@
                     <div class="jaScriptureFields">
                         <MaterialColorInput label="edit.background_color" value={$templates[activeId]?.settings?.backgroundColor || ""} on:input={(e) => updateBibleBg("backgroundColor", e.detail)} allowEmpty />
                         <MaterialFilePicker label="edit.background_media" value={$templates[activeId]?.settings?.backgroundPath || ""} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateBibleBg("backgroundPath", e.detail ?? e)} allowEmpty />
+                        <button class="jaResetBtn" type="button" on:click={resetBibleBackground}>Restablecer fondo</button>
                     </div>
                 </details>
                 <details>
@@ -468,6 +485,7 @@
                                 <div class="jaPlateColorRow"><label for="plateColor">Color y opacidad</label><MaterialColorInput label="Color y opacidad" value={plateColor} allowOpacity on:input={(e) => updatePlate("background-color", e.detail)} /></div>
                                 <div class="jaPlateRadiusLabel"><label for="jaPlateRadius">Esquinas redondeadas</label><output>{parseInt(plateStyles["border-radius"] || "0") || 0}px</output></div>
                                 <input id="jaPlateRadius" type="range" min="0" max="80" step="2" value={parseInt(plateStyles["border-radius"] || "0") || 0} on:input={(e) => updatePlate("border-radius", e.currentTarget.value + "px")} />
+                            <button class="jaResetBtn" type="button" on:click={resetPlate}>Restablecer placa de lectura</button>
                             {/if}
                         {:else}
                             <p>Selecciona el cuadro de texto del versículo o de la referencia.</p>
@@ -570,6 +588,8 @@
 </div>
 
 <style>
+    .jaResetBtn { width: 100%; padding: 9px 8px; border: 1px solid var(--primary-lighter); border-radius: 6px; background: var(--primary-darker); color: var(--text); cursor: pointer; font-size: .8rem; }
+    .jaResetBtn:hover { background: var(--primary-dark); }
     .jaScriptureSidebar { flex-shrink: 0; border-bottom: 1px solid var(--primary-lighter); }
     .jaScriptureSidebar details { border-bottom: 1px solid var(--primary-lighter); }
     .jaScriptureSidebar summary { cursor: pointer; padding: 11px 13px; background: var(--primary-darker); font-weight: 600; font-size: .87rem; }
