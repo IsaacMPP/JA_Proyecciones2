@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { Main } from "../../types/IPC/Main"
 import { requestMain } from "../IPC/main"
 import { audioFolders, mediaFolders } from "../stores"
-import { refreshJAHymnLibrary } from "./jaHymnLibrary"
+import { installJAHymnLibrarySync, refreshJAHymnLibrary } from "./jaHymnLibrary"
 import { normalizeJAContentPath } from "./jaHymnPaths"
 
 // Register JA-managed locations with FreeShow's existing folder browsers.
@@ -40,6 +40,7 @@ export async function registerJAMediaFolders(): Promise<void> {
         addMissing(mediaFolders, JA_MEDIA)
         addMissing(audioFolders, JA_AUDIO)
         await refreshJAHymnLibrary()
+        installJAHymnLibrarySync()
     } catch (error) {
         console.warn("JA media folders could not be registered:", error)
     }
