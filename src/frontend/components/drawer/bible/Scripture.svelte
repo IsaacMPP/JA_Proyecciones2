@@ -32,7 +32,7 @@
     let liveStyleReady = false
     let lastLiveStyle = ""
     const unsubscribeLiveStyle = templates.subscribe((all) => {
-        const templateId = get(scriptureSettings).template || ""
+        const templateId = get(scriptureSettings).template || "scripture"
         const signature = JSON.stringify(templateId ? all[templateId] || null : null)
         if (!liveStyleReady) {
             lastLiveStyle = signature
