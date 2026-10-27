@@ -24,6 +24,10 @@
     import SlideStyle from "./tools/SlideStyle.svelte"
     import TemplateStyle from "./tools/TemplateStyle.svelte"
     import { itemBoxes } from "./values/boxes"
+    import MaterialCheckbox from "../inputs/MaterialCheckbox.svelte"
+    import MaterialColorInput from "../inputs/MaterialColorInput.svelte"
+    import MaterialFilePicker from "../inputs/MaterialFilePicker.svelte"
+    import { mediaExtensions } from "../../values/extensions"
 
     let tabs: TabsObj = {
         text: { name: "items.text", icon: "text" },
@@ -34,6 +38,38 @@
     let active: string = Object.keys(tabs)[0]
     $: tabs.text.icon = item?.type && itemBoxes[item.type] ? itemBoxes[item.type]!.icon : "text"
     $: tabs.text.name = "items." + (item?.type || "text")
+
+    $: bibleMode = $activeEdit.type === "template" && !!$templates[$activeEdit.id || ""] &&
+        ($templates[$activeEdit.id || ""]?.settings?.mode === "scripture" ||
+        ($templates[$activeEdit.id || ""]?.items || []).some((entry) => JSON.stringify(entry.lines || []).includes("{scripture")))
+    $: plateIndex = $activeEdit.items.length === 1 ? $activeEdit.items[0] : -1
+    $: plateItem = bibleMode && plateIndex >= 0 ? $templates[$activeEdit.id || ""]?.items?.[plateIndex] : null
+    $: plateStyles = getStyles(plateItem?.style)
+    $: plateColor = plateStyles["background-color"] || plateStyles.background || ""
+    $: plateEnabled = !!plateColor && plateColor !== "transparent"
+    let previousPlateColor = "rgb(0 0 0 / 0.55)"
+
+    function updateBibleBg(key: "backgroundPath" | "backgroundColor", value: string) {
+        if (!bibleMode || !activeId) return
+        const settings = { ...($templates[activeId]?.settings || {}), [key]: value || "" }
+        history({ id: "UPDATE", newData: { key: "settings", data: settings }, oldData: { id: activeId }, location: { page: "edit", id: "template_settings", override: activeId } })
+    }
+    function updatePlate(key: "background-color" | "border-radius", value: string) {
+        if (!plateItem || !activeId) return
+        const styles = getStyles(plateItem.style)
+        if (key === "background-color") {
+            delete styles.background
+            if (value) styles[key] = value
+            else delete styles[key]
+        } else if (value) styles[key] = value
+        else delete styles[key]
+        const data = Object.entries(styles).map(([name, val]) => name + ":" + val + ";").join("")
+        history({ id: "UPDATE", newData: { key: "items", indexes: [plateIndex], subkey: "style", data: [data] }, oldData: { id: activeId }, location: { page: "edit", id: "template_items", override: "ja_scripture_plate#" + activeId + "#" + plateIndex } })
+    }
+    function togglePlate(enabled: boolean) {
+        if (!enabled && plateEnabled) previousPlateColor = plateColor
+        updatePlate("background-color", enabled ? previousPlateColor : "")
+    }
 
     $: activeId = $activeEdit.id || ""
     $: activeSlide = $activeEdit.slide ?? -1
@@ -414,6 +450,33 @@
     {#if slideActive && !isLocked}
         <Tabs {tabs} bind:active {overflowHidden} />
 
+        {#if bibleMode}
+            <div class="jaScriptureSidebar">
+                <details>
+                    <summary>Fondo de Escrituras</summary>
+                    <div class="jaScriptureFields">
+                        <MaterialColorInput label="edit.background_color" value={$templates[activeId]?.settings?.backgroundColor || ""} on:input={(e) => updateBibleBg("backgroundColor", e.detail)} allowEmpty />
+                        <MaterialFilePicker label="edit.background_media" value={$templates[activeId]?.settings?.backgroundPath || ""} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateBibleBg("backgroundPath", e.detail ?? e)} allowEmpty />
+                    </div>
+                </details>
+                <details>
+                    <summary>Fondo de lectura</summary>
+                    <div class="jaScriptureFields">
+                        {#if plateItem?.lines}
+                            <MaterialCheckbox label="Mostrar fondo" checked={plateEnabled} on:change={(e) => togglePlate(e.detail)} small />
+                            {#if plateEnabled}
+                                <MaterialColorInput label="Color y opacidad" value={plateColor} allowOpacity on:input={(e) => updatePlate("background-color", e.detail)} />
+                                <label for="jaPlateRadius">Esquinas redondeadas</label>
+                                <input id="jaPlateRadius" type="range" min="0" max="80" step="2" value={parseInt(plateStyles["border-radius"] || "0") || 0} on:input={(e) => updatePlate("border-radius", e.currentTarget.value + "px")} />
+                            {/if}
+                        {:else}
+                            <p>Selecciona el cuadro de texto del versículo o de la referencia.</p>
+                        {/if}
+                    </div>
+                </details>
+            </div>
+        {/if}
+
         {#if active === "text"}
             <div class="content">
                 {#if item}
@@ -507,6 +570,13 @@
 </div>
 
 <style>
+    .jaScriptureSidebar { flex-shrink: 0; max-height: 44vh; overflow-y: auto; border-bottom: 1px solid var(--primary-lighter); }
+    .jaScriptureSidebar details { border-bottom: 1px solid var(--primary-lighter); }
+    .jaScriptureSidebar summary { cursor: pointer; padding: 11px 13px; background: var(--primary-darker); font-weight: 600; font-size: .87rem; }
+    .jaScriptureFields { padding: 10px 9px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .jaScriptureFields p, .jaScriptureFields label { font-size: .8rem; opacity: .8; }
+    .jaScriptureFields input[type="range"] { width: 100%; }
+
     .main {
         display: flex;
         flex-direction: column;
