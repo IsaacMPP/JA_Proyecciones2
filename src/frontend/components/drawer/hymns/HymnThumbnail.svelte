@@ -8,6 +8,7 @@
     let thumbnail = ""
     let failed = false
     let generation = 0
+    let visible = false
 
     async function load() {
         const current = ++generation
@@ -26,12 +27,13 @@
         revision
         thumbnail = ""
         failed = false
-        if (node) void load()
+        if (node && visible) void load()
     }
     onMount(() => {
-        if (typeof IntersectionObserver === "undefined") { void load(); return }
+        if (typeof IntersectionObserver === "undefined") { visible = true; void load(); return }
         const observer = new IntersectionObserver((entries) => {
             if (entries.some((entry) => entry.isIntersecting)) {
+                visible = true
                 void load()
                 observer.disconnect()
             }
