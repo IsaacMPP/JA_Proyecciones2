@@ -95,3 +95,6 @@ Por decisión del usuario se formalizó una ruta de trabajo por entregas E0–E5
 
 ## 2026-10-26 — E1: vista del versículo real en editor de plantillas
 Cambio `bbf95dd`: `TemplateEditor.svelte` permite alternar entre elementos editables de plantilla y una vista de solo lectura basada en `tempItems` de la proyección bíblica actual. La plantilla original no se reemplaza por texto fijo. Aparece solo al editar la plantilla activa de Biblia con una proyección bíblica. Pendiente: CI, prueba Windows, variables dinámicas y sincronía visual precisa. No equivale a completar la personalización en vivo.
+
+## 2026-10-26 — E1 vista de edición y versículo lado a lado
+Commit `b703126`: en `TemplateEditor.svelte` la opción de vista en vivo muestra simultáneamente la plantilla editable y el contenido bíblico real de la proyección, sin sustituir variables de la plantilla. Se reutilizan los controles existentes de fuente y fondos de `TemplateStyle.svelte` para evitar una segunda configuración. Todavía requieren validación CI/Windows: dimensiones, actualización del preview al editar, pantalla de salida, selección de texto y persistencia entre versículos. No declarar completa E1.
