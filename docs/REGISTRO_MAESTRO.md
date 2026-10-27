@@ -107,3 +107,6 @@ Captura del usuario mostró que el editor doble repetía el versículo a la dere
 
 ## 2026-10-26 — E1 raíz del lienzo que seguía mostrando variables
 La nueva captura del operador confirma que el lienzo seguía mostrando `{scripture_text}`. La vista dependía incorrectamente de `getFirstActiveOutput(...).out.slide.id === "temp"`; al abrir el editor sin salida bíblica activa no se generaba la sustitución. Commit `7960a1f` construye los ítems con `getActiveScripturesContent` y `getScriptureSlidesNew` a partir de la selección bíblica, aun sin proyector, y los presenta en el único lienzo. Queda verificar CI, Windows, coincidencia de ítems editables, rendimiento, guardado de estilos y fondos. No marcar E1 completa.
+
+## E1 — regresiones de teclado y acceso a fondos (26-oct-2026)
+Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elemento seleccionado en el editor (`ac1b721`), preservando protección de campos editables. Se expusieron en el editor bíblico los controles existentes de FreeShow para `backgroundColor` y `backgroundPath` usando historial de plantilla (`1258b6f`), sin almacenamiento paralelo. Falta validar compilación Windows y pruebas de imagen/color, navegación y persistencia; no cerrar E1.
