@@ -117,3 +117,6 @@ Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elem
 
 ## 2026-10-26 — Corrección de vista previa
 E1: commits `d608088`, `bb86b18` y `9166c62` corrigen renderizado del texto real (array `versePreview` pasado directamente a `displayItems`) y fondo de imagen cuando miniatura no está disponible. Revisar último CI y probar con misma imagen `ejemplo.png`, cambios de versículo, estilo y persistencia. No declarar cierre antes de ver resultado Windows.
+
+## E1: placa de lectura
+Commit `e217648`: controles en `TemplateEditor.svelte` para fondo del cuadro de texto bíblico seleccionado (toggle, color con opacidad, radio de esquinas) mediante historial de plantilla FreeShow, sin otra capa ni guardar valores por versículo. Validar CI/Windows, interacción con selección y distintas cajas de texto. Las mejoras previas E1 siguen pendientes de aceptación; PR #2 draft.
