@@ -778,11 +778,13 @@ export class VideoPlayer {
     // STATE
 
     static audioExists(path: string, outputIds?: string[]) {
-        const playing = get(playingVideos).find((v) => v.path === path)
-        if (!playing) return false
+        // A path may have independent playback instances on different outputs.
+        // Checking only the first match breaks Play/Pause on the secondary.
+        const playing = get(playingVideos).filter((v) => v.path === path)
+        if (!playing.length) return false
 
         if (!outputIds?.length) return true
-        return outputIds.some((id) => playing.linkedOutputIds.includes(id))
+        return playing.some((v) => outputIds.some((id) => v.linkedOutputIds.includes(id)))
     }
 
     // static isPaused(path: string) {
