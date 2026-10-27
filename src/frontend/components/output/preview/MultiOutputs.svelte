@@ -14,11 +14,11 @@
     import { _show } from "../../helpers/shows"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import OutputPreviewLabel from "./OutputPreviewLabel.svelte"
-    import MediaControls from "../tools/MediaControls.svelte"
+    import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import PreviewOutput from "./PreviewOutput.svelte"
 
     export let disableTransitions = false
-    let controlsForOutput = ""
+
 
     $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled)), "stageOutput")
     $: outs = allEnabledOuts.length > 1 ? allEnabledOuts.filter((a) => !a.hideFromPreview) : allEnabledOuts
@@ -259,15 +259,12 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
 
             <div class="previewContainer" style={outs.length > 1 && !fullscreen ? `border: 2px solid ${output?.color};` : ""}>
                 <PreviewOutput outputId={output.id} {disableTransitions} disabled={outs.length > 1 && !fullscreen && !output?.active} {fullscreen} />
-                {#if !fullscreen && allEnabledOuts.length > 1 && output.active && output.out?.background}
-                    <div class="jaOutputControls" on:click|stopPropagation>
-                        <button type="button" class="jaOutputToggle" on:click={() => controlsForOutput = controlsForOutput === output.id ? "" : output.id} aria-expanded={controlsForOutput === output.id} title="Controlar esta salida">{controlsForOutput === output.id ? "Ocultar controles" : "Controlar pantalla"}</button>
-                        {#if controlsForOutput === output.id}
-                            <div class="jaOutputTransport">
-                                <MediaControls currentOutput={output} outputId={output.id} />
-                            </div>
-                        {/if}
-                    </div>
+                {#if !fullscreen && allEnabledOuts.length > 1 && output.active}
+                    <button type="button" class="jaSelectOutput" class:chosen={$jaControlledOutputId === output.id}
+                        on:click|stopPropagation={() => jaControlledOutputId.set(output.id)}
+                        title={"Controlar " + output.name}>
+                        {$jaControlledOutputId === output.id ? "Controlando" : "Controlar"}
+                    </button>
                 {/if}
 
                 <!-- BADGES (LIVE / REC) -->
@@ -357,9 +354,8 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
 </div>
 
 <style>
-    .jaOutputControls {position:absolute;bottom:3px;left:3px;right:3px;z-index:5;display:flex;flex-direction:column;gap:2px;background:var(--primary-darkest);border-radius:4px;max-height:105px;overflow:auto}
-    .jaOutputToggle {padding:4px;background:var(--primary-darker);border:1px solid var(--primary-lighter);color:var(--text);font-size:10px;cursor:pointer;border-radius:4px}
-    .jaOutputTransport {font-size:10px;min-width:0;overflow:auto}
+    .jaSelectOutput {position:absolute;right:4px;bottom:4px;z-index:5;padding:3px 6px;background:var(--primary-darkest);color:var(--text);border:1px solid var(--primary-lighter);border-radius:4px;font-size:10px;cursor:pointer}
+    .jaSelectOutput.chosen {border-color:var(--secondary);color:var(--secondary)}
 
     .hiddenOutputTitles {
         display: flex;
