@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
-    import { activeEdit, activePopup, popupData, templates } from "../../../stores"
+    import { activeEdit, activePopup, popupData, templates, outputs, scriptureSettings } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import TemplateSlide from "../../drawer/pages/TemplateSlide.svelte"
     import Icon from "../../helpers/Icon.svelte"
@@ -8,6 +8,7 @@
     import { clone } from "../../helpers/array"
     import { history } from "../../helpers/history"
     import { getStyles } from "../../helpers/style"
+    import { getFirstActiveOutput } from "../../helpers/output"
     import FloatingInputs from "../../input/FloatingInputs.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialZoom from "../../inputs/MaterialZoom.svelte"
@@ -21,6 +22,14 @@
     let Slide = clone($templates[currentId])
     const unsubscribe = templates.subscribe((a) => clone((Slide = a[currentId])))
     onDestroy(unsubscribe)
+
+    // Preview the projected Scripture content without replacing reusable template variables.
+    let showLiveVerse = false
+    $: projectedSlide = getFirstActiveOutput($outputs)?.out?.slide
+    $: isBibleTemplate = !!currentId && $scriptureSettings.template === currentId && projectedSlide?.id === "temp"
+    $: versePreview = isBibleTemplate && projectedSlide?.tempItems?.length && Slide
+        ? { ...Slide, items: projectedSlide.tempItems }
+        : null
 
     let newStyles: { [key: string]: string | number } = {}
     $: active = $activeEdit.items
@@ -87,7 +96,11 @@
         <!--  && (!Slide.isDefault) -->
         {#if Slide}
             <DropArea id="edit" file>
-                <TemplateSlide bind:newStyles templateId={currentId} template={Slide} edit {width} {height} {zoom} bind:ratio />
+                {#if showLiveVerse && versePreview}
+                    <TemplateSlide templateId={currentId} template={versePreview} preview {width} {height} {zoom} bind:ratio />
+                {:else}
+                    <TemplateSlide bind:newStyles templateId={currentId} template={Slide} edit {width} {height} {zoom} bind:ratio />
+                {/if}
             </DropArea>
         {:else}
             <Center size={2} faded>
@@ -95,6 +108,12 @@
             </Center>
         {/if}
     </div>
+
+    {#if isBibleTemplate}
+        <button class="jaLiveToggle" type="button" aria-pressed={showLiveVerse} on:click={() => (showLiveVerse = !showLiveVerse)}>
+            {showLiveVerse ? "Editar plantilla" : "Ver versículo real"}
+        </button>
+    {/if}
 
     <FloatingInputs side="left">
         <MaterialZoom columns={zoom} min={0.2} max={4} defaultValue={1} addValue={0.1} on:change={updateZoom} on:origin={(e) => (zoomOrigin = e.detail)} />
@@ -117,6 +136,8 @@
 </div>
 
 <style>
+    .jaLiveToggle { position: absolute; top: 16px; right: 18px; z-index: 15; padding: 10px 14px; border: 1px solid var(--primary-lighter); background: var(--primary-dark); color: var(--text); border-radius: 8px; cursor: pointer; }
+    .jaLiveToggle:hover { background: var(--primary); }
     .default {
         position: absolute;
         top: 10px;
