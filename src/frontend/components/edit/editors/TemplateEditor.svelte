@@ -23,16 +23,11 @@
     const unsubscribe = templates.subscribe((a) => clone((Slide = a[currentId])))
     onDestroy(unsubscribe)
 
-    // Preview the projected Scripture content without replacing reusable template variables.
-    let showLiveVerse = true
+    // The editor presents the active Scripture text, while retaining editable
+    // template items as the single persisted source of style and layout.
     $: projectedSlide = getFirstActiveOutput($outputs)?.out?.slide
-    // A Bible template can be the FreeShow default (scriptureSettings.template is empty).
-    // Identify the actual template by its mode or Scripture placeholders, not by
-    // equality with the optional custom-template preference or projected output.
-    $: isBibleTemplate = !!Slide && (
-        Slide.settings?.mode === "scripture" ||
-        (Slide.items || []).some((item) => JSON.stringify(item.lines || []).includes("{scripture"))
-    )
+    $: isBibleTemplate = !!Slide && (Slide.settings?.mode === "scripture" ||
+        (Slide.items || []).some((item) => JSON.stringify(item.lines || []).includes("{scripture")))
     $: versePreview = isBibleTemplate && projectedSlide?.id === "temp" && projectedSlide?.tempItems?.length
         ? { ...Slide, items: projectedSlide.tempItems }
         : null
@@ -102,17 +97,17 @@
         <!--  && (!Slide.isDefault) -->
         {#if Slide}
             <DropArea id="edit" file>
-                <div class="jaEditorSplit" class:livePreviewOpen={showLiveVerse && !!versePreview}>
-                    <div class="jaEditorCanvas">
-                        <TemplateSlide bind:newStyles templateId={currentId} template={Slide} edit width={showLiveVerse && versePreview ? width / 2 : width} {height} {zoom} bind:ratio />
-                    </div>
-                    {#if showLiveVerse && versePreview}
-                        <div class="jaPreviewCanvas" aria-label="Vista previa del versículo proyectado">
-                            <div class="jaPreviewTitle">Versículo proyectado · vista previa</div>
-                            <TemplateSlide templateId={currentId} template={versePreview} preview width={width / 2} {height} {zoom} />
-                        </div>
-                    {/if}
-                </div>
+                <TemplateSlide
+                    bind:newStyles
+                    templateId={currentId}
+                    template={Slide}
+                    displayItems={versePreview?.items || null}
+                    edit
+                    {width}
+                    {height}
+                    {zoom}
+                    bind:ratio
+                />
             </DropArea>
         {:else}
             <Center size={2} faded>
@@ -120,12 +115,6 @@
             </Center>
         {/if}
     </div>
-
-    {#if isBibleTemplate && versePreview}
-        <button class="jaLiveToggle" type="button" aria-pressed={showLiveVerse} on:click={() => (showLiveVerse = !showLiveVerse)}>
-            {showLiveVerse ? "Ocultar vista en vivo" : "Mostrar vista en vivo"}
-        </button>
-    {/if}
 
     <FloatingInputs side="left">
         <MaterialZoom columns={zoom} min={0.2} max={4} defaultValue={1} addValue={0.1} on:change={updateZoom} on:origin={(e) => (zoomOrigin = e.detail)} />
@@ -148,12 +137,6 @@
 </div>
 
 <style>
-    .jaEditorSplit { display: flex; width: 100%; height: 100%; min-width: 0; }
-    .jaEditorCanvas { flex: 1; position: relative; min-width: 0; height: 100%; }
-    .jaPreviewCanvas { flex: 1; min-width: 0; height: 100%; position: relative; border-left: 2px solid var(--primary-lighter); overflow: hidden; pointer-events: none; }
-    .jaPreviewTitle { position: absolute; top: 8px; left: 12px; z-index: 10; background: var(--primary-darkest); border-radius: 6px; padding: 6px 10px; font-size: .75rem; }
-    .jaLiveToggle { position: absolute; top: 16px; right: 18px; z-index: 15; padding: 10px 14px; border: 1px solid var(--primary-lighter); background: var(--primary-dark); color: var(--text); border-radius: 8px; cursor: pointer; }
-    .jaLiveToggle:hover { background: var(--primary); }
     .default {
         position: absolute;
         top: 10px;
