@@ -9,6 +9,34 @@ export const hymnFolders = writable<Record<string, string>>({})
 export const hymnVideos = writable<FileFolder[]>([])
 export const hymnLibraryError = writable("")
 
+export const hymnSourcePaths = writable<string[]>([])
+export const hymnSourceStatus = writable<Record<string, string>>({})
+export const hymnLinks = writable<Record<string, string[]>>({ "Himnario Adventista": [], "Cantos Juveniles": [] })
+const STORAGE = "ja-hymn-linked-sources-v1"
+function readLinks(): Record<string, string[]> {
+    try {
+        const data = JSON.parse(localStorage.getItem(STORAGE) || "{}")
+        return Object.fromEntries(["Himnario Adventista", "Cantos Juveniles"].map((name) => [name, Array.isArray(data[name]) ? data[name].filter((v: unknown) => typeof v === "string") : []]))
+    } catch { return { "Himnario Adventista": [], "Cantos Juveniles": [] } }
+}
+export function linkHymnFolder(collection: string, path: string, previous = "") {
+    if (!path || !["Himnario Adventista", "Cantos Juveniles"].includes(collection)) return
+    const next = readLinks()
+    next[collection] = next[collection].filter((p) => normalizeJAContentPath(p) !== normalizeJAContentPath(previous))
+    if (!next[collection].some((p) => normalizeJAContentPath(p) === normalizeJAContentPath(path))) next[collection].push(path)
+    localStorage.setItem(STORAGE, JSON.stringify(next))
+    hymnLinks.set(next)
+    void refreshJAHymnLibrary()
+}
+export function unlinkHymnFolder(collection: string, path: string) {
+    const next = readLinks()
+    if (!next[collection]) return
+    next[collection] = next[collection].filter((p) => normalizeJAContentPath(p) !== normalizeJAContentPath(path))
+    localStorage.setItem(STORAGE, JSON.stringify(next))
+    hymnLinks.set(next)
+    void refreshJAHymnLibrary()
+}
+
 const EXTENSIONS = new Set(["mp4", "mov", "m4v", "webm", "avi", "mkv", "wmv"])
 let refreshGeneration = 0
 
@@ -27,23 +55,32 @@ export async function refreshJAHymnLibrary(): Promise<void> {
         if (folders.folders[name]) roots[name] = folders.folders[name]
     }
     hymnFolders.set(roots)
+    const links = readLinks()
+    hymnLinks.set(links)
+    const sources = [...new Set([...Object.values(roots), ...Object.values(links).flat()].filter(Boolean))]
+    hymnSourcePaths.set(sources)
+    const statuses: Record<string, string> = {}
     const byPath = new Map<string, FileFolder>()
     let failed = false
-    for (const path of Object.values(roots)) {
+    for (const path of sources) {
         try {
             const result = await requestMain(Main.READ_FOLDER, { path, depth: 5 })
             if (generation !== refreshGeneration) return
-            if (!result) { failed = true; continue }
+            if (!result) { statuses[path] = "unavailable"; continue }
+            let found = 0
             for (const file of Object.values(result) as FileFolder[]) {
                 if (file.isFolder || !isHymnVideo(file.name)) continue
-                if (!isJAExclusiveHymnPath(file.path, Object.values(roots))) continue
+                if (!isJAExclusiveHymnPath(file.path, sources)) continue
+                found++
                 byPath.set(normalizeJAContentPath(file.path), file)
             }
+            statuses[path] = found ? "available" : "empty"
         } catch {
-            failed = true
+            statuses[path] = "unavailable"
         }
     }
     if (generation !== refreshGeneration) return
+    hymnSourceStatus.set(statuses)
     hymnVideos.set([...byPath.values()].sort((a, b) => a.name.localeCompare(b.name, "es", { numeric: true })))
     hymnLibraryError.set(failed ? "No se pudieron leer una o más carpetas del Himnario." : "")
 }
