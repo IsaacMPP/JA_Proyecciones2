@@ -108,3 +108,6 @@ Tras capturas del usuario sin el botón, identificada condición demasiado restr
 
 ## E1 — Último cambio
 Por capturas de Windows se descartó la vista doble. Commits `33ec009` y `9e5af4f`: el editor bíblico presenta un solo lienzo con texto de `tempItems` y conserva el modelo de plantilla para los estilos. Los controles nativos para fondo de imagen y color ya se verificaron en `TemplateStyle.svelte`; se corrigió limpieza de miniatura al retirar fondo. Probar compilación, selección de elementos y cambios live/persistentes en Windows. Mantener E1 como entrega activa; PR #2 en borrador.
+
+## E1: corrección posterior por captura Windows
+La captura mostró que el editor seguía mostrando variables: faltaba salida activa, por lo que `versePreview` era nulo. Commit `7960a1f` genera previsualización con `getActiveScripturesContent` / `getScriptureSlidesNew` desde la selección de Biblia, independientemente de una pantalla física. El editor mantiene solo un lienzo. Confirmar CI y pruebas Windows; corregir cualquier incompatibilidad tipada o de indexación antes de avanzar. E1 activa, PR draft.
