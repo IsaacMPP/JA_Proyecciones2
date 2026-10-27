@@ -1,32 +1,31 @@
 <script lang="ts">
     import { onMount } from "svelte"
+    import HymnThumbnail from "./HymnThumbnail.svelte"
     import { hymnFolders, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
-    import { loadThumbnail, getMediaStyle, encodeFilePath } from "../../helpers/media"
+    import { getMediaStyle } from "../../helpers/media"
     import { getFirstActiveOutput, setOutput } from "../../helpers/output"
     import { activeEdit, activeShow, media, outLocked, outputs, styles } from "../../../stores"
 
-    export let searchValue = ""
+    let searches: Record<string, string> = {}
+    let revision = 0
+    let updating = false
+    $: searchValue = searches[collection] || ""
     export let collection = "Himnario Adventista"
     $: currentRoot = $hymnFolders[collection] || ""
     $: shown = $hymnVideos.filter((video) => (collection === "Todas" || isPathInJACollection(video.path, currentRoot)) && (!searchValue || video.name.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(searchValue.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))
-    let thumbnailCache: Record<string, string> = {}
-    let lastThumbnailSignature = ""
-    $: {
-        const signature = shown.slice(0, 80).map((v) => v.path).join("|")
-        if (signature !== lastThumbnailSignature) {
-            lastThumbnailSignature = signature
-            void getPreviews(shown.slice(0, 80))
+    async function updateCatalog() {
+        if (updating) return
+        updating = true
+        try {
+            await refreshJAHymnLibrary()
+            revision += 1
+        } finally {
+            updating = false
         }
     }
-    async function getPreviews(files: typeof shown) {
-        for (const item of files) {
-            if (thumbnailCache[item.path]) continue
-            try {
-                const preview = await loadThumbnail(item.path)
-                if (preview) thumbnailCache = { ...thumbnailCache, [item.path]: preview }
-            } catch { /* keep video fallback */ }
-        }
+    function changeSearch(value: string) {
+        searches = { ...searches, [collection]: value }
     }
     function preview(video: typeof shown[number]) {
         activeEdit.set({ id: video.path, type: "media", items: [] })
@@ -39,22 +38,19 @@
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
         setOutput("background", { path: video.path, type: "video", loop: false, muted: false, startAt: 0, ...mediaStyle }, false, output.id)
     }
-    onMount(() => { void refreshJAHymnLibrary() })
+    onMount(() => { void updateCatalog() })
 </script>
 
 <section class="jaHymns">
-    <header><strong>Videohimnario</strong><span>{shown.length} videos</span><button type="button" on:click={() => refreshJAHymnLibrary()}>Actualizar</button></header>
+    <header><strong>Videohimnario</strong><span>{shown.length} videos</span><button type="button" disabled={updating} on:click={updateCatalog}>{updating ? "Actualizando…" : "Actualizar"}</button></header>
+    <div class="search"><input aria-label={"Buscar en " + collection} type="search" placeholder={"Buscar número o título en " + collection} value={searchValue} on:input={(e) => changeSearch(e.currentTarget.value)} />{#if searchValue}<button type="button" on:click={() => changeSearch("")}>Limpiar</button>{/if}</div>
     {#if $hymnLibraryError}<p class="error">{$hymnLibraryError}</p>{/if}
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
     <div class="grid">
         {#each shown as video (video.path)}
             <article title={video.path} class:selected={$activeShow?.id === video.path}>
                 <button class="select" type="button" on:click={() => preview(video)} aria-label={"Vista previa: " + video.name}>
-                    <div class="thumbnail">
-                        {#if thumbnailCache[video.path]}
-                            <img src={encodeFilePath(thumbnailCache[video.path])} alt="" loading="lazy" />
-                        {:else}<span>▶</span>{/if}
-                    </div>
+                    <HymnThumbnail path={video.path} {revision} />
                     <p>{video.name.replace(/\.[^.]+$/, "")}</p>
                 </button>
                 <button class="project" type="button" disabled={$outLocked} on:click={() => project(video)}>Proyectar</button>
@@ -67,6 +63,9 @@
     header {display:flex;align-items:center;gap:12px;margin-bottom:14px}
     header span {opacity:.7}
     header button {margin-left:auto;border:1px solid var(--primary-lighter);padding:7px 12px;background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
+    .search {display:flex;gap:8px;margin-bottom:12px}
+    .search input {width:100%;padding:10px;border:1px solid var(--primary-lighter);border-radius:6px;color:var(--text);background:var(--primary)}
+    .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
     .grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
     article {min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
     article.selected {outline:2px solid var(--secondary)}
