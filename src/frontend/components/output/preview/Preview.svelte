@@ -1,5 +1,6 @@
 <script lang="ts">
     import { actions, activePage, activePopup, activeShow, activeTimers, contextActive, groups, guideActive, outLocked, outputs, overlayTimers, playingAudio, playingMetronome, resized, slideTimers, special } from "../../../stores"
+    import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import { DEFAULT_WIDTH, isDarkTheme } from "../../../utils/common"
     import { formatSearch } from "../../../utils/search"
     import { getNormalizedKey, previewCtrlShortcuts, previewShortcuts } from "../../../utils/shortcuts"
@@ -28,12 +29,12 @@
     import SpotifyController from "./SpotifyController.svelte"
 
     $: allActiveOutputs = getActiveOutputs($outputs, true, true, true)
-    $: outputId = allActiveOutputs[0]
+    $: outputId = $jaControlledOutputId && allActiveOutputs.includes($jaControlledOutputId) ? $jaControlledOutputId : allActiveOutputs[0]
     let currentOutput: any = {}
     $: currentOutput = outputId ? $outputs[outputId] || {} : {}
 
     $: allOutputsWithBackground = allActiveOutputs.filter((id) => $outputs[id]?.out?.background)
-    $: backgroundOutputId = getFirstOutputIdWithBackground(allOutputsWithBackground) || allOutputsWithBackground[0] || outputId
+    $: backgroundOutputId = $jaControlledOutputId && allActiveOutputs.includes($jaControlledOutputId) ? $jaControlledOutputId : getFirstOutputIdWithBackground(allOutputsWithBackground) || allOutputsWithBackground[0] || outputId
     $: currentBgOutput = backgroundOutputId ? $outputs[backgroundOutputId] || null : null
 
     let numberKeyTimeout: NodeJS.Timeout | null = null
