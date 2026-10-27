@@ -53,3 +53,12 @@ Una fase solo pasa a «completa» con evidencia en código, CI y, cuando se trat
 - **E1 ACTIVA:** primer enlace de plantilla a proyección (`aea39a6`) implementado, workflow #40420576232 en ejecución al registrar este plan. Falta aceptación de importación FSB, sincronización sin parpadeos ni historial duplicado, vista real en editor, controles de color/fondo y persistencia verificable.
 - **E2–E5:** planificadas, no declaradas implementadas.
 - **Siguiente unidad técnica concreta:** revisar CI del cambio de plantilla, auditar flujo de actualizaciones de salida/estilo y diseñar una única ruta de estado persistente; completar previsualización de versículo real y cambio live sin usar la regeneración completa por cada edición. Pruebas antes de avanzar.
+
+## Repriorización 27-oct-2026: Himnario → Multipantalla → Editor compartido
+E1 Biblia: aceptada funcionalmente en los flujos que el usuario comprobó; no reabrir sin defecto reproducible. Editor general queda aplazado.
+**H1 ACTIVA: Himnario independiente.** Crear navegación y panel de Himnario adyacentes a Biblia, no dentro de Multimedia. La carpeta, archivos, búsqueda y recuentos de himnos han de quedar aislados de Multimedia; reutilizar motor de reproducción/proyección FreeShow pero no su biblioteca visible. Incluir índice por número y título, importación local autorizada, letra/medios, estilos persistentes, navegación y pruebas Windows. No redistribuir obras protegidas sin autorización.
+**M1 siguiente: Pantallas múltiples.** Implementar sobre contratos de docs/ARQUITECTURA_MULTIPANTALLA.md: principal con audio, auxiliares independientes sin audio, selección de destino, desconexión y reconexión, conservar ajustes avanzados FreeShow.
+**T1 después: Editor compartido.** Presentaciones, bienvenida y estilos de texto, no trabajar antes de cerrar H1 y M1.
+**F1 final: Integración, pruebas, instalador y documentación.**
+**Navegación agrupada:** Biblia / Himnario juntos, Multimedia / Audio juntos, presentaciones y plantillas juntos, Pantallas y salidas en configuración; mantener pestañas independientes y no romper IDs existentes.
+**Primera unidad H1-01:** auditar lector/proyección existente, rutas e índices de MediaTabs y librería media, formato y licencia de himnos. H1-02 pestaña y almacenamiento aislado; H1-03 búsqueda/importación; H1-04 proyección; H1-05 pruebas Windows. No confundir pestaña visible con módulo funcional.
