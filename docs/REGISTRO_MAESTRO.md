@@ -113,3 +113,6 @@ Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elem
 
 ## 2026-10-26 — Corrección de vista previa
 E1: captura muestra proyector con imagen y texto reales, editor con variables y miniatura rota. Causa identificada: `TemplateEditor.svelte` usaba `versePreview?.items` aunque `versePreview` ya es `Item[]`, produciendo `null` y vuelta a placeholders. Corregido en `d608088`. `TemplateSlide.svelte` dependía de miniatura para renderizar el fondo; ahora usa imagen original incluso sin miniatura (`bb86b18`, `9166c62`). Pendiente CI y confirmación Windows.
+
+## 2026-10-26 — E1 placa de lectura configurable
+En `TemplateEditor.svelte`, commit `e217648`, se incorporó un panel contextual para el cuadro de texto seleccionado de la plantilla bíblica. No se dibuja capa superpuesta: usa el fondo (`background-color`) y borde (`border-radius`) del mismo elemento del texto mediante historial nativo `template_items`, con activar/desactivar, selección de color y opacidad a través de `MaterialColorInput` nativo y radio ajustable. No altera la imagen de fondo ni la navegación de versículos. Pendiente: CI, comprobar en Windows selección de cuadro principal/referencia, orden de capas, opacidad de fondo independiente del texto, persistencia y que el panel no obstruya el lienzo.
