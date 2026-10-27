@@ -18,6 +18,9 @@
     $: shown = $hymnVideos.filter((video) => (collection === "Todas" || isPathInJACollection(video.path, currentRoot)) && (!searchValue || video.name.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(searchValue.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))
     let catalogWidth = 0
     $: columnCount = Math.max(1, Math.floor(Math.max(180, catalogWidth - 10) / 165))
+    // Match row height to the rendered 16:9 thumbnail, title, button and spacing.
+    $: cardWidth = Math.max(155, (catalogWidth - 10 - (columnCount - 1) * 10 - 8) / columnCount)
+    $: rowHeight = Math.ceil(cardWidth * 9 / 16 + 88)
     $: virtualRows = Array.from({ length: Math.ceil(shown.length / columnCount) }, (_, index) => shown.slice(index * columnCount, (index + 1) * columnCount))
 
     async function updateCatalog() {
@@ -56,8 +59,8 @@
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
     <div class="virtualContainer" bind:clientWidth={catalogWidth}>
         {#key collection + "|" + searchValue + "|" + columnCount}
-            <VirtualList items={virtualRows} itemHeight={163} let:item>
-                <div class="virtualRow" style={"grid-template-columns:repeat(" + columnCount + ", minmax(0,1fr));"}>
+            <VirtualList items={virtualRows} itemHeight={rowHeight} let:item>
+                <div class="virtualRow" style={"grid-template-columns:repeat(" + columnCount + ", minmax(0,1fr));height:" + rowHeight + "px;"}>
 
         {#each item as video (video.path)}
             <article title={video.path} class:selected={$activeShow?.id === video.path}>
@@ -83,7 +86,7 @@
     .search input {width:100%;padding:10px;border:1px solid var(--primary-lighter);border-radius:6px;color:var(--text);background:var(--primary)}
     .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
     .virtualContainer {height:100%;width:100%;min-height:0}
-    .virtualRow {display:grid;gap:10px;height:163px;padding:2px 4px 8px}
+    .virtualRow {display:grid;gap:10px;padding:2px 4px 8px;box-sizing:border-box}
     article {content-visibility:auto;contain-intrinsic-size:auto 135px;min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
     article.selected {outline:2px solid var(--secondary)}
     .select {display:block;width:100%;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
