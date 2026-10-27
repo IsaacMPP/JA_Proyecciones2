@@ -74,7 +74,7 @@ checkered={template.items?.length > 0 && transparentOutput} -->
 <Zoomed background={!preview || template.items?.length ? template.settings?.backgroundColor || (preview ? "var(--primary);" : "transparent") : template.color || "var(--primary);"} {checkered} border={!preview && checkered} {resolution} style={width && height ? getStyleResolution(resolution, width, height, "fit", { zoom }) : ""} bind:ratio hideOverflow={!edit} center={edit}>
     <!-- background -->
     <!-- WIP !altKeyPressed &&  -->
-    {#if thumbnailPath}
+    {#if mediaPath}
         <div class="background" style="zoom: {1 / ratio};opacity: {edit ? 0.75 : 1};height: 100%;width: 100%;">
             <MediaLoader path={mediaPath} {thumbnailPath} loadFullImage />
         </div>
