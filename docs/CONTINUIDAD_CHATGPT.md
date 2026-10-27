@@ -102,3 +102,6 @@ Commit `bbf95dd`: nuevo botón `Ver versículo real` / `Editar plantilla` en `Te
 
 ## Unidad E1 implementada: editor dividido
 `b703126` cambia `TemplateEditor.svelte` para visualizar la plantilla editable y el versículo real simultáneamente al activar vista en vivo. Conserva marcadores y usa `TemplateStyle.svelte` para controles existentes, sin duplicar almacenamientos. Revisar CI reciente y validar Windows; aun pendiente completar sincronización visual sin regeneración, persistencia y fondos de imagen, y pruebas de importación local FSB. No cerrar E1 ni iniciar otros módulos.
+
+## 2026-10-26 — Corrección de vista bíblica ausente
+Tras capturas del usuario sin el botón, identificada condición demasiado restrictiva: `scriptureSettings.template === currentId` impedía la vista con plantilla por defecto. Commit `81e00ed` detecta modo/variables y abre vista en vivo cuando existe proyección. Verificar compilación y pantalla antes de declarar resultado.
