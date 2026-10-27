@@ -85,3 +85,6 @@ Se reorganizó el desarrollo en entregas E0–E5, definidas en `docs/RUTA_CRITIC
 
 ## E1: vista previa de versículo proyectado
 Se añadió al editor de plantillas un control para alternar a una vista de los elementos del versículo actualmente proyectado. El modo editable conserva los marcadores de plantilla; la previsualización no modifica los textos bíblicos. La función requiere validación en CI y Windows y es parte de E1, no cierre del módulo.
+
+## E1: edición con vista en vivo simultánea
+Editor de plantillas bíblicas con dos paneles al activar vista en vivo: plantilla editable a un lado y contenido proyectado al otro. Se mantienen las herramientas nativas de estilo/fondos, en vez de duplicarlas. Código en Git pendiente de aceptación Windows y de verificar que la proyección actualiza la apariencia sin parpadeos.
