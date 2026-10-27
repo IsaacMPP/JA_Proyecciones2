@@ -111,3 +111,6 @@ Por capturas de Windows se descartó la vista doble. Commits `33ec009` y `9e5af4
 
 ## E1: corrección posterior por captura Windows
 La captura mostró que el editor seguía mostrando variables: faltaba salida activa, por lo que `versePreview` era nulo. Commit `7960a1f` genera previsualización con `getActiveScripturesContent` / `getScriptureSlidesNew` desde la selección de Biblia, independientemente de una pantalla física. El editor mantiene solo un lienzo. Confirmar CI y pruebas Windows; corregir cualquier incompatibilidad tipada o de indexación antes de avanzar. E1 activa, PR draft.
+
+## E1 — regresiones de teclado y acceso a fondos (26-oct-2026)
+Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elemento seleccionado en el editor (`ac1b721`), preservando protección de campos editables. Se expusieron en el editor bíblico los controles existentes de FreeShow para `backgroundColor` y `backgroundPath` usando historial de plantilla (`1258b6f`), sin almacenamiento paralelo. Falta validar compilación Windows y pruebas de imagen/color, navegación y persistencia; no cerrar E1.
