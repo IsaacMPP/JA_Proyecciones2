@@ -110,3 +110,6 @@ La nueva captura del operador confirma que el lienzo seguía mostrando `{scriptu
 
 ## E1 — regresiones de teclado y acceso a fondos (26-oct-2026)
 Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elemento seleccionado en el editor (`ac1b721`), preservando protección de campos editables. Se expusieron en el editor bíblico los controles existentes de FreeShow para `backgroundColor` y `backgroundPath` usando historial de plantilla (`1258b6f`), sin almacenamiento paralelo. Falta validar compilación Windows y pruebas de imagen/color, navegación y persistencia; no cerrar E1.
+
+## 2026-10-26 — Corrección de vista previa
+E1: captura muestra proyector con imagen y texto reales, editor con variables y miniatura rota. Causa identificada: `TemplateEditor.svelte` usaba `versePreview?.items` aunque `versePreview` ya es `Item[]`, produciendo `null` y vuelta a placeholders. Corregido en `d608088`. `TemplateSlide.svelte` dependía de miniatura para renderizar el fondo; ahora usa imagen original incluso sin miniatura (`bb86b18`, `9166c62`). Pendiente CI y confirmación Windows.
