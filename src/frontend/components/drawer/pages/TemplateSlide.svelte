@@ -20,6 +20,7 @@
     export let preview = false
 
     export let edit = false
+    export let displayItems: Template["items"] | null = null
     let lines: [string, number][] = []
     let mouse: any = null
     export let newStyles: { [key: string]: string | number } = {}
@@ -40,6 +41,7 @@
 
     $: bgPath = template?.settings?.backgroundPath || ""
     $: if (bgPath) loadBackground()
+    $: if (!bgPath) { mediaPath = ""; thumbnailPath = "" }
     async function loadBackground() {
         mediaPath = bgPath
         thumbnailPath = getThumbnailPath(mediaPath, mediaSize.slideSize)
@@ -73,7 +75,7 @@ checkered={template.items?.length > 0 && transparentOutput} -->
     <!-- background -->
     <!-- WIP !altKeyPressed &&  -->
     {#if thumbnailPath}
-        <div class="background" style="zoom: {1 / ratio};opacity: 0.5;height: 100%;width: 100%;">
+        <div class="background" style="zoom: {1 / ratio};opacity: {edit ? 0.75 : 1};height: 100%;width: 100%;">
             <MediaLoader path={mediaPath} {thumbnailPath} />
         </div>
     {/if}
@@ -82,7 +84,13 @@ checkered={template.items?.length > 0 && transparentOutput} -->
     {#if edit && mode !== "text"}
         <Snaplines bind:lines bind:newStyles bind:mouse {ratio} {active} />
         {#each template.items || [] as item, index}
-            <Editbox ref={{ type: "template", id: templateId }} {item} {index} {ratio} bind:mouse />
+            {#if displayItems?.[index]?.lines && item.lines}
+                <div class="scriptureEditableItem" style="display: contents;" on:click={() => activeEdit.update((state) => ({ ...state, items: [index] }))} role="presentation">
+                    <Textbox backdropFilter={template["backdrop-filter"] || ""} item={{ ...displayItems[index], style: item.style, align: item.align }} ref={{ type: "template", id: templateId }} dynamicValues={false} isTemplatePreview />
+                </div>
+            {:else}
+                <Editbox ref={{ type: "template", id: templateId }} {item} {index} {ratio} bind:mouse />
+            {/if}
         {/each}
     {:else}
         {#each template.items || [] as item}
