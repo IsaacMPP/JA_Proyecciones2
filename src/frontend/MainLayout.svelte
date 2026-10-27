@@ -9,6 +9,7 @@
     import Top from "./components/main/Top.svelte"
     import Preview from "./components/output/preview/Preview.svelte"
     import PreviewOutput from "./components/output/preview/PreviewOutput.svelte"
+    import JAGlobalDestinationDialog from "./components/output/tools/JAGlobalDestinationDialog.svelte"
     import { jaControlledOutputId } from "./utils/jaControlledOutput"
     import SettingsTabs from "./components/settings/SettingsTabs.svelte"
     import Projects from "./components/show/Projects.svelte"
@@ -33,6 +34,8 @@
         previousId = $activeShow?.id
     }
 </script>
+<JAGlobalDestinationDialog />
+
 
 <div class="column">
     {#if !$focusMode}
