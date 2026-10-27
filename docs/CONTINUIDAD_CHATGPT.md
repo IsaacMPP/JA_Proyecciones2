@@ -170,3 +170,6 @@ Se inspeccionaron archivos reales de Ja_Proyeccion/main y JA_Proyecciones2/featu
 
 ## 2026-10-27 — Virtualización real del videohimnario H1
 Commit `8703395` adapta `VirtualList.svelte` ya existente en FreeShow a **filas** de cuadrícula de Himnario en `HymnCatalog.svelte`, con altura fija de 163px, columnas dependientes del ancho del área y remonte controlado al cambiar búsqueda, colección o cantidad de columnas. En vez de dibujar las 613 tarjetas, crea únicamente filas visibles y el espaciador que conserva el tamaño del catálogo. Se mantienen los PNG persistentes nativos, la cola limitada de carga y la vista previa/proyección sin cambios. Buscador y botón Actualizar permanecen fuera del scroll. Pendientes CI, prueba Windows con scroll rápido, resize, búsqueda y respuesta en equipos modestos. No dar por comprobado rendimiento sin medición. No fusionar PR #2.
+
+## 2026-10-27 — H1 ajuste visual de filas virtuales
+Captura Windows: botón Proyectar cortado en las últimas tarjetas por altura rígida de 163px en HymnCatalog.svelte. Commit `75d54ce` calcula altura virtual según ancho de la tarjeta, relación 16:9, título, botón y márgenes; VirtualList y fila usan la misma altura reactiva, manteniendo virtualización. Falta confirmar CI y comprobar visualmente primera/última fila y redimensionamiento.
