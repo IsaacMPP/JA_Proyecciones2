@@ -1,6 +1,6 @@
 <script lang="ts">
     import { uid } from "uid"
-    import { hymnFolders } from "../../../utils/jaHymnLibrary"
+    import { hymnSourcePaths } from "../../../utils/jaHymnLibrary"
     import { isJAExclusiveHymnPath } from "../../../utils/jaHymnPaths"
     import type { ContentProviderId } from "../../../../electron/contentProviders/base/types"
     import { Main } from "../../../../types/IPC/Main"
@@ -241,7 +241,7 @@
         }
 
         allRelevantFiles = Object.values(data).filter((a) => {
-            if (isJAExclusiveHymnPath(a.path, Object.values($hymnFolders))) return false
+            if (isJAExclusiveHymnPath(a.path, $hymnSourcePaths)) return false
             // remove folders with no content
             if (a.isFolder) return !a.noMedia && a.files.length > 0
             // only image/video files
