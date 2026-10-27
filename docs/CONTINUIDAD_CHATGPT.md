@@ -96,3 +96,6 @@ Commit de código `aea39a6` modifica `Scripture.svelte` para escuchar cambios de
 
 ## Plan de trabajo actualizado
 Seguir las entregas E0-E5 definidas en docs/RUTA_CRITICA_ENTREGAS.md. Actualmente se trabaja en E1: Biblia. Revisar los criterios de cierre antes de cambiar de modulo.
+
+## E1 — Última unidad implementada
+Commit `bbf95dd`: nuevo botón `Ver versículo real` / `Editar plantilla` en `TemplateEditor.svelte` cuando la plantilla de Biblia está activa y hay proyección. La vista utiliza los `tempItems` de salida sin sobrescribir la plantilla. Verificar CI de este commit y pruebas visuales en Windows. Pendientes de E1: actualización de estilos sin regeneración completa, colores/fondos y persistencia comprobada; importación FSB en Windows. Mantener ruta crítica y PR draft.
