@@ -284,6 +284,7 @@
             {/each}
         </span>
 
+        {#if $activeDrawerTab !== "hymns"}
         <input bind:this={searchElem} class:hidden={!searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} on:keydown={searchKeydown} use:selectTextOnFocus />
         {#if !searchActive && !searchValue.length}
             <Button class="search" style="border-bottom: 2px solid var(--secondary);" on:click={() => (searchActive = true)} title={translateText("tabs.search_tip [Ctrl+F]")} bold={false}>
@@ -313,6 +314,7 @@
                     <Icon id="clear" white />
                 </Button>
             </div>
+        {/if}
         {/if}
     </div>
 
