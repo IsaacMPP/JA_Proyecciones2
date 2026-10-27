@@ -490,7 +490,27 @@ export class VideoPlayer {
     static isFadingOut: string[] = []
     static isStopping = new Set<string>()
     static async stop(path: string, outputId?: string, reachedEnd = false) {
-        if (!this.audioExists(path, outputId ? [outputId] : undefined) || this.isFadingOut.includes(path)) return
+        if (!this.audioExists(path, outputId ? [outputId] : undefined)) return
+
+        // One playing audio instance can be attached to several outputs.
+        // Detaching a secondary must never fade/pause/clear the main output.
+        const scopedPlaying = outputId ? this.getPlaying(path, [outputId]) : null
+        if (outputId && scopedPlaying && scopedPlaying.linkedOutputIds.length > 1) {
+            AudioAnalyser.detach(path, outputId)
+            playingVideos.update((entries) => {
+                const instance = entries.find((v) => v === scopedPlaying)
+                if (instance) instance.linkedOutputIds = instance.linkedOutputIds.filter((id) => id !== outputId)
+                return entries
+            })
+            playingVideoState.update((state) => {
+                delete state[`${path}_${outputId}`]
+                return state
+            })
+            this.initSyncClock()
+            return
+        }
+
+        if (this.isFadingOut.includes(path)) return
 
         // multiple outputs at once
         if (this.isStopping.has(path)) return
