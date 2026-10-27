@@ -9,12 +9,26 @@
     import ShowsTabs from "./navigation/ShowsTabs.svelte"
     import TemplatesTabs from "./navigation/TemplatesTabs.svelte"
 
-    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers"
+    import { drawerTabsData } from "../../stores"
+    import { hymnVideos, hymnFolders } from "../../utils/jaHymnLibrary"
+    import { isPathInJACollection } from "../../utils/jaHymnPaths"
+
+    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "hymns" | "calendar" | "functions" | "templates" | "timers"
 </script>
 
 <div class="main">
     <div class="categories context #category_{id}">
-        {#if id === "scripture"}
+        {#if id === "hymns"}
+            <div class="hymnNav">
+                <strong>Colecciones</strong>
+                {#each ["Himnario Adventista", "Cantos Juveniles", "Todas"] as name}
+                    <button class:active={($drawerTabsData.hymns?.activeSubTab || "Himnario Adventista") === name} on:click={() => drawerTabsData.update((data) => ({ ...data, hymns: { ...data.hymns, enabled: true, activeSubTab: name } }))} type="button">
+                        {name}
+                        <small>{$hymnVideos.filter((v) => name === "Todas" || isPathInJACollection(v.path, $hymnFolders[name] || "")).length}</small>
+                    </button>
+                {/each}
+            </div>
+        {:else if id === "scripture"}
             <ScriptureTabs />
         {:else if id === "calendar"}
             <CalendarTabs />
@@ -39,6 +53,11 @@
 </div>
 
 <style>
+    .hymnNav { padding:12px;display:flex;flex-direction:column;gap:8px }
+    .hymnNav button { background:var(--primary);color:var(--text);border:1px solid var(--primary-lighter);border-radius:5px;padding:10px;text-align:left;cursor:pointer }
+    .hymnNav button.active { border-left:3px solid var(--secondary) }
+    .hymnNav small { float:right;opacity:.65 }
+
     .main,
     .categories {
         display: flex;
