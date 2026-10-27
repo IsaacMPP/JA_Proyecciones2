@@ -92,3 +92,6 @@ Se inspeccionaron localmente (sin incorporarlos a Git) seis archivos: RVC, TLA, 
 
 ## 2026-10-26 — Orden y gobernanza
 Por decisión del usuario se formalizó una ruta de trabajo por entregas E0–E5 en `docs/RUTA_CRITICA_ENTREGAS.md`. Se evita interrumpir la entrega activa con ideas nuevas sin clasificar. La Biblia E1 queda activa y pendiente de validación en Windows y funciones completas de edición. Este ciclo actualiza documentación, no implementa funciones nuevas.
+
+## 2026-10-26 — E1: vista del versículo real en editor de plantillas
+Cambio `bbf95dd`: `TemplateEditor.svelte` permite alternar entre elementos editables de plantilla y una vista de solo lectura basada en `tempItems` de la proyección bíblica actual. La plantilla original no se reemplaza por texto fijo. Aparece solo al editar la plantilla activa de Biblia con una proyección bíblica. Pendiente: CI, prueba Windows, variables dinámicas y sincronía visual precisa. No equivale a completar la personalización en vivo.
