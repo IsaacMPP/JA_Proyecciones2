@@ -74,6 +74,7 @@
         {#if tabId === "general"}
             <General />
         {:else if tabId === "display_settings"}
+            <div class="jaPrimaryAccess"><button type="button" on:click={() => (showGlobalOutputOptions = !showGlobalOutputOptions)}>{showGlobalOutputOptions ? "← Volver a las salidas" : "★ Elegir proyector principal"}</button><span>{showGlobalOutputOptions ? "Selecciona cuál pantalla controla JA y cuál es el proyector principal." : "Asigna manualmente la pantalla principal antes de utilizar varias salidas."}</span></div>
             {#if showGlobalOutputOptions}
                 <OutputsGeneral />
             {:else}
@@ -175,4 +176,7 @@
             --padding: 20px;
         }
     }
+.jaPrimaryAccess{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 12px 14px;padding:10px;border:1px solid var(--primary-lighter);border-radius:7px;background:var(--primary-darker)}
+.jaPrimaryAccess button{border:1px solid var(--secondary);background:var(--primary);color:var(--text);border-radius:6px;padding:9px 12px;font-weight:bold;cursor:pointer}
+.jaPrimaryAccess span{font-size:12px;opacity:.8}
 </style>
