@@ -124,3 +124,6 @@ Captura Windows: restablecer apariencia deja lienzo azul, pero monitor de salida
 
 ## Orden aprobado 27-oct-2026
 E1 Biblia: usuario confirmó sus flujos principales. Editor general aplazado. H1 Himnario independiente junto a Biblia y fuera del índice de Multimedia; sigue M1 Multipantalla; después T1 Editor general. Ver docs/RUTA_CRITICA_ENTREGAS.md.
+
+## Requisito permanente 27-oct-2026: autodescubrimiento de bibliotecas
+Las carpetas de usuario que la app crea en Documentos/JA Proyecciones 2 constituyen la fuente de contenido para cada módulo. Archivos copiados por Explorador de Windows deben detectarse automáticamente, sin botón obligatorio de importación y sin mezclar categorías. Biblia se vincula a Biblias; videohimnario a Himnario Adventista y Cantos Juveniles; Multimedia a Imagenes/Videos/Fondos Personalizados; Audio a Audio, otros destinos según capacidades. Debe funcionar después de reiniciar y al agregar/renombrar/eliminar archivos; nunca modificar archivos de usuario. Actualmente la creación de carpetas no implica autodescubrimiento completo: consultar jaContentFolders.ts y jaMediaFolders.ts. Es regla de alcance para el desarrollo actual y futuro.
