@@ -10,6 +10,7 @@ export const hymnVideos = writable<FileFolder[]>([])
 export const hymnLibraryError = writable("")
 
 export const hymnSourcePaths = writable<string[]>([])
+export const hymnCollectionPaths = writable<Record<string, string[]>>({})
 export const hymnSourceStatus = writable<Record<string, string>>({})
 export const hymnLinks = writable<Record<string, string[]>>({ "Himnario Adventista": [], "Cantos Juveniles": [] })
 const STORAGE = "ja-hymn-linked-sources-v1"
@@ -57,11 +58,12 @@ export async function refreshJAHymnLibrary(): Promise<void> {
     hymnFolders.set(roots)
     const links = readLinks()
     hymnLinks.set(links)
-    const sources = [...new Set([...Object.values(roots), ...Object.values(links).flat()].filter(Boolean))]
+    const collections = Object.fromEntries(["Himnario Adventista", "Cantos Juveniles"].map((name) => [name, [roots[name], ...links[name]].filter(Boolean)]))
+    hymnCollectionPaths.set(collections)
+    const sources = [...new Set(Object.values(collections).flat())]
     hymnSourcePaths.set(sources)
     const statuses: Record<string, string> = {}
     const byPath = new Map<string, FileFolder>()
-    let failed = false
     for (const path of sources) {
         try {
             const result = await requestMain(Main.READ_FOLDER, { path, depth: 5 })
@@ -82,7 +84,7 @@ export async function refreshJAHymnLibrary(): Promise<void> {
     if (generation !== refreshGeneration) return
     hymnSourceStatus.set(statuses)
     hymnVideos.set([...byPath.values()].sort((a, b) => a.name.localeCompare(b.name, "es", { numeric: true })))
-    hymnLibraryError.set(failed ? "No se pudieron leer una o más carpetas del Himnario." : "")
+    hymnLibraryError.set("")
 }
 
 let syncListenersInstalled = false
