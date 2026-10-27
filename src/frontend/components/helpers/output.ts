@@ -159,11 +159,12 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     let implicitTargets = allOutputIds
     if (!resolvedOutputId && !resolvedBindings.length && allOutputIds.length > 1 && typeof localStorage !== "undefined") {
         const primaryId = localStorage.getItem("ja-main-projector") || ""
-        if (primaryId) {
-            const resolvedPrimary = resolveOutputId(primaryId) || primaryId
-            if (!allOutputIds.includes(resolvedPrimary)) return
-            implicitTargets = [resolvedPrimary]
-        }
+        // With multiple outputs, never choose a destination on the user's behalf.
+        // Explicit targets and intentional bindings are handled above.
+        if (!primaryId) return
+        const resolvedPrimary = resolveOutputId(primaryId) || primaryId
+        if (!allOutputIds.includes(resolvedPrimary)) return
+        implicitTargets = [resolvedPrimary]
     }
     const outs = resolvedOutputId ? [resolvedOutputId] : implicitTargets
 
