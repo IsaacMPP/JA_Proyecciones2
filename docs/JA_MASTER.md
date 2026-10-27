@@ -94,3 +94,6 @@ E1: corregida detección de plantillas bíblicas predeterminadas para que la vis
 
 ## E1 — Lienzo único de Escrituras
 Sustituida la vista doble por lienzo único que muestra versículo proyectado sin tokens visibles; la plantilla interna sigue siendo la fuente de los estilos. Controles nativos de FreeShow para fondo de color e imagen ya existen y se conservan. Cambios de código pendientes de CI/aceptación Windows, sin declarar terminada E1.
+
+## E1: selección bíblica como fuente de la vista real
+Se corrigió la dependencia impropia del proyector al renderizar el editor: la vista principal ahora obtiene el contenido desde el estado de selección bíblica con funciones nativas, en vez de requerir salida temporal activa. Código `7960a1f`. Pendiente validación real Windows y enlace de edición de texto/estilo.
