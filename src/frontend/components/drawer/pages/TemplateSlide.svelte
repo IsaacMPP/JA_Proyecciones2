@@ -47,10 +47,10 @@
         thumbnailPath = getThumbnailPath(mediaPath, mediaSize.slideSize)
 
         const media = await getMedia(bgPath, mediaSize.slideSize)
-        if (!media) return
+        if (!media) { thumbnailPath = ""; return }
 
         mediaPath = media.path
-        thumbnailPath = media.thumbnail
+        thumbnailPath = media.thumbnail || ""
     }
 
     // OVERLAY
@@ -76,7 +76,7 @@ checkered={template.items?.length > 0 && transparentOutput} -->
     <!-- WIP !altKeyPressed &&  -->
     {#if thumbnailPath}
         <div class="background" style="zoom: {1 / ratio};opacity: {edit ? 0.75 : 1};height: 100%;width: 100%;">
-            <MediaLoader path={mediaPath} {thumbnailPath} />
+            <MediaLoader path={mediaPath} {thumbnailPath} loadFullImage />
         </div>
     {/if}
 
