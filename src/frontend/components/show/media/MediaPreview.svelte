@@ -69,7 +69,11 @@
                         const type = getMediaLayerType(mediaPath, mediaStyle)
                         if (type === "foreground" || type !== "background") clearSlide()
 
-                        setOutput("background", { path: mediaPath, ...mediaStyle })
+                        const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+                        if (primaryId) {
+                            if (!$outputs[primaryId]?.enabled || !$outputs[primaryId]?.active) return
+                            setOutput("background", { path: mediaPath, ...mediaStyle }, false, primaryId)
+                        } else setOutput("background", { path: mediaPath, ...mediaStyle })
                     }}
                 >
                     {#if mediaStyle.fit === "blur"}
