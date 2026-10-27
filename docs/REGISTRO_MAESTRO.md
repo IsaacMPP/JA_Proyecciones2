@@ -134,3 +134,6 @@ Captura Windows: restablecer apariencia deja lienzo azul, pero monitor de salida
 
 ## 2026-10-27 — Nuevo orden por decisión del usuario
 E1 Biblia aceptada funcionalmente en pruebas del usuario. Se pospone editor general. Se prioriza H1 Himnario con panel propio y aislado de Multimedia, luego M1 Multipantalla y T1 Editor. Auditoría: sin pestaña Himnario en values/tabs.ts ni drawer/Navigation.svelte; MediaTabs lista mediaFolders y cuenta archivos multimedia. Hay que separar almacenamiento/índices, no solo ocultar elementos. Actualización documental, sin modificar aplicación.
+
+## 2026-10-27 — Auditoría carpetas y decisión del propietario
+Capturas verificadas: carpeta Documents/JA Proyecciones 2 contiene 11 directorios; Himnario Adventista contiene videos numerados, sin requerir TXT. Código `src/electron/utils/jaContentFolders.ts` confirma creación; `src/frontend/utils/jaMediaFolders.ts` solo registra multimedia y audio parciales, y ubica Cantos Juveniles en Audio. El usuario exige descubrimiento/sincronización automática de contenidos por carpeta para TODOS los módulos (Biblia, Himnario, etc.), incluidos los archivos copiados externamente. Registrar en ruta crítica, corregir en H1 para videohimnos; no considerar autodetección implementada por existir carpeta. Mantener biblioteca Himnario fuera de Multimedia, persistencia y no modificación del original.
