@@ -106,3 +106,6 @@ E1: corrección de referencia de array de ítems del versículo y visualización
 
 ## E1 — Placa de lectura
 Panel contextual vinculado al fondo del cuadro de texto seleccionado, usando estilos y controles FreeShow sin añadir capas de dibujo nuevas. Alternancia, color/opacidad y redondez registrados en la plantilla; falta validación de CI y prueba visual real. La referencia puede configurarse seleccionando su propio cuadro.
+
+## 2026-10-26 — E1: menús de fondos reubicados
+Captura del operador muestra el control de color cortado en la esquina inferior derecha y los paneles flotantes bloqueando el lienzo. Cambios: `bc8e23c` elimina paneles flotantes de `TemplateEditor.svelte`; `8077906` sitúa las opciones plegables `Fondo de Escrituras` y `Fondo de lectura` en `EditTools.svelte` (panel derecho), reutilizando `MaterialColorInput`, `MaterialFilePicker`, `MaterialCheckbox` y el historial de plantillas. Se mantiene un solo estado de plantilla. CI y validación Windows pendientes, sobre todo el tamaño de popover de color y el scroll lateral.
