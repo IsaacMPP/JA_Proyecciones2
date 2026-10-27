@@ -10,10 +10,6 @@
     import { history } from "../../helpers/history"
     import { getStyles } from "../../helpers/style"
     import { getFirstActiveOutput } from "../../helpers/output"
-    import MaterialFilePicker from "../../inputs/MaterialFilePicker.svelte"
-    import MaterialColorInput from "../../inputs/MaterialColorInput.svelte"
-    import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
-    import { mediaExtensions } from "../../../values/extensions"
     import FloatingInputs from "../../input/FloatingInputs.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialZoom from "../../inputs/MaterialZoom.svelte"
@@ -99,54 +95,6 @@
         history({ id: "UPDATE", newData: { key: "items", indexes: active, subkey: "style", data: values }, oldData: { id: $activeEdit.id }, location: { page: "edit", id: "template_items", override } })
     }
 
-    // JA: the reading plate is the background of the existing text box,
-    // not a new overlapping layer. It stays behind the text and persists
-    // in the same template that renders every Scripture verse.
-    $: selectedPlateIndex = isBibleTemplate && active.length === 1 ? active[0] : -1
-    $: selectedPlateItem = selectedPlateIndex >= 0 ? Slide?.items?.[selectedPlateIndex] : null
-    $: selectedPlateStyle = getStyles(selectedPlateItem?.style)
-    $: plateColor = selectedPlateStyle["background-color"] || selectedPlateStyle.background || ""
-    $: plateEnabled = !!plateColor && plateColor !== "transparent"
-    let rememberedPlateColor = "rgb(0 0 0 / 0.55)"
-
-    function updateReadingPlate(key: "background-color" | "border-radius", value: string) {
-        if (!selectedPlateItem || !currentId) return
-        const current = getStyles(selectedPlateItem.style)
-        if (key === "background-color") {
-            delete current.background
-            if (!value) delete current["background-color"]
-            else current["background-color"] = value
-        } else {
-            if (!value) delete current["border-radius"]
-            else current["border-radius"] = value
-        }
-        const style = Object.entries(current).map(([name, val]) => name + ":" + val + ";").join("")
-        history({
-            id: "UPDATE",
-            newData: { key: "items", indexes: [selectedPlateIndex], subkey: "style", data: [style] },
-            oldData: { id: currentId },
-            location: { page: "edit", id: "template_items", override: "ja_scripture_plate#" + currentId + "#" + selectedPlateIndex }
-        })
-    }
-
-    function toggleReadingPlate(enabled: boolean) {
-        if (!enabled && plateEnabled) rememberedPlateColor = plateColor
-        updateReadingPlate("background-color", enabled ? rememberedPlateColor : "")
-    }
-
-    function updateBibleBackground(key: "backgroundPath" | "backgroundColor", value: string) {
-        if (!currentId || !Slide || !isBibleTemplate) return
-        const current = $templates[currentId]
-        if (!current) return
-        const settings = { ...(current.settings || {}), [key]: value || "" }
-        history({
-            id: "UPDATE",
-            newData: { key: "settings", data: settings },
-            oldData: { id: currentId },
-            location: { page: "edit", id: "template_settings", override: currentId }
-        })
-    }
-
     let width = 0
     let height = 0
 
@@ -194,29 +142,6 @@
         {/if}
     </div>
 
-    {#if isBibleTemplate}
-        <div class="jaBibleBackground" aria-label="Fondo de Escrituras">
-            <span>Fondo de Escrituras</span>
-            <MaterialColorInput label="edit.background_color" value={Slide?.settings?.backgroundColor || ""} on:input={(e) => updateBibleBackground("backgroundColor", e.detail)} allowEmpty noLabel />
-            <MaterialFilePicker label="edit.background_media" value={Slide?.settings?.backgroundPath || ""} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateBibleBackground("backgroundPath", e.detail ?? e)} allowEmpty />
-        </div>
-    {/if}
-
-    {#if isBibleTemplate && selectedPlateItem?.lines}
-        <div class="jaReadingPlate">
-            <strong>Fondo de lectura</strong>
-            <small>Aplica al cuadro de texto seleccionado, detrás de las letras.</small>
-            <MaterialCheckbox label="Mostrar fondo" checked={plateEnabled} on:change={(e) => toggleReadingPlate(e.detail)} small />
-            {#if plateEnabled}
-                <MaterialColorInput label="Color y opacidad" value={plateColor} allowOpacity on:input={(e) => updateReadingPlate("background-color", e.detail)} />
-                <label for="jaPlateRadius">Esquinas redondeadas</label>
-                <input id="jaPlateRadius" type="range" min="0" max="80" step="2"
-                    value={parseInt(selectedPlateStyle["border-radius"] || "0") || 0}
-                    on:input={(e) => updateReadingPlate("border-radius", e.currentTarget.value + "px")} />
-            {/if}
-        </div>
-    {/if}
-
     <FloatingInputs side="left">
         <MaterialZoom columns={zoom} min={0.2} max={4} defaultValue={1} addValue={0.1} on:change={updateZoom} on:origin={(e) => (zoomOrigin = e.detail)} />
 
@@ -238,12 +163,6 @@
 </div>
 
 <style>
-    .jaReadingPlate { position: absolute; right: 18px; bottom: 18px; z-index: 14; display: flex; flex-direction: column; gap: 7px; width: 230px; padding: 12px; color: var(--text); background: var(--primary-darkest); border: 1px solid var(--primary-lighter); border-radius: 9px; }
-    .jaReadingPlate small { opacity: .75; line-height: 1.35; }
-    .jaReadingPlate label { font-size: .8rem; }
-    .jaReadingPlate input { width: 100%; }
-    .jaBibleBackground { position: absolute; right: 18px; top: 18px; z-index: 14; display: flex; flex-direction: column; gap: 6px; padding: 10px; width: 210px; border-radius: 9px; background: var(--primary-darkest); border: 1px solid var(--primary-lighter); }
-    .jaBibleBackground > span { font-size: .8rem; font-weight: 600; }
     .default {
         position: absolute;
         top: 10px;
