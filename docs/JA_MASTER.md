@@ -121,3 +121,6 @@ Commit `ecd2cc9` añade botones de restablecimiento por sección en el inspector
 
 ## 2026-10-26 — E1 regresión de fondo retenido en proyección
 Captura Windows: restablecer apariencia deja lienzo azul, pero monitor de salida conserva imagen navideña. Causa verificada en `playScripture`: cuando `backgroundPath` queda vacío tras restaurar, la función hacía `return` sin limpiar la salida anterior. Commit `b44c59c` añade `setOutput("background", null)` mediante el motor nativo antes de retornar. Pendiente compilar y validar en Windows restauración de fondo en salida activa y navegación siguiente, sin perder texto. No declarar cerrado E1 sin prueba real.
+
+## Orden aprobado 27-oct-2026
+E1 Biblia: usuario confirmó sus flujos principales. Editor general aplazado. H1 Himnario independiente junto a Biblia y fuera del índice de Multimedia; sigue M1 Multipantalla; después T1 Editor general. Ver docs/RUTA_CRITICA_ENTREGAS.md.
