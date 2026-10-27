@@ -78,3 +78,13 @@ El propietario aporta el código `obs-studio-master(2).zip` y solicita una conso
 - **M1-06 Aceptación Windows**: 1 salida JA, 2 salidas JA, varias (3+), desconexión HDMI, reconexión, modo espejo/extender, Wireless HDMI, spacedesk, multirresolución, reinicio, bajo rendimiento; regresiones Biblia/Himnario/Multimedia, CI y documentación.
 
 **Reglas de salida**: no declarar compilación = hardware validado; ni afirmar modelo exacto sin reporte real de Windows. No modificar main/fusionar PR #2. Revisión de código antes de solicitar implementar cada fase; el usuario prioriza no duplicar/crear parches superficiales.
+
+
+## M1 — Grupos sincronizados y prónter independiente (27-oct-2026)
+Requisito nuevo del usuario: multipantalla debe funcionar con Biblia, PowerPoint, presentaciones, imágenes, videos, videohimnos y fondos animados. Escenario: principal reproduce cantos con audio; secundaria 1 muestra al predicador/maestro de ceremonias agenda, notas de presentación o temporizador sin verlo el público; secundaria 2 reproduce un logo animado en bucle sin audio.
+
+**Grupos de destino:** elegir por separado cualquier conjunto explícito de salidas, por ejemplo principal+secundaria1 reciben la misma presentación sincronizada mientras secundaria2 mantiene su video. El clic normal sigue enviando SOLO al principal. El envío a grupos exige elección consciente y no modifica salidas externas al grupo. Guardar grupos con IDs reales y tratar desconexiones sin reasignación silenciosa.
+
+**Dos tipos de sincronización distintos:** (a) contenido discreto como diapositivas, versículos, imágenes, presentación PowerPoint: compartir estado/índice y avance; (b) video/audio: coordinar tiempos, pausa, seek, loop, sincronismo y política solo-principal audible. El prónter puede mostrar una vista relacionada pero no idéntica con notas/temporizador privados; NO prometer notas de PowerPoint hasta comprobar que el importador las conserva.
+
+**Auditoría obligatoria antes de M1:** analizar stageOutput, PowerPoint import, temporizadores, controles de reproducción y videoSync existentes, bindings y enrutamiento de setOutput. Reutilizar capacidades FreeShow; no duplicar motores. Incorporar a fases M1-03 enrutamiento a grupos; M1-04 sincronía según tipo de medio; M1-05 consola/mostrador y prónter. Validar 3 salidas: principal y aux1 mismo PowerPoint sincronizado, aux2 logo animado continuo y silencioso; ensayo inverso con prónter privado, principal cantos y aux2 logo. Probar desconexiones, cambios de selección, audio, y PCs poco potentes.
