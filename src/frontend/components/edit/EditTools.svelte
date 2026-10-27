@@ -71,6 +71,28 @@
         updatePlate("background-color", enabled ? previousPlateColor : "")
     }
 
+    function resetEntireBibleAppearance() {
+        if (!bibleMode || !activeId) return
+        if (!window.confirm("¿Restablecer toda la apariencia de Escrituras? Se restaurarán fuente, tamaño, colores, contorno, sombras, fondos y placas de lectura de esta plantilla. Los textos y Biblias no se borrarán.")) return
+        const template = $templates[activeId]
+        if (!template) return
+        const settings = { ...(template.settings || {}), backgroundPath: "", backgroundColor: "#101a2d" }
+        history({ id: "UPDATE", newData: { key: "settings", data: settings }, oldData: { id: activeId }, location: { page: "edit", id: "template_settings", override: "ja_full_reset_settings#" + activeId } })
+        const items = template.items || []
+        const indexes = items.map((_, i) => i)
+        const boxStyles = items.map((entry) => {
+            const style = getStyles(entry.style)
+            const geometryKeys = ["left", "top", "width", "height", "position", "display", "overflow", "transform"]
+            const geometry = Object.entries(style).filter(([key]) => geometryKeys.includes(key))
+            if (!entry.lines) return entry.style || ""
+            return [...geometry, ["color", "#ffffff"]].map(([key, value]) => key + ":" + value + ";").join("")
+        })
+        if (indexes.length) history({ id: "UPDATE", newData: { key: "items", indexes, subkey: "style", data: boxStyles }, oldData: { id: activeId }, location: { page: "edit", id: "template_items", override: "ja_full_reset_boxes#" + activeId } })
+        // Retain the Biblical placeholder tokens while resetting their visual formatting.
+        const textIndexes = items.map((entry, i) => entry.lines ? i : -1).filter((i) => i >= 0)
+        const plainLines = textIndexes.map((i) => clone(items[i].lines || []).map((line) => ({ ...line, align: "", text: (line.text || []).map((part) => ({ ...part, style: "color:#ffffff;font-family:Arial;font-size:64px;font-weight:400;font-style:normal;text-decoration:none;text-shadow:none;" })) })))
+        if (textIndexes.length) history({ id: "UPDATE", newData: { key: "items", indexes: textIndexes, subkey: "lines", data: plainLines }, oldData: { id: activeId }, location: { page: "edit", id: "template_items", override: "ja_full_reset_text#" + activeId } })
+    }
     function resetBibleBackground() {
         if (!bibleMode || !activeId) return
         if (!window.confirm("¿Restablecer el fondo de Escrituras?")) return
@@ -468,6 +490,7 @@
 
         {#if bibleMode}
             <div class="jaScriptureSidebar">
+                <button class="jaResetBtn" type="button" on:click={resetEntireBibleAppearance}>Restablecer toda la apariencia</button>
                 <details>
                     <summary>Fondo de Escrituras</summary>
                     <div class="jaScriptureFields">
