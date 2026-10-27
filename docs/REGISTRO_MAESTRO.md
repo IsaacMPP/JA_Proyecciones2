@@ -131,3 +131,6 @@ Commit `ecd2cc9` añade botones de restablecimiento por sección en el inspector
 
 ## 2026-10-26 — E1 regresión de fondo retenido en proyección
 Captura Windows: restablecer apariencia deja lienzo azul, pero monitor de salida conserva imagen navideña. Causa verificada en `playScripture`: cuando `backgroundPath` queda vacío tras restaurar, la función hacía `return` sin limpiar la salida anterior. Commit `b44c59c` añade `setOutput("background", null)` mediante el motor nativo antes de retornar. Pendiente compilar y validar en Windows restauración de fondo en salida activa y navegación siguiente, sin perder texto. No declarar cerrado E1 sin prueba real.
+
+## 2026-10-27 — Nuevo orden por decisión del usuario
+E1 Biblia aceptada funcionalmente en pruebas del usuario. Se pospone editor general. Se prioriza H1 Himnario con panel propio y aislado de Multimedia, luego M1 Multipantalla y T1 Editor. Auditoría: sin pestaña Himnario en values/tabs.ts ni drawer/Navigation.svelte; MediaTabs lista mediaFolders y cuenta archivos multimedia. Hay que separar almacenamiento/índices, no solo ocultar elementos. Actualización documental, sin modificar aplicación.
