@@ -618,7 +618,9 @@ export class VideoPlayer {
 
     static stopByOutputIds(outputIds: string[]) {
         const videosToStop = get(playingVideos).filter((v) => v.linkedOutputIds?.some((id) => outputIds.includes(id)))
-        videosToStop.forEach((v) => this.stop(v.path))
+        videosToStop.forEach((v) => {
+            v.linkedOutputIds.filter((id) => outputIds.includes(id)).forEach((id) => this.stop(v.path, id))
+        })
     }
 
     static seekTo(path: string, outputId: string, time: number) {
