@@ -126,3 +126,6 @@ Captura del operador muestra el control de color cortado en la esquina inferior 
 
 ## 2026-10-26 — E1 selector color del inspector
 Se constató en captura que el selector original de color queda recortado dentro de la subárea de controles laterales. Commits `b144f36` y `1773619` eliminan `max-height:44vh` y `overflow-y:auto` del contenedor secundario, manteniendo el desplazamiento del inspector original FreeShow, y presentan radio de esquinas con valor en px. Se conserva `MaterialColorInput` para mantener colores y opacidad sin duplicar el componente. CI y prueba visual Windows pendientes; confirmar que ningún ancestro aún recorta el selector.
+
+## 2026-10-26 — Restaurar fondos de Escrituras
+Commit `ecd2cc9` añade botones de restablecimiento por sección en el inspector derecho: Fondo de Escrituras (limpia `backgroundColor` y `backgroundPath`) y Fondo de lectura del cuadro seleccionado (limpia fondo y radio en el estilo del cuadro). Ambos piden confirmación, usan historial nativo y preservan fuentes, texto, traducciones bíblicas, archivos multimedia importados y otros ajustes. Pendiente CI y validación Windows; restablecer el fondo no elimina el archivo de la biblioteca.
