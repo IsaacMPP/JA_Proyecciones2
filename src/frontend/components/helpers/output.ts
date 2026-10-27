@@ -153,7 +153,19 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     const resolvedOutputId = outputId ? resolveOutputId(outputId) || outputId : ""
     // M1-03: an explicit target must own its media transport as well as its visual output.
     // Do not silently broadcast playback commands to every active output.
-    const outs = resolvedOutputId ? [resolvedOutputId] : allOutputIds
+    // M1-03: normal sends use the chosen JA primary output once multiple JA
+    // projection outputs are active. Explicit output IDs and intentional bindings win.
+    // Do not guess a replacement if a saved primary is disconnected.
+    let implicitTargets = allOutputIds
+    if (!resolvedOutputId && !resolvedBindings.length && allOutputIds.length > 1 && typeof localStorage !== "undefined") {
+        const primaryId = localStorage.getItem("ja-main-projector") || ""
+        if (primaryId) {
+            const resolvedPrimary = resolveOutputId(primaryId) || primaryId
+            if (!allOutputIds.includes(resolvedPrimary)) return
+            implicitTargets = [resolvedPrimary]
+        }
+    }
+    const outs = resolvedOutputId ? [resolvedOutputId] : implicitTargets
 
     // track usage (& set attributionString)
     if (type === "slide" && data?.id) {
