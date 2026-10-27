@@ -105,3 +105,6 @@ Commit `bbf95dd`: nuevo botón `Ver versículo real` / `Editar plantilla` en `Te
 
 ## 2026-10-26 — Corrección de vista bíblica ausente
 Tras capturas del usuario sin el botón, identificada condición demasiado restrictiva: `scriptureSettings.template === currentId` impedía la vista con plantilla por defecto. Commit `81e00ed` detecta modo/variables y abre vista en vivo cuando existe proyección. Verificar compilación y pantalla antes de declarar resultado.
+
+## E1 — Último cambio
+Por capturas de Windows se descartó la vista doble. Commits `33ec009` y `9e5af4f`: el editor bíblico presenta un solo lienzo con texto de `tempItems` y conserva el modelo de plantilla para los estilos. Los controles nativos para fondo de imagen y color ya se verificaron en `TemplateStyle.svelte`; se corrigió limpieza de miniatura al retirar fondo. Probar compilación, selección de elementos y cambios live/persistentes en Windows. Mantener E1 como entrega activa; PR #2 en borrador.
