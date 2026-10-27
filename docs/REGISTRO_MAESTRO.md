@@ -98,3 +98,6 @@ Cambio `bbf95dd`: `TemplateEditor.svelte` permite alternar entre elementos edita
 
 ## 2026-10-26 — E1 vista de edición y versículo lado a lado
 Commit `b703126`: en `TemplateEditor.svelte` la opción de vista en vivo muestra simultáneamente la plantilla editable y el contenido bíblico real de la proyección, sin sustituir variables de la plantilla. Se reutilizan los controles existentes de fuente y fondos de `TemplateStyle.svelte` para evitar una segunda configuración. Todavía requieren validación CI/Windows: dimensiones, actualización del preview al editar, pantalla de salida, selección de texto y persistencia entre versículos. No declarar completa E1.
+
+## 2026-10-26 — Corrección de vista bíblica ausente
+Corrige causa raíz de vista ausente: el editor exigía igualdad con `scriptureSettings.template`, aunque la plantilla por defecto de Escrituras no requiere ese valor. Ahora identifica modo `scripture` o placeholders bíblicos, y abre vista simultánea al existir proyección. Commit `81e00ed`. CI/Windows pendientes.
