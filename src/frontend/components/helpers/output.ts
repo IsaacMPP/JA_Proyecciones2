@@ -142,6 +142,17 @@ export function toggleOutput(id: string) {
 // overlays: [],
 // transition: null,
 let resetActionTrigger = false
+// A deliberate multi-destination send. This is a fan-out of the same
+// projection action, not temporal synchronization of independent videos.
+// Video clock sync/group transport remains a separate M1-05 requirement.
+export function sendToJAOutputs(type: string, data: any, outputIds: string[]): string[] {
+    const sent: string[] = []
+    for (const id of Array.from(new Set(outputIds))) {
+        if (sendToJAOutput(type, data, id)) sent.push(id)
+    }
+    return sent
+}
+
 // Shared destination entry point for JA modules. The native FreeShow
 // setOutput routine remains the single renderer and playback controller.
 export function sendToJAOutput(type: string, data: any, outputId: string, toggle = false) {
