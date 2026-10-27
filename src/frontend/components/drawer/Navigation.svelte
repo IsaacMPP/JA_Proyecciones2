@@ -21,7 +21,7 @@
         {#if id === "hymns"}
             <div class="hymnNav">
                 <strong>Colecciones</strong>
-                {#each ["Himnario Adventista", "Cantos Juveniles", "Todas"] as name}
+                {#each ["Himnario Adventista", "Cantos Juveniles"] as name}
                     <button class:active={($drawerTabsData.hymns?.activeSubTab || "Himnario Adventista") === name} on:click={() => drawerTabsData.update((data) => ({ ...data, hymns: { ...data.hymns, enabled: true, activeSubTab: name } }))} type="button">
                         {name}
                         <small>{$hymnVideos.filter((v) => name === "Todas" || isPathInJACollection(v.path, $hymnFolders[name] || "")).length}</small>
