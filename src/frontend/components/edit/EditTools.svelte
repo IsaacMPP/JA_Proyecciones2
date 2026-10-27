@@ -465,7 +465,7 @@
                         {#if plateItem?.lines}
                             <MaterialCheckbox label="Mostrar fondo" checked={plateEnabled} on:change={(e) => togglePlate(e.detail)} small />
                             {#if plateEnabled}
-                                <MaterialColorInput label="Color y opacidad" value={plateColor} allowOpacity on:input={(e) => updatePlate("background-color", e.detail)} />
+                                <div class="jaPlateColorRow"><label for="plateColor">Color y opacidad</label><MaterialColorInput label="Color y opacidad" value={plateColor} allowOpacity on:input={(e) => updatePlate("background-color", e.detail)} /></div>
                                 <label for="jaPlateRadius">Esquinas redondeadas</label>
                                 <input id="jaPlateRadius" type="range" min="0" max="80" step="2" value={parseInt(plateStyles["border-radius"] || "0") || 0} on:input={(e) => updatePlate("border-radius", e.currentTarget.value + "px")} />
                             {/if}
@@ -570,12 +570,12 @@
 </div>
 
 <style>
-    .jaScriptureSidebar { flex-shrink: 0; max-height: 44vh; overflow-y: auto; border-bottom: 1px solid var(--primary-lighter); }
+    .jaScriptureSidebar { flex-shrink: 0; border-bottom: 1px solid var(--primary-lighter); }
     .jaScriptureSidebar details { border-bottom: 1px solid var(--primary-lighter); }
     .jaScriptureSidebar summary { cursor: pointer; padding: 11px 13px; background: var(--primary-darker); font-weight: 600; font-size: .87rem; }
     .jaScriptureFields { padding: 10px 9px 14px; display: flex; flex-direction: column; gap: 8px; }
     .jaScriptureFields p, .jaScriptureFields label { font-size: .8rem; opacity: .8; }
-    .jaScriptureFields input[type="range"] { width: 100%; }
+    .jaScriptureFields input[type="range"] { width: 100%; }\n    .jaPlateColorRow { display: flex; flex-direction: column; gap: 5px; }
 
     .main {
         display: flex;
