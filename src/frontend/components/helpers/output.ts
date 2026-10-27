@@ -151,6 +151,8 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     const resolvedBindings = bindings.length ? resolveOutputIds(bindings) : []
     const allOutputIds = resolvedBindings.length ? resolvedBindings : getActiveOutputs(get(outputs), true, false, true)
     const resolvedOutputId = outputId ? resolveOutputId(outputId) || outputId : ""
+    // M1-03: an explicit target must own its media transport as well as its visual output.
+    // Do not silently broadcast playback commands to every active output.
     const outs = resolvedOutputId ? [resolvedOutputId] : allOutputIds
 
     // track usage (& set attributionString)
@@ -350,7 +352,7 @@ function checkAudio(type: string, data: any, allOutputIds: string[], outs: strin
 
             // stop any playing backgrounds (if different than new path)
             let hasActiveBg = false
-            allOutputIds.forEach((outputId) => {
+            outs.forEach((outputId) => {
                 const currentBg = get(outputs)[outputId]?.out?.background
                 const bgPath = currentBg?.path || currentBg?.id || ""
                 if (bgPath) hasActiveBg = true
@@ -359,9 +361,9 @@ function checkAudio(type: string, data: any, allOutputIds: string[], outs: strin
                 if (bgPath && bgPath !== newPath) VideoPlayer.stop(bgPath, outputId)
             })
 
-            VideoPlayer.start(newPath, { loop: data.loop, muted: data.muted, startAt: data.startAt || 0, isOnline: data.type === "player", hasActiveBg }, allOutputIds)
+            VideoPlayer.start(newPath, { loop: data.loop, muted: data.muted, startAt: data.startAt || 0, isOnline: data.type === "player", hasActiveBg }, outs)
         } else {
-            VideoPlayer.stopByOutputIds(allOutputIds)
+            VideoPlayer.stopByOutputIds(outs)
         }
     } else if (type === "slide") {
         const oldSlideOut = get(outputs)[outs?.[0]]?.out?.slide
@@ -374,16 +376,16 @@ function checkAudio(type: string, data: any, allOutputIds: string[], outs: strin
         oldItems.forEach((item: any) => {
             if (!newPaths.includes(item.src)) {
                 // don't stop if the same video is used as background
-                const outBg = get(outputs)[allOutputIds?.[0]]?.out?.background
+                const outBg = get(outputs)[outs?.[0]]?.out?.background
                 if (outBg?.path === item.src) return
 
-                allOutputIds.forEach((outId) => VideoPlayer.stop(item.src, outId))
+                outs.forEach((outId) => VideoPlayer.stop(item.src, outId))
             }
         })
 
         // start new video items
         newItems.forEach((item: any) => {
-            VideoPlayer.start(item.src, { loop: item.loop !== false, muted: item.muted, startAt: item.startAt || item.fromTime || 0, fromTime: item.fromTime, toTime: item.toTime, volume: item.volume, type: "item" }, allOutputIds)
+            VideoPlayer.start(item.src, { loop: item.loop !== false, muted: item.muted, startAt: item.startAt || item.fromTime || 0, fromTime: item.fromTime, toTime: item.toTime, volume: item.volume, type: "item" }, outs)
         })
     }
 }
