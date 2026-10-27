@@ -209,7 +209,7 @@
         const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
         if (primaryId) {
             if (!$outputs[primaryId]?.enabled || !$outputs[primaryId]?.active) return
-            setOutput("background", { ...bg, muted: false }, false, primaryId)
+            setOutput("background", bg, false, primaryId)
         } else {
             setOutput("background", bg)
         }
