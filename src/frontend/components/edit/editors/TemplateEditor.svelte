@@ -143,7 +143,7 @@
                     bind:newStyles
                     templateId={currentId}
                     template={Slide}
-                    displayItems={versePreview?.items || null}
+                    displayItems={versePreview || null}
                     edit
                     {width}
                     {height}
