@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import HymnThumbnail from "./HymnThumbnail.svelte"
+    import VirtualList from "../VirtualList.svelte"
     import { clearHymnThumbnailRequests } from "../../../utils/jaHymnThumbnailQueue"
     import { hymnFolders, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
@@ -15,6 +16,10 @@
     export let collection = "Himnario Adventista"
     $: currentRoot = $hymnFolders[collection] || ""
     $: shown = $hymnVideos.filter((video) => (collection === "Todas" || isPathInJACollection(video.path, currentRoot)) && (!searchValue || video.name.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(searchValue.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))
+    let catalogWidth = 0
+    $: columnCount = Math.max(1, Math.floor(Math.max(180, catalogWidth - 10) / 165))
+    $: virtualRows = Array.from({ length: Math.ceil(shown.length / columnCount) }, (_, index) => shown.slice(index * columnCount, (index + 1) * columnCount))
+
     async function updateCatalog() {
         if (updating) return
         updating = true
@@ -49,8 +54,12 @@
     <div class="catalogScroll">
     {#if $hymnLibraryError}<p class="error">{$hymnLibraryError}</p>{/if}
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
-    <div class="grid">
-        {#each shown as video (video.path)}
+    <div class="virtualContainer" bind:clientWidth={catalogWidth}>
+        {#key collection + "|" + searchValue + "|" + columnCount}
+            <VirtualList items={virtualRows} itemHeight={163} let:item>
+                <div class="virtualRow" style={"grid-template-columns:repeat(" + columnCount + ", minmax(0,1fr));"}>
+
+        {#each item as video (video.path)}
             <article title={video.path} class:selected={$activeShow?.id === video.path}>
                 <button class="select" type="button" on:click={() => preview(video)} aria-label={"Vista previa: " + video.name}>
                     <HymnThumbnail path={video.path} {revision} />
@@ -59,19 +68,22 @@
                 <button class="project" type="button" disabled={$outLocked} on:click={() => project(video)}>Proyectar</button>
             </article>
         {/each}
-    </div>
-    </div>
+                </div>
+            </VirtualList>
+        {/key}
+    </div>    </div>
 </section>
 <style>
     .jaHymns {padding:14px;width:100%;height:100%;min-height:0;color:var(--text);display:flex;flex-direction:column;overflow:hidden}
-    .catalogScroll {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+    .catalogScroll {flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain}
     header {display:flex;align-items:center;gap:12px;margin-bottom:14px}
     header span {opacity:.7}
     header button {margin-left:auto;border:1px solid var(--primary-lighter);padding:7px 12px;background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
     .search {display:flex;gap:8px;margin-bottom:12px}
     .search input {width:100%;padding:10px;border:1px solid var(--primary-lighter);border-radius:6px;color:var(--text);background:var(--primary)}
     .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
-    .grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+    .virtualContainer {height:100%;width:100%;min-height:0}
+    .virtualRow {display:grid;gap:10px;height:163px;padding:2px 4px 8px}
     article {content-visibility:auto;contain-intrinsic-size:auto 135px;min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
     article.selected {outline:2px solid var(--secondary)}
     .select {display:block;width:100%;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
