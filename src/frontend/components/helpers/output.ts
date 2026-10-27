@@ -1,3 +1,4 @@
+import { makeJAProjectionRequest } from "../../utils/jaProjectionDestinations"
 import { get } from "svelte/store"
 import { uid } from "uid"
 import { OUTPUT } from "../../../types/Channels"
@@ -141,6 +142,16 @@ export function toggleOutput(id: string) {
 // overlays: [],
 // transition: null,
 let resetActionTrigger = false
+// Shared destination entry point for JA modules. The native FreeShow
+// setOutput routine remains the single renderer and playback controller.
+export function sendToJAOutput(type: string, data: any, outputId: string, toggle = false) {
+    const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+    const request = makeJAProjectionRequest(type, data, outputId, primaryId, get(outputs))
+    if (!request) return false
+    setOutput(request.type, request.data, toggle, request.outputId)
+    return true
+}
+
 export function setOutput(type: string, data: any, toggle = false, outputId = "", add = false) {
     const ref = data?.layout ? _show(data.id).layouts([data.layout]).ref()[0] || [] : []
 
