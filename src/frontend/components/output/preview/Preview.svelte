@@ -270,9 +270,7 @@
             <MaterialButton class="hide" icon="hide" style="z-index: 2;" title="preview._hide_preview" on:click={() => (enablePreview = false)} />
             <!-- disable before hiding: disableTransitions={!enablePreview} -->
             <MultiOutputs />
-            {#if $activePage === "show" && (currentOutput?.out?.background || currentOutput?.out?.slide)}
-                <div class="jaCopyDestinations"><JADestinationChooser label="Duplicar contenido a…" compact={false} onSend={copyVisibleContent} /></div>
-            {/if}
+
             <div class="preview-meter">
                 <AudioMeter channelId="main" preview />
             </div>
@@ -287,6 +285,9 @@
     {#if enablePreview}
         <div class="section" style="margin-bottom: 2px;" class:float={!isSplitted && $activePage !== "show" && $activePage !== "settings"} class:light class:isOptimized>
             <ShowActions {currentOutput} {ref} {linesIndex} {maxLines} />
+            {#if $activePage === "show" && (currentOutput?.out?.background || currentOutput?.out?.slide)}
+                <div class="jaCopyAction"><JADestinationChooser label="Enviar contenido actual a…" compact={true} onSend={copyVisibleContent} /></div>
+            {/if}
         </div>
     {/if}
 
@@ -319,7 +320,7 @@
 </div>
 
 <style>
-.jaCopyDestinations{position:absolute;right:6px;bottom:3px;z-index:8;max-width:190px}
+.jaCopyAction{display:inline-flex;align-items:center;margin:2px 4px;flex:none}
 
     .main {
         /* max-height: 50%; */
