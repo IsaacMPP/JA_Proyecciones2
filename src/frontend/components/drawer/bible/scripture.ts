@@ -355,8 +355,13 @@ export async function playScripture() {
 
     const templateBackground = _template.getSetting("backgroundPath")
 
-    // play template background
-    if (!templateBackground) return
+    // When a Bible template removes its image background (including "Restore
+    // appearance"), the output must clear the previously projected media.
+    // Otherwise the editor updates while the live output keeps the old image.
+    if (!templateBackground) {
+        setOutput("background", null)
+        return
+    }
 
     // get style (for media "fit")
     const currentOutput = getFirstActiveOutput()
