@@ -43,10 +43,12 @@
     }
     function project(video: typeof shown[number]) {
         if ($outLocked) return
-        const output = getFirstActiveOutput($outputs)
+        const savedPrimary = typeof localStorage === "undefined" ? "" : (localStorage.getItem("ja-main-projector") || "")
+        // In multi-output mode do not fall back silently to a different monitor.
+        const output = savedPrimary ? ($outputs[savedPrimary]?.enabled && $outputs[savedPrimary]?.active ? { ...$outputs[savedPrimary], id: savedPrimary } : null) : getFirstActiveOutput($outputs)
         if (!output) return
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
-        setOutput("background", { path: video.path, type: "video", loop: false, muted: false, startAt: 0, ...mediaStyle }, false, output.id)
+        setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: false }, false, output.id)
     }
     onMount(() => { void updateCatalog() })
 </script>
