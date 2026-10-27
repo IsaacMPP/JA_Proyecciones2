@@ -100,3 +100,6 @@ Se corrigió la dependencia impropia del proyector al renderizar el editor: la v
 
 ## E1 — regresiones de teclado y acceso a fondos (26-oct-2026)
 Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elemento seleccionado en el editor (`ac1b721`), preservando protección de campos editables. Se expusieron en el editor bíblico los controles existentes de FreeShow para `backgroundColor` y `backgroundPath` usando historial de plantilla (`1258b6f`), sin almacenamiento paralelo. Falta validar compilación Windows y pruebas de imagen/color, navegación y persistencia; no cerrar E1.
+
+## 2026-10-26 — Corrección de vista previa
+E1: corrección de referencia de array de ítems del versículo y visualización de fondo original sin exigir miniatura. La salida proyectada ya se veía en captura; fallaba solo el lienzo de edición. Aún sin aceptación Windows.
