@@ -8,6 +8,8 @@
     import Tipbar from "./components/main/Tipbar.svelte"
     import Top from "./components/main/Top.svelte"
     import Preview from "./components/output/preview/Preview.svelte"
+    import PreviewOutput from "./components/output/preview/PreviewOutput.svelte"
+    import { jaControlledOutputId } from "./utils/jaControlledOutput"
     import SettingsTabs from "./components/settings/SettingsTabs.svelte"
     import Projects from "./components/show/Projects.svelte"
     import Show from "./components/show/Show.svelte"
@@ -15,7 +17,7 @@
     import StageLayouts from "./components/stage/StageLayouts.svelte"
     import Resizeable from "./components/system/Resizeable.svelte"
     import Timeline from "./components/timeline/Timeline.svelte"
-    import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
+    import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, outputs, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
 
     $: page = $activePage
@@ -60,7 +62,9 @@
                 {#if $focusMode}
                     <LazyLoad component={() => import("./components/show/focus/FocusMode.svelte")} show={$focusMode} />
                 {:else}
-                    <Show />
+                    {#if $jaControlledOutputId && $outputs[$jaControlledOutputId]?.enabled && $outputs[$jaControlledOutputId]?.active}
+                        <div class="jaSelectedCenter"><div class="jaSelectedCaption">Pantalla: {$outputs[$jaControlledOutputId]?.name || $jaControlledOutputId} <button type="button" on:click={() => jaControlledOutputId.set("")}>Volver</button></div><div class="jaSelectedCanvas"><PreviewOutput outputId={$jaControlledOutputId} /></div></div>
+                    {:else}<Show />{/if}
                 {/if}
             {:else if page === "edit"}
                 <LazyLoad component={() => import("./components/edit/Editor.svelte")} show={page === "edit"} />
@@ -131,6 +135,12 @@
 </div>
 
 <style>
+.jaSelectedCenter{height:100%;width:100%;display:flex;flex-direction:column;min-height:0;background:var(--primary-darkest)}
+.jaSelectedCaption{display:flex;justify-content:space-between;align-items:center;padding:8px;color:var(--text)}
+.jaSelectedCaption button{background:var(--primary);color:var(--text);padding:5px;border:1px solid var(--primary-lighter)}
+.jaSelectedCanvas{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.jaSelectedCanvas :global(.previewOutput){width:100%;height:auto;max-height:100%}
+
     .column,
     .row {
         display: flex;
