@@ -12,6 +12,14 @@
     let searches: Record<string, string> = {}
     let revision = 0
     let updating = false
+    let targetVideoPath = ""
+    $: primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+    $: availableOutputs = Object.entries($outputs).filter(([id, o]) =>
+        o.enabled && o.active && !o.stageOutput && !o.ndi && !o.omt && !o.rtmp && !o.webrtc && !o.blackmagic
+    ).map(([id, o]) => ({ id, name: o.name || id }))
+    $: secondaryOutputs = availableOutputs.filter((o) => o.id !== primaryId)
+    $: hasSecondaryControls = !!primaryId && availableOutputs.some((o) => o.id === primaryId) && secondaryOutputs.length > 0
+    $: if (!hasSecondaryControls) targetVideoPath = ""
     $: searchValue = searches[collection] || ""
     export let collection = "Himnario Adventista"
     $: currentRoot = $hymnFolders[collection] || ""
@@ -51,6 +59,14 @@
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
         setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: false }, false, output.id)
     }
+    function sendToSecondary(video: typeof shown[number], outputId: string) {
+        if ($outLocked || !hasSecondaryControls || outputId === primaryId) return
+        const output = $outputs[outputId]
+        if (!output?.enabled || !output.active) return
+        const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
+        setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: true }, false, outputId)
+        targetVideoPath = ""
+    }
     onMount(() => { void updateCatalog() })
 </script>
 
@@ -71,7 +87,20 @@
                     <HymnThumbnail path={video.path} {revision} />
                     <p>{video.name.replace(/\.[^.]+$/, "")}</p>
                 </button>
-                <button class="project" type="button" disabled={$outLocked} on:click={() => project(video)}>Proyectar</button>
+                <div class="sendActions">
+                    <button class="project" type="button" disabled={$outLocked} on:click={() => project(video)}>Proyectar</button>
+                    {#if hasSecondaryControls}
+                        <button class="destToggle" type="button" disabled={$outLocked} aria-label={"Enviar " + video.name + " a otra pantalla"} aria-expanded={targetVideoPath === video.path} on:click={() => targetVideoPath = targetVideoPath === video.path ? "" : video.path}>▾</button>
+                    {/if}
+                </div>
+                {#if hasSecondaryControls && targetVideoPath === video.path}
+                    <div class="destinationMenu">
+                        <strong>Enviar sin audio a…</strong>
+                        {#each secondaryOutputs as destination (destination.id)}
+                            <button type="button" on:click={() => sendToSecondary(video, destination.id)}>{destination.name}</button>
+                        {/each}
+                    </div>
+                {/if}
             </article>
         {/each}
                 </div>
@@ -99,5 +128,11 @@
     article p {padding:8px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .project {display:block;margin:0 8px 8px;padding:6px;width:calc(100% - 16px);border:1px solid var(--secondary);background:var(--primary-darker);color:var(--text);border-radius:5px;cursor:pointer}
     .project:disabled {opacity:.45;cursor:not-allowed}
+    .sendActions {display:flex;gap:4px;margin:0 8px 8px}
+    .sendActions .project {flex:1;width:auto;min-width:0;margin:0}
+    .destToggle {flex:0 0 30px;background:var(--primary-darker);border:1px solid var(--secondary);border-radius:5px;color:var(--text);cursor:pointer}
+    .destinationMenu {padding:7px;margin:0 8px 8px;display:flex;flex-direction:column;gap:5px;background:var(--primary-darkest);border-radius:5px}
+    .destinationMenu strong {font-size:11px}
+    .destinationMenu button {background:var(--primary);color:var(--text);border:1px solid var(--primary-lighter);border-radius:4px;padding:7px;cursor:pointer}
     .error {color:var(--secondary)}
 </style>
