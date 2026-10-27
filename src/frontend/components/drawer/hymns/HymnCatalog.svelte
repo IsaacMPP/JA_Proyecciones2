@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import { hymnFolders, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
-    import { loadThumbnail, getMediaStyle } from "../../helpers/media"
+    import { loadThumbnail, getMediaStyle, encodeFilePath } from "../../helpers/media"
     import { getFirstActiveOutput, setOutput } from "../../helpers/output"
     import { activeEdit, activeShow, media, outLocked, outputs, styles } from "../../../stores"
 
@@ -52,7 +52,7 @@
                 <button class="select" type="button" on:click={() => preview(video)} aria-label={"Vista previa: " + video.name}>
                     <div class="thumbnail">
                         {#if thumbnailCache[video.path]}
-                            <img src={thumbnailCache[video.path]} alt="" loading="lazy" />
+                            <img src={encodeFilePath(thumbnailCache[video.path])} alt="" loading="lazy" />
                         {:else}<span>▶</span>{/if}
                     </div>
                     <p>{video.name.replace(/\.[^.]+$/, "")}</p>
