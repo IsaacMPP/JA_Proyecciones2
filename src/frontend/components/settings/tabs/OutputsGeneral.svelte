@@ -9,6 +9,7 @@
     import { send } from "../../../utils/request"
     import { requestMain } from "../../../IPC/main"
     import { getJAProjectionOutputs } from "../../../utils/jaProjectionScreens"
+    import { setJAPrimaryAudioRouting } from "../../../audio/routing/audioRoutingInit"
     let displays: any[] = []
     let operatorId = ""
     let principal = ""
@@ -23,6 +24,7 @@
         try { names = JSON.parse(localStorage.getItem("ja-m1-screen-names") || "{}") } catch { names = {} }
         operatorId = localStorage.getItem("ja-operator-display") || String(displays.find((d) => d.primary)?.id || displays.find((d) => d.internal)?.id || displays[0]?.id || "")
         principal = localStorage.getItem("ja-main-projector") || ""
+        if (principal) setJAPrimaryAudioRouting(principal)
     })
     $: projectors = getJAProjectionOutputs($outputs, displays, operatorId)
     $: principalAvailable = projectors.some((p) => p.id === principal)
@@ -54,7 +56,7 @@
     <div class="jaActions"><button type="button" on:click={identify}>Identificar pantallas</button><button type="button" on:click={reload} disabled={loading}>Actualizar monitores</button></div>
     <div class="jaScreenCards">{#each displays as d (d.id)}<div class="jaScreenCard"><strong>{label(d)}</strong><small>ID: {d.id}{d.primary ? " · Principal de Windows" : ""}</small><input aria-label={"Nombre para pantalla "+d.id} placeholder="Nombre: auditorio, prónter…" value={names[String(d.id)] || ""} on:change={(e) => rename(String(d.id), e.currentTarget.value)} /></div>{/each}</div>
     <label for="jaPrimary">Proyector principal</label>
-    <select id="jaPrimary" value={principalAvailable ? principal : ""} on:change={(e) => {principal=e.currentTarget.value;localStorage.setItem("ja-main-projector",principal)}}>
+    <select id="jaPrimary" value={principalAvailable ? principal : ""} on:change={(e) => {principal=e.currentTarget.value;localStorage.setItem("ja-main-projector",principal);if(principal) setJAPrimaryAudioRouting(principal)}}>
         <option value="">Sin seleccionar</option>
         {#each projectors as p}<option value={p.id}>{p.name} · {label(displays.find((d) => String(d.id) === p.screen) || {id:p.screen})}</option>{/each}
     </select>
