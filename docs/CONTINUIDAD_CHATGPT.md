@@ -120,3 +120,6 @@ E1: commits `d608088`, `bb86b18` y `9166c62` corrigen renderizado del texto real
 
 ## E1: placa de lectura
 Commit `e217648`: controles en `TemplateEditor.svelte` para fondo del cuadro de texto bíblico seleccionado (toggle, color con opacidad, radio de esquinas) mediante historial de plantilla FreeShow, sin otra capa ni guardar valores por versículo. Validar CI/Windows, interacción con selección y distintas cajas de texto. Las mejoras previas E1 siguen pendientes de aceptación; PR #2 draft.
+
+## 2026-10-26 — E1: menús de fondos reubicados
+Captura del operador muestra el control de color cortado en la esquina inferior derecha y los paneles flotantes bloqueando el lienzo. Cambios: `bc8e23c` elimina paneles flotantes de `TemplateEditor.svelte`; `8077906` sitúa las opciones plegables `Fondo de Escrituras` y `Fondo de lectura` en `EditTools.svelte` (panel derecho), reutilizando `MaterialColorInput`, `MaterialFilePicker`, `MaterialCheckbox` y el historial de plantillas. Se mantiene un solo estado de plantilla. CI y validación Windows pendientes, sobre todo el tamaño de popover de color y el scroll lateral.
