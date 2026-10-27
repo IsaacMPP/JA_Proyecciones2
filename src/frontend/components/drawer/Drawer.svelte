@@ -277,7 +277,7 @@
                     <MaterialButton id={tab.id} style="border-radius: 0;border-bottom: 2px solid var(--primary);padding: 0.2em 0.8em;" class="context #drawer_top" title="<b>{tab.name.split('.')[0]}.{tab.name.split('.')[1]}</b>{tab.title ? `\n${tab.title}` : ''} [Ctrl+{i + 1}]" isActive={activeTab === tab.id} on:click={() => openDrawerTab(tab)} on:dblclick={closeDrawer}>
                         <Icon id={tab.icon} size={1.3} white={activeTab === tab.id} />
                         {#if !$labelsDisabled && !$focusMode}
-                            <span><T id={tab.name} /></span>
+                            <span>{#if tab.id === "hymns"}Himnario{:else}<T id={tab.name} />{/if}</span>
                         {/if}
                     </MaterialButton>
                 {/if}
