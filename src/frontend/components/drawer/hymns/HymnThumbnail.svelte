@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
-    import { encodeFilePath, loadThumbnail } from "../../helpers/media"
+    import { encodeFilePath } from "../../helpers/media"
+    import { queuedHymnThumbnail } from "../../../utils/jaHymnThumbnailQueue"
 
     export let path: string
     export let revision = 0
@@ -14,7 +15,7 @@
         const current = ++generation
         failed = false
         try {
-            const result = await loadThumbnail(path)
+            const result = await queuedHymnThumbnail(path)
             if (generation === current) {
                 thumbnail = result || ""
                 failed = !result
@@ -23,8 +24,9 @@
             if (generation === current) failed = true
         }
     }
-    $: if (revision > 0) {
-        revision
+    let lastRevision = revision
+    $: if (revision !== lastRevision) {
+        lastRevision = revision
         thumbnail = ""
         failed = false
         if (node && visible) void load()
