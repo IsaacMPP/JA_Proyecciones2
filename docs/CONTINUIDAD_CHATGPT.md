@@ -99,3 +99,6 @@ Seguir las entregas E0-E5 definidas en docs/RUTA_CRITICA_ENTREGAS.md. Actualment
 
 ## E1 — Última unidad implementada
 Commit `bbf95dd`: nuevo botón `Ver versículo real` / `Editar plantilla` en `TemplateEditor.svelte` cuando la plantilla de Biblia está activa y hay proyección. La vista utiliza los `tempItems` de salida sin sobrescribir la plantilla. Verificar CI de este commit y pruebas visuales en Windows. Pendientes de E1: actualización de estilos sin regeneración completa, colores/fondos y persistencia comprobada; importación FSB en Windows. Mantener ruta crítica y PR draft.
+
+## Unidad E1 implementada: editor dividido
+`b703126` cambia `TemplateEditor.svelte` para visualizar la plantilla editable y el versículo real simultáneamente al activar vista en vivo. Conserva marcadores y usa `TemplateStyle.svelte` para controles existentes, sin duplicar almacenamientos. Revisar CI reciente y validar Windows; aun pendiente completar sincronización visual sin regeneración, persistencia y fondos de imagen, y pruebas de importación local FSB. No cerrar E1 ni iniciar otros módulos.
