@@ -3,7 +3,7 @@
     import HymnThumbnail from "./HymnThumbnail.svelte"
     import VirtualList from "../VirtualList.svelte"
     import { clearHymnThumbnailRequests } from "../../../utils/jaHymnThumbnailQueue"
-    import { hymnFolders, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
+    import { hymnFolders, hymnCollectionPaths, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
     import { getMediaStyle } from "../../helpers/media"
     import { getFirstActiveOutput, setOutput } from "../../helpers/output"
@@ -15,7 +15,7 @@
     $: searchValue = searches[collection] || ""
     export let collection = "Himnario Adventista"
     $: currentRoot = $hymnFolders[collection] || ""
-    $: shown = $hymnVideos.filter((video) => (collection === "Todas" || isPathInJACollection(video.path, currentRoot)) && (!searchValue || video.name.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(searchValue.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))
+    $: shown = $hymnVideos.filter((video) => (($hymnCollectionPaths[collection] || []).some((p) => isPathInJACollection(video.path, p))) && (!searchValue || video.name.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(searchValue.toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))))
     let catalogWidth = 0
     $: columnCount = Math.max(1, Math.floor(Math.max(180, catalogWidth - 10) / 165))
     // Match row height to the rendered 16:9 thumbnail, title, button and spacing.
