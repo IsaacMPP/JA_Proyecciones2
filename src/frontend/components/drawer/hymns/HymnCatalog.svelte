@@ -4,9 +4,10 @@
     import VirtualList from "../VirtualList.svelte"
     import { clearHymnThumbnailRequests } from "../../../utils/jaHymnThumbnailQueue"
     import { hymnFolders, hymnCollectionPaths, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
+    import { getJADestinations } from "../../../utils/jaProjectionDestinations"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
     import { getMediaStyle } from "../../helpers/media"
-    import { getFirstActiveOutput, setOutput } from "../../helpers/output"
+    import { getFirstActiveOutput, sendToJAOutput, setOutput } from "../../helpers/output"
     import { activeEdit, activeShow, media, outLocked, outputs, styles } from "../../../stores"
 
     let searches: Record<string, string> = {}
@@ -14,9 +15,7 @@
     let updating = false
     let targetVideoPath = ""
     $: primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
-    $: availableOutputs = Object.entries($outputs).filter(([id, o]) =>
-        o.enabled && o.active && !o.stageOutput && !o.ndi && !o.omt && !o.rtmp && !o.webrtc && !o.blackmagic
-    ).map(([id, o]) => ({ id, name: o.name || id }))
+    $: availableOutputs = getJADestinations($outputs, primaryId)
     $: secondaryOutputs = availableOutputs.filter((o) => o.id !== primaryId)
     $: hasSecondaryControls = !!primaryId && availableOutputs.some((o) => o.id === primaryId) && secondaryOutputs.length > 0
     $: if (!hasSecondaryControls) targetVideoPath = ""
@@ -64,7 +63,7 @@
         const output = $outputs[outputId]
         if (!output?.enabled || !output.active) return
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
-        setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: true }, false, outputId)
+        sendToJAOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle }, outputId)
         targetVideoPath = ""
     }
     onMount(() => { void updateCatalog() })
