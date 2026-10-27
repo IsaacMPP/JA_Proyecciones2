@@ -55,7 +55,7 @@
     {#if id === "shows"}
         <Shows {active} {searchValue} bind:firstMatch />
     {:else if id === "hymns"}
-        <HymnCatalog {searchValue} collection={active || "Himnario Adventista"} />
+        <HymnCatalog collection={active || "Himnario Adventista"} />
     {:else if id === "media"}
         <Media {active} {searchValue} bind:streams />
     {:else if id === "audio"}
