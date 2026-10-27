@@ -82,3 +82,6 @@ El lector bíblico ahora escucha cambios en su plantilla persistente y puede sol
 
 ## Plan operativo vigente
 Se reorganizó el desarrollo en entregas E0–E5, definidas en `docs/RUTA_CRITICA_ENTREGAS.md`. La entrega E1 (Biblia) es la unidad activa. Las tareas nuevas se clasifican y se incorporan al plan sin interrumpir arbitrariamente la entrega. El cierre exige pruebas, registro de defectos y validación Windows.
+
+## E1: vista previa de versículo proyectado
+Se añadió al editor de plantillas un control para alternar a una vista de los elementos del versículo actualmente proyectado. El modo editable conserva los marcadores de plantilla; la previsualización no modifica los textos bíblicos. La función requiere validación en CI y Windows y es parte de E1, no cierre del módulo.
