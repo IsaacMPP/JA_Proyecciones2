@@ -204,7 +204,15 @@
 
         // TODO: playing in multiple outputs will create unclearable "ghost" video
 
-        setOutput("background", bg)
+        // Direct project always targets the operator-selected JA primary.
+        // Preview/control selection must never change projection destination.
+        const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        if (primaryId) {
+            if (!$outputs[primaryId]?.enabled || !$outputs[primaryId]?.active) return
+            setOutput("background", { ...bg, muted: false }, false, primaryId)
+        } else {
+            setOutput("background", bg)
+        }
     }
 
     function toggleLoop() {
