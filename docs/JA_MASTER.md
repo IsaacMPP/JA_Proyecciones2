@@ -97,3 +97,6 @@ Sustituida la vista doble por lienzo único que muestra versículo proyectado si
 
 ## E1: selección bíblica como fuente de la vista real
 Se corrigió la dependencia impropia del proyector al renderizar el editor: la vista principal ahora obtiene el contenido desde el estado de selección bíblica con funciones nativas, en vez de requerir salida temporal activa. Código `7960a1f`. Pendiente validación real Windows y enlace de edición de texto/estilo.
+
+## E1 — regresiones de teclado y acceso a fondos (26-oct-2026)
+Ante reporte del operador, se corrigió el bloqueo de flechas cuando hay un elemento seleccionado en el editor (`ac1b721`), preservando protección de campos editables. Se expusieron en el editor bíblico los controles existentes de FreeShow para `backgroundColor` y `backgroundPath` usando historial de plantilla (`1258b6f`), sin almacenamiento paralelo. Falta validar compilación Windows y pruebas de imagen/color, navegación y persistencia; no cerrar E1.
