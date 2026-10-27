@@ -96,31 +96,29 @@
 <style>
     .jaHymns {padding:14px;width:100%;height:100%;min-height:0;color:var(--text);display:flex;flex-direction:column;overflow:hidden}
     .catalogScroll {flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain}
-    header {display:flex;align-items:center;gap:12px;margin-bottom:14px}
-    header span {opacity:.7}
-    header button {margin-left:auto;border:1px solid var(--primary-lighter);padding:7px 12px;background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
+    header {display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    header strong {font-size:15px;letter-spacing:.01em}
+    header span {font-size:11px;opacity:.72;border:1px solid var(--primary-lighter);padding:4px 8px;border-radius:20px}
+    header button {margin-left:auto;border:1px solid var(--primary-lighter);padding:7px 11px;background:var(--primary);color:var(--text);border-radius:7px;cursor:pointer;transition:background .15s ease}
+    header button:hover {background:var(--primary-lighter)}
     .search {display:flex;gap:8px;margin-bottom:12px}
-    .search input {width:100%;padding:10px;border:1px solid var(--primary-lighter);border-radius:6px;color:var(--text);background:var(--primary)}
-    .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
+    .search input {width:100%;padding:11px 12px;border:1px solid var(--primary-lighter);border-radius:9px;color:var(--text);background:var(--primary);outline:none}
+    .search input:focus-visible {border-color:var(--secondary)}
+    .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:7px;cursor:pointer}
     .virtualContainer {height:100%;width:100%;min-height:0}
-    .virtualRow {display:grid;gap:10px;padding:2px 4px 8px;box-sizing:border-box}
-    article {content-visibility:auto;contain-intrinsic-size:auto 135px;min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
-    article.selected {outline:2px solid var(--secondary)}
+    .virtualRow {display:grid;gap:10px;padding:3px 4px 9px;box-sizing:border-box}
+    article {content-visibility:auto;contain-intrinsic-size:auto 135px;min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:9px;overflow:hidden;transition:border-color .15s ease}
+    article:hover {border-color:var(--secondary)}
+    article.selected {outline:2px solid var(--secondary);outline-offset:0}
     .select {display:block;width:100%;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
     .thumbnail {aspect-ratio:16/9;background:var(--primary-darkest);display:flex;align-items:center;justify-content:center;position:relative}
     .thumbnail img {width:100%;height:100%;object-fit:contain}
     .thumbnail span {font-size:24px;opacity:.6}
-    article p {padding:8px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .project {display:block;margin:0 8px 8px;padding:6px;width:calc(100% - 16px);border:1px solid var(--secondary);background:var(--primary-darker);color:var(--text);border-radius:5px;cursor:pointer}
-    .destinationBar {display:flex;align-items:center;gap:7px;padding:8px;margin-bottom:8px;border:1px solid var(--primary-lighter);border-radius:5px;flex-wrap:wrap;background:var(--primary-darkest)}
-    .destinationBar span {font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .destinationBar button {padding:6px 8px;border:1px solid var(--secondary);color:var(--text);background:var(--primary);border-radius:4px;cursor:pointer}
+    article p {padding:7px 9px 6px;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sendActions {display:flex;gap:5px;margin:0 8px 8px}
+    .sendActions .project {flex:1;width:auto;min-width:0;margin:0;padding:6px;border:1px solid var(--secondary);background:var(--primary-darker);color:var(--text);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600}
+    .sendActions .project:hover {background:var(--primary-lighter)}
     .project:disabled {opacity:.45;cursor:not-allowed}
-    .sendActions {display:flex;gap:4px;margin:0 8px 8px}
-    .sendActions .project {flex:1;width:auto;min-width:0;margin:0}
-    .destToggle {flex:0 0 30px;background:var(--primary-darker);border:1px solid var(--secondary);border-radius:5px;color:var(--text);cursor:pointer}
-    .destinationMenu {padding:7px;margin:0 8px 8px;display:flex;flex-direction:column;gap:5px;background:var(--primary-darkest);border-radius:5px}
-    .destinationMenu strong {font-size:11px}
-    .destinationMenu button {background:var(--primary);color:var(--text);border:1px solid var(--primary-lighter);border-radius:4px;padding:7px;cursor:pointer}
     .error {color:var(--secondary)}
+    @media (prefers-reduced-motion: reduce) {article,header button {transition:none}}
 </style>
