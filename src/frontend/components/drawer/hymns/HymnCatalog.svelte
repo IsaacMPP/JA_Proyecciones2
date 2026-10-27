@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import HymnThumbnail from "./HymnThumbnail.svelte"
+    import { clearHymnThumbnailRequests } from "../../../utils/jaHymnThumbnailQueue"
     import { hymnFolders, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
     import { getMediaStyle } from "../../helpers/media"
@@ -19,6 +20,7 @@
         updating = true
         try {
             await refreshJAHymnLibrary()
+            clearHymnThumbnailRequests()
             revision += 1
         } finally {
             updating = false
@@ -44,6 +46,7 @@
 <section class="jaHymns">
     <header><strong>Videohimnario</strong><span>{shown.length} videos</span><button type="button" disabled={updating} on:click={updateCatalog}>{updating ? "Actualizando…" : "Actualizar"}</button></header>
     <div class="search"><input aria-label={"Buscar en " + collection} type="search" placeholder={"Buscar número o título en " + collection} value={searchValue} on:input={(e) => changeSearch(e.currentTarget.value)} />{#if searchValue}<button type="button" on:click={() => changeSearch("")}>Limpiar</button>{/if}</div>
+    <div class="catalogScroll">
     {#if $hymnLibraryError}<p class="error">{$hymnLibraryError}</p>{/if}
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
     <div class="grid">
@@ -57,9 +60,11 @@
             </article>
         {/each}
     </div>
+    </div>
 </section>
 <style>
-    .jaHymns {padding:14px;width:100%;color:var(--text);overflow-y:auto}
+    .jaHymns {padding:14px;width:100%;height:100%;min-height:0;color:var(--text);display:flex;flex-direction:column;overflow:hidden}
+    .catalogScroll {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
     header {display:flex;align-items:center;gap:12px;margin-bottom:14px}
     header span {opacity:.7}
     header button {margin-left:auto;border:1px solid var(--primary-lighter);padding:7px 12px;background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
@@ -67,7 +72,7 @@
     .search input {width:100%;padding:10px;border:1px solid var(--primary-lighter);border-radius:6px;color:var(--text);background:var(--primary)}
     .search button {padding:6px 10px;border:1px solid var(--primary-lighter);background:var(--primary);color:var(--text);border-radius:6px;cursor:pointer}
     .grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
-    article {min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
+    article {content-visibility:auto;contain-intrinsic-size:auto 135px;min-width:0;background:var(--primary);border:1px solid var(--primary-lighter);border-radius:7px;overflow:hidden}
     article.selected {outline:2px solid var(--secondary)}
     .select {display:block;width:100%;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
     .thumbnail {aspect-ratio:16/9;background:var(--primary-darkest);display:flex;align-items:center;justify-content:center;position:relative}
