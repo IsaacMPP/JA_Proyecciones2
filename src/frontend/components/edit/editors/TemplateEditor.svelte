@@ -96,11 +96,17 @@
         <!--  && (!Slide.isDefault) -->
         {#if Slide}
             <DropArea id="edit" file>
-                {#if showLiveVerse && versePreview}
-                    <TemplateSlide templateId={currentId} template={versePreview} preview {width} {height} {zoom} bind:ratio />
-                {:else}
-                    <TemplateSlide bind:newStyles templateId={currentId} template={Slide} edit {width} {height} {zoom} bind:ratio />
-                {/if}
+                <div class="jaEditorSplit" class:livePreviewOpen={showLiveVerse && !!versePreview}>
+                    <div class="jaEditorCanvas">
+                        <TemplateSlide bind:newStyles templateId={currentId} template={Slide} edit width={showLiveVerse && versePreview ? width / 2 : width} {height} {zoom} bind:ratio />
+                    </div>
+                    {#if showLiveVerse && versePreview}
+                        <div class="jaPreviewCanvas" aria-label="Vista previa del versículo proyectado">
+                            <div class="jaPreviewTitle">Versículo proyectado · vista previa</div>
+                            <TemplateSlide templateId={currentId} template={versePreview} preview width={width / 2} {height} {zoom} />
+                        </div>
+                    {/if}
+                </div>
             </DropArea>
         {:else}
             <Center size={2} faded>
@@ -111,7 +117,7 @@
 
     {#if isBibleTemplate}
         <button class="jaLiveToggle" type="button" aria-pressed={showLiveVerse} on:click={() => (showLiveVerse = !showLiveVerse)}>
-            {showLiveVerse ? "Editar plantilla" : "Ver versículo real"}
+            {showLiveVerse ? "Ocultar vista en vivo" : "Mostrar vista en vivo"}
         </button>
     {/if}
 
@@ -136,6 +142,10 @@
 </div>
 
 <style>
+    .jaEditorSplit { display: flex; width: 100%; height: 100%; min-width: 0; }
+    .jaEditorCanvas { flex: 1; position: relative; min-width: 0; }
+    .jaPreviewCanvas { flex: 1; min-width: 0; position: relative; border-left: 2px solid var(--primary-lighter); overflow: hidden; pointer-events: none; }
+    .jaPreviewTitle { position: absolute; top: 8px; left: 12px; z-index: 10; background: var(--primary-darkest); border-radius: 6px; padding: 6px 10px; font-size: .75rem; }
     .jaLiveToggle { position: absolute; top: 16px; right: 18px; z-index: 15; padding: 10px 14px; border: 1px solid var(--primary-lighter); background: var(--primary-dark); color: var(--text); border-radius: 8px; cursor: pointer; }
     .jaLiveToggle:hover { background: var(--primary); }
     .default {
