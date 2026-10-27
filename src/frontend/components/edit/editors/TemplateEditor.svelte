@@ -10,6 +10,9 @@
     import { history } from "../../helpers/history"
     import { getStyles } from "../../helpers/style"
     import { getFirstActiveOutput } from "../../helpers/output"
+    import MaterialFilePicker from "../../inputs/MaterialFilePicker.svelte"
+    import MaterialColorInput from "../../inputs/MaterialColorInput.svelte"
+    import { mediaExtensions } from "../../../values/extensions"
     import FloatingInputs from "../../input/FloatingInputs.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialZoom from "../../inputs/MaterialZoom.svelte"
@@ -95,6 +98,19 @@
         history({ id: "UPDATE", newData: { key: "items", indexes: active, subkey: "style", data: values }, oldData: { id: $activeEdit.id }, location: { page: "edit", id: "template_items", override } })
     }
 
+    function updateBibleBackground(key: "backgroundPath" | "backgroundColor", value: string) {
+        if (!currentId || !Slide || !isBibleTemplate) return
+        const current = $templates[currentId]
+        if (!current) return
+        const settings = { ...(current.settings || {}), [key]: value || "" }
+        history({
+            id: "UPDATE",
+            newData: { key: "settings", data: settings },
+            oldData: { id: currentId },
+            location: { page: "edit", id: "template_settings", override: currentId }
+        })
+    }
+
     let width = 0
     let height = 0
 
@@ -142,6 +158,14 @@
         {/if}
     </div>
 
+    {#if isBibleTemplate}
+        <div class="jaBibleBackground" aria-label="Fondo de Escrituras">
+            <span>Fondo de Escrituras</span>
+            <MaterialColorInput label="edit.background_color" value={Slide?.settings?.backgroundColor || ""} on:input={(e) => updateBibleBackground("backgroundColor", e.detail)} allowEmpty noLabel />
+            <MaterialFilePicker label="edit.background_media" value={Slide?.settings?.backgroundPath || ""} filter={{ name: "Media files", extensions: mediaExtensions }} on:change={(e) => updateBibleBackground("backgroundPath", e.detail ?? e)} allowEmpty />
+        </div>
+    {/if}
+
     <FloatingInputs side="left">
         <MaterialZoom columns={zoom} min={0.2} max={4} defaultValue={1} addValue={0.1} on:change={updateZoom} on:origin={(e) => (zoomOrigin = e.detail)} />
 
@@ -163,6 +187,8 @@
 </div>
 
 <style>
+    .jaBibleBackground { position: absolute; right: 18px; top: 18px; z-index: 14; display: flex; flex-direction: column; gap: 6px; padding: 10px; width: 210px; border-radius: 9px; background: var(--primary-darkest); border: 1px solid var(--primary-lighter); }
+    .jaBibleBackground > span { font-size: .8rem; font-weight: 600; }
     .default {
         position: absolute;
         top: 10px;
