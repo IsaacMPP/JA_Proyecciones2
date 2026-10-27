@@ -275,6 +275,9 @@
                 <AudioMeter channelId="main" preview />
             </div>
         </div>
+        {#if $activePage === "show" && (currentOutput?.out?.background || currentOutput?.out?.slide)}
+            <div class="jaSendStrip"><span>Enviar contenido de esta pantalla</span><JADestinationChooser label="Enviar a…" compact={false} onSend={copyVisibleContent} /></div>
+        {/if}
     {:else}
         <Button on:click={() => (enablePreview = true)} style="width: 100%;" center dark>
             <Icon id="eye" right />
@@ -285,10 +288,7 @@
     {#if enablePreview}
         <div class="section" style="margin-bottom: 2px;" class:float={!isSplitted && $activePage !== "show" && $activePage !== "settings"} class:light class:isOptimized>
             <ShowActions {currentOutput} {ref} {linesIndex} {maxLines} />
-            {#if $activePage === "show" && (currentOutput?.out?.background || currentOutput?.out?.slide)}
-                <div class="jaCopyAction"><JADestinationChooser label="Enviar contenido actual a…" compact={true} onSend={copyVisibleContent} /></div>
-            {/if}
-        </div>
+       </div>
     {/if}
 
     {#if $activePage === "show"}
@@ -320,7 +320,7 @@
 </div>
 
 <style>
-.jaCopyAction{display:inline-flex;align-items:center;margin:2px 4px;flex:none}
+.jaSendStrip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 8px;margin:3px 5px 0;background:var(--primary-darker);border:1px solid var(--primary-lighter);border-radius:7px;color:var(--text);font-size:11px}.jaSendStrip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 
     .main {
         /* max-height: 50%; */
