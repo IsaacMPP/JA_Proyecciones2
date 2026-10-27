@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
-    import { activeEdit, activePopup, popupData, templates, outputs, scriptureSettings } from "../../../stores"
+    import { activeEdit, activePopup, popupData, templates, outputs, scriptureSettings, activeScripture, drawerTabsData } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import TemplateSlide from "../../drawer/pages/TemplateSlide.svelte"
+    import { getActiveScripturesContent, getScriptureSlidesNew } from "../../drawer/bible/scripture"
     import Icon from "../../helpers/Icon.svelte"
     import T from "../../helpers/T.svelte"
     import { clone } from "../../helpers/array"
@@ -28,9 +29,34 @@
     $: projectedSlide = getFirstActiveOutput($outputs)?.out?.slide
     $: isBibleTemplate = !!Slide && (Slide.settings?.mode === "scripture" ||
         (Slide.items || []).some((item) => JSON.stringify(item.lines || []).includes("{scripture")))
-    $: versePreview = isBibleTemplate && projectedSlide?.id === "temp" && projectedSlide?.tempItems?.length
-        ? { ...Slide, items: projectedSlide.tempItems }
-        : null
+    // Build the actual verse from Bible selection, not from the output state.
+    // The editor must work even when no projector is connected or active.
+    let selectedBibleItems: typeof Slide.items | null = null
+    let biblePreviewRequest = 0
+    $: biblePreviewKey = isBibleTemplate ? JSON.stringify({
+        reference: $activeScripture.reference,
+        bible: $drawerTabsData.scripture?.activeSubTab,
+        template: currentId,
+        templateVersion: Slide?.items,
+        scriptureSettings: $scriptureSettings
+    }) : ""
+    $: if (biblePreviewKey) void updateBiblePreview(biblePreviewKey)
+    async function updateBiblePreview(key: string) {
+        const request = ++biblePreviewRequest
+        const content = await getActiveScripturesContent()
+        if (!content?.[0]) {
+            if (request === biblePreviewRequest) selectedBibleItems = null
+            return
+        }
+        const { slides } = await getScriptureSlidesNew({
+            biblesContent: content,
+            selectedChapters: content[0].chapters || [],
+            selectedVerses: content[0].activeVerses || []
+        }, true)
+        if (request !== biblePreviewRequest || biblePreviewKey !== key) return
+        selectedBibleItems = slides[0] || null
+    }
+    $: versePreview = isBibleTemplate ? (selectedBibleItems || (projectedSlide?.id === "temp" ? projectedSlide?.tempItems : null)) : null
 
     let newStyles: { [key: string]: string | number } = {}
     $: active = $activeEdit.items
