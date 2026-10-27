@@ -932,7 +932,7 @@
         // focused controls or element editing. Ctrl+arrows remain available.
         if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && isActiveInOutput && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
             const target = e.target as HTMLElement | null
-            if (target?.closest("input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']") || $activeEdit.items.length) return
+            if (target?.closest("input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']")) return
             e.preventDefault()
             e.stopImmediatePropagation()
             void _moveSelection(e.key === "ArrowLeft")
@@ -968,7 +968,7 @@
         }
 
         if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
-        if ($activeEdit.items.length) return
+        if ((e.target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable]")) return
 
         // go to next/previous verse
         let left = e.key.includes("Left")
