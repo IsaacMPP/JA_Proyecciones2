@@ -6,6 +6,7 @@
     import Scripture from "./bible/Scripture.svelte"
     import Calendar from "./calendar/Calendar.svelte"
     import Media from "./media/Media.svelte"
+    import HymnCatalog from "./hymns/HymnCatalog.svelte"
     import Actions from "./pages/Actions.svelte"
     import Interactions from "./pages/Interactions.svelte"
     import OBS from "./pages/OBS.svelte"
@@ -53,6 +54,8 @@
 
     {#if id === "shows"}
         <Shows {active} {searchValue} bind:firstMatch />
+    {:else if id === "hymns"}
+        <HymnCatalog {searchValue} collection={active || "Himnario Adventista"} />
     {:else if id === "media"}
         <Media {active} {searchValue} bind:streams />
     {:else if id === "audio"}
