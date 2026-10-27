@@ -10,6 +10,7 @@ export const drawerTabs = {
     templates: { name: "tabs.templates", icon: "templates", title: "" },
 
     scripture: { name: "tabs.scripture", icon: "scripture", title: "" },
+    hymns: { name: "tabs.hymns", icon: "audio", title: "" },
     calendar: { name: "tabs.calendar", icon: "calendar", title: "" },
 
     functions: { name: "tabs.functions", icon: "functions", title: "" }
