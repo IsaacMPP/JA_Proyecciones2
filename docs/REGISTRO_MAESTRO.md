@@ -101,3 +101,6 @@ Commit `b703126`: en `TemplateEditor.svelte` la opción de vista en vivo muestra
 
 ## 2026-10-26 — Corrección de vista bíblica ausente
 Corrige causa raíz de vista ausente: el editor exigía igualdad con `scriptureSettings.template`, aunque la plantilla por defecto de Escrituras no requiere ese valor. Ahora identifica modo `scripture` o placeholders bíblicos, y abre vista simultánea al existir proyección. Commit `81e00ed`. CI/Windows pendientes.
+
+## 2026-10-26 — E1 corrección de lienzo único e imagen de fondo
+Captura del usuario mostró que el editor doble repetía el versículo a la derecha y las variables a la izquierda; se corrigió el diseño para representar el texto real en un solo lienzo bíblico manteniendo la plantilla subyacente para estilos. `TemplateEditor.svelte` y `TemplateSlide.svelte`, commits `33ec009` y `9e5af4f`. Se auditó `TemplateStyle.svelte`: FreeShow ya ofrece `MaterialColorInput` y `MaterialFilePicker` para `backgroundColor`/`backgroundPath`; NO se duplicó. Se ajusta vista de medios y su limpieza al quitar imagen. Validación CI y Windows pendientes; se debe comprobar selección/edición de estilo en panel lateral y actualización/persistencia en proyector.
