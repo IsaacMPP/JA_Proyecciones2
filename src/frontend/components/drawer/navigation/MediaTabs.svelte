@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
+    import { hymnFolders } from "../../../utils/jaHymnLibrary"
+    import { isJAExclusiveHymnPath } from "../../../utils/jaHymnPaths"
     import { uid } from "uid"
     import type { ContentProviderId } from "../../../../electron/contentProviders/base/types"
     import { Main } from "../../../../types/IPC/Main"
@@ -28,7 +30,7 @@
     $: if (foldersList.length) getCounts()
     async function getCounts() {
         const folderPaths = foldersList.map((a) => a.path || "")
-        const data = keysToID((await requestMain(Main.READ_FOLDER, { path: folderPaths })) || {})
+        const data = keysToID((await requestMain(Main.READ_FOLDER, { path: folderPaths })) || {}).filter((item) => !isJAExclusiveHymnPath(item.path || "", Object.values($hymnFolders)))
         const newFolderLengths: { [key: string]: number } = {}
         allCount = 0
 
