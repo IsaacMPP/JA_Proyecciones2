@@ -73,6 +73,18 @@
 <section class="jaHymns">
     <header><strong>Videohimnario</strong><span>{shown.length} videos</span><button type="button" disabled={updating} on:click={updateCatalog}>{updating ? "Actualizando…" : "Actualizar"}</button></header>
     <div class="search"><input aria-label={"Buscar en " + collection} type="search" placeholder={"Buscar número o título en " + collection} value={searchValue} on:input={(e) => changeSearch(e.currentTarget.value)} />{#if searchValue}<button type="button" on:click={() => changeSearch("")}>Limpiar</button>{/if}</div>
+    {#if hasSecondaryControls && targetVideoPath}
+        <div class="destinationBar">
+            <span>Enviar sin audio: {shown.find((v) => v.path === targetVideoPath)?.name || "Video"}</span>
+            {#each secondaryOutputs as destination (destination.id)}
+                <button type="button" on:click={() => {
+                    const video = shown.find((v) => v.path === targetVideoPath)
+                    if (video) sendToSecondary(video, destination.id)
+                }}>{destination.name}</button>
+            {/each}
+            <button type="button" on:click={() => targetVideoPath = ""} aria-label="Cerrar selección">✕</button>
+        </div>
+    {/if}
     <div class="catalogScroll">
     {#if $hymnLibraryError}<p class="error">{$hymnLibraryError}</p>{/if}
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
@@ -93,14 +105,7 @@
                         <button class="destToggle" type="button" disabled={$outLocked} aria-label={"Enviar " + video.name + " a otra pantalla"} aria-expanded={targetVideoPath === video.path} on:click={() => targetVideoPath = targetVideoPath === video.path ? "" : video.path}>▾</button>
                     {/if}
                 </div>
-                {#if hasSecondaryControls && targetVideoPath === video.path}
-                    <div class="destinationMenu">
-                        <strong>Enviar sin audio a…</strong>
-                        {#each secondaryOutputs as destination (destination.id)}
-                            <button type="button" on:click={() => sendToSecondary(video, destination.id)}>{destination.name}</button>
-                        {/each}
-                    </div>
-                {/if}
+
             </article>
         {/each}
                 </div>
@@ -127,6 +132,9 @@
     .thumbnail span {font-size:24px;opacity:.6}
     article p {padding:8px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .project {display:block;margin:0 8px 8px;padding:6px;width:calc(100% - 16px);border:1px solid var(--secondary);background:var(--primary-darker);color:var(--text);border-radius:5px;cursor:pointer}
+    .destinationBar {display:flex;align-items:center;gap:7px;padding:8px;margin-bottom:8px;border:1px solid var(--primary-lighter);border-radius:5px;flex-wrap:wrap;background:var(--primary-darkest)}
+    .destinationBar span {font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .destinationBar button {padding:6px 8px;border:1px solid var(--secondary);color:var(--text);background:var(--primary);border-radius:4px;cursor:pointer}
     .project:disabled {opacity:.45;cursor:not-allowed}
     .sendActions {display:flex;gap:4px;margin:0 8px 8px}
     .sendActions .project {flex:1;width:auto;min-width:0;margin:0}
