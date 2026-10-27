@@ -1,6 +1,5 @@
 <script lang="ts">
     import { actions, activePage, activePopup, activeShow, activeTimers, contextActive, groups, guideActive, outLocked, outputs, overlayTimers, playingAudio, playingMetronome, resized, slideTimers, special } from "../../../stores"
-    import JADestinationChooser from "../tools/JADestinationChooser.svelte"
     import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import { DEFAULT_WIDTH, isDarkTheme } from "../../../utils/common"
     import { formatSearch } from "../../../utils/search"
@@ -10,7 +9,7 @@
     import { getSlideText } from "../../edit/scripts/textStyle"
     import Icon from "../../helpers/Icon.svelte"
     import T from "../../helpers/T.svelte"
-    import { getActiveOutputs, getFirstOutputIdWithBackground, isOutCleared, outputSlideHasContent, sendToJAOutputs, setOutput } from "../../helpers/output"
+    import { getActiveOutputs, getFirstOutputIdWithBackground, isOutCleared, outputSlideHasContent, setOutput } from "../../helpers/output"
     import { getLayoutRef } from "../../helpers/show"
     import { getFewestOutputLines, getItemWithMostLines, playNextGroup, playPreviousGroup, updateOut } from "../../helpers/showActions"
     import { _show } from "../../helpers/shows"
@@ -37,17 +36,6 @@
     $: allOutputsWithBackground = allActiveOutputs.filter((id) => $outputs[id]?.out?.background)
     $: backgroundOutputId = $jaControlledOutputId && allActiveOutputs.includes($jaControlledOutputId) ? $jaControlledOutputId : getFirstOutputIdWithBackground(allOutputsWithBackground) || allOutputsWithBackground[0] || outputId
     $: currentBgOutput = backgroundOutputId ? $outputs[backgroundOutputId] || null : null
-
-    // Copy the currently projected layers from the inspected output.
-    // Works for any content that FreeShow renders as a slide or background.
-    // This does not switch the operator's selected or primary output.
-    function copyVisibleContent(targets: string[]) {
-        const source = currentOutput?.out
-        if (!source || !targets.length) return
-        const ids = targets.filter((id) => id !== outputId)
-        if (source.background) sendToJAOutputs("background", source.background, ids)
-        if (source.slide) sendToJAOutputs("slide", source.slide, ids)
-    }
 
     let numberKeyTimeout: NodeJS.Timeout | null = null
     let previousNumberKey = ""
@@ -275,9 +263,7 @@
                 <AudioMeter channelId="main" preview />
             </div>
         </div>
-        {#if $activePage === "show" && (currentOutput?.out?.background || currentOutput?.out?.slide)}
-            <div class="jaSendStrip"><span>Enviar contenido de esta pantalla</span><JADestinationChooser label="Enviar a…" compact={false} onSend={copyVisibleContent} /></div>
-        {/if}
+
     {:else}
         <Button on:click={() => (enablePreview = true)} style="width: 100%;" center dark>
             <Icon id="eye" right />
@@ -320,7 +306,6 @@
 </div>
 
 <style>
-.jaSendStrip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 8px;margin:3px 5px 0;background:var(--primary-darker);border:1px solid var(--primary-lighter);border-radius:7px;color:var(--text);font-size:11px}.jaSendStrip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 
     .main {
         /* max-height: 50%; */
