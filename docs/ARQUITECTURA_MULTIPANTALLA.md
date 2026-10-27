@@ -49,3 +49,32 @@ Base tecnológica y modelo exacto de reproductores por salida; mecanismo de nomb
 - Sincronización bidireccional: cambios en asistente, configuración y centro de control reflejan el mismo registro de salidas; no crean reglas contradictorias.
 
 **Controles independientes:** operar por ID de salida y sesión; probar dos videos distintos y mismo video en dos destinos para determinar si FreeShow comparte audio/tiempo antes de decidir implementación. Conservar su motor mientras se diagnostica.
+
+## M1 — Contrato funcional ratificado para el siguiente desarrollo (27-oct-2026)
+El propietario aporta el código `obs-studio-master(2).zip` y solicita una consola de operación por proyector, similar en ergonomía al control de medios de VirtualDJ pero **sin reemplazar** el motor de FreeShow.
+
+### Hallazgos de la auditoría previa al código
+- `src/frontend/components/helpers/output.ts:setOutput(type,data,toggle,outputId,...)`: cuando `outputId` está vacío, resuelve los bindings o **todas las salidas activas**; el enrutamiento M1 debe interceptar el envío normal en el origen/contrato de rutas, no simplemente cambiar una tarjeta de UI ni sustituir indiscriminadamente todos los llamados (existen usos legítimos de envíos múltiples y bindings).
+- `src/frontend/components/output/tools/MediaControls.svelte`: ya recibe `outputId` y usa `videoSync(path, outputId,...)` para tiempo/pausa/mute/loop. Se debe estudiar si las sesiones de medios se separan realmente por salida cuando se reproduce el **mismo archivo**; no inventar un reproductor nuevo sin pruebas.
+- `src/frontend/components/output/preview/MultiOutputs.svelte`: ya existe un panel de previsualización de múltiples salidas. Reutilizarlo y añadir selección de destino y transporte contextual, no crear otro panel completamente desconectado.
+- `src/frontend/components/settings/Screens.svelte`: usa `Main.GET_DISPLAYS`, bounds, ID y reconciliación de pantallas; ya tiene controles de asignación. **No confundir monitor Windows (escritorio del operador) con salida JA.**
+- Código OBS proporcionado: `plugins/win-capture/monitor-capture.c` enumera dispositivos con `EnumDisplayMonitors/GetMonitorInfo` y presenta resolución/bounds; `frontend/components/DisplayCaptureToolbar.cpp` expone IDs de monitor. Esto es REFERENCIA, no prueba de que OBS siempre obtenga marca/modelo exactos; para ello se requerirá auditar EDID/Windows DisplayConfig cuando sea posible. No copiar archivos C/C++ de OBS ni integrar su motor por accidente; comparar licencias antes de reutilizar fuentes.
+
+### Decisiones UX y funcionales
+1. **Una salida de proyección JA principal** elegida y persistida explícitamente. Clic o enviar normal sobre Biblia, Himnario, Multimedia, audio y presentaciones => sólo salida JA principal. Las demás se mantienen intactas. Enviar simultáneamente es una acción **deliberada y separada**, sin eliminar capacidades nativas de FreeShow.
+2. **Secundarias con destinos explícitos**: menú contextual «Enviar a…»/selector de destino; nunca elegir por el índice ordinal del monitor. Etiqueta de sala definida por operador + nombre técnico disponible + resolución/estado para identificar.
+3. **Política de audio**: toda salida secundaria empieza y permanece silenciada para videos del flujo normal, incluida una acción de envío externo; principal audible por defecto. Al desconectar/reconectar, no heredar accidentalmente audio del proyector principal. El control global del sonido y el dispositivo de audio no equivalen al mute de cada reproductor; verificar captura, NDI y audio de sistema.
+4. **Consola por salida**: preview real de contenido actual, título, play/pausa, detener/limpiar, desplazamiento (seek), tiempo y estado de audio para **cada sesión por outputId**. Operar una salida no pausa ni sustituye las demás. Los controles se muestran cuando existen al menos **dos salidas JA de proyección configuradas/activas** (principal + auxiliar), no basándose solo en que Windows detecte dos monitores incluyendo el de control; configuración avanzada de salidas FreeShow siempre accesible.
+5. **Identificación de dispositivo**: inventario `GET_DISPLAYS`, marca/modelo vía API de Windows si disponible; fallback verificable «Monitor [etiqueta del operador] • resolución • conexión / posición» y botón Identificar que muestre número en pantalla real. Evitar falsas identidades y reasignación silenciosa tras hotplug/EDID ambiguo. Monitor virtual/spacedesk/HDMI inalámbrico puede reportar identificadores genéricos.
+6. **Estado de operación segura**: si no hay principal, mostrar configuración sin emitir; si desaparece principal, detener nuevas emisiones, no redirigir a una auxiliar. Restaurar vínculos solo cuando coincida identidad comprobada.
+7. **Rendimiento**: usar reproductores, caches y vista de FreeShow, limitar previews vivos si hay múltiples monitores; no duplicar decodificación por defecto; degradación elegante para hardware modesto.
+
+### Fases obligatorias M1
+- **M1-01 Auditoría/ensayo**: inventario de módulos de FreeShow, mapa de todos los llamados `setOutput`, clasificación de envíos normales frente a envíos múltiples legítimos, prueba de 2 videos distintos e idénticos y sincronización `videoSync`; revisión de viabilidad de EDID/DisplayConfig Windows y licencias. Entregable: matriz de rutas/decisiones + pruebas, antes de cambiar código.
+- **M1-02 Identificación/registro**: dispositivo real, etiqueta, identificación visual, escoger principal, persistencia y hotplug seguro, manteniendo ajustes nativos.
+- **M1-03 Enrutamiento**: clic normal => principal; envío secundario explícito; preservar bindings intencionales y enviar a varias sólo si solicitado.
+- **M1-04 Audio/sesiones**: secundarios mudos y controles independientes por outputId, con pruebas misma fuente/diferente fuente y audio real.
+- **M1-05 Consola condicional**: preview por salida y controles tipo transporte, visibles solo con 2+ salidas JA proyectables, ergonomía para operadores.
+- **M1-06 Aceptación Windows**: 1 salida JA, 2 salidas JA, varias (3+), desconexión HDMI, reconexión, modo espejo/extender, Wireless HDMI, spacedesk, multirresolución, reinicio, bajo rendimiento; regresiones Biblia/Himnario/Multimedia, CI y documentación.
+
+**Reglas de salida**: no declarar compilación = hardware validado; ni afirmar modelo exacto sin reporte real de Windows. No modificar main/fusionar PR #2. Revisión de código antes de solicitar implementar cada fase; el usuario prioriza no duplicar/crear parches superficiales.
