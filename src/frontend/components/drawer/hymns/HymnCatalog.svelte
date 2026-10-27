@@ -4,21 +4,15 @@
     import VirtualList from "../VirtualList.svelte"
     import { clearHymnThumbnailRequests } from "../../../utils/jaHymnThumbnailQueue"
     import { hymnFolders, hymnCollectionPaths, hymnVideos, hymnLibraryError, refreshJAHymnLibrary } from "../../../utils/jaHymnLibrary"
-    import { getJADestinations } from "../../../utils/jaProjectionDestinations"
+    import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
     import { getMediaStyle } from "../../helpers/media"
-    import { getFirstActiveOutput, sendToJAOutput, setOutput } from "../../helpers/output"
+    import { getFirstActiveOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
     import { activeEdit, activeShow, media, outLocked, outputs, styles } from "../../../stores"
 
     let searches: Record<string, string> = {}
     let revision = 0
     let updating = false
-    let targetVideoPath = ""
-    $: primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
-    $: availableOutputs = getJADestinations($outputs, primaryId)
-    $: secondaryOutputs = availableOutputs.filter((o) => o.id !== primaryId)
-    $: hasSecondaryControls = !!primaryId && availableOutputs.some((o) => o.id === primaryId) && secondaryOutputs.length > 0
-    $: if (!hasSecondaryControls) targetVideoPath = ""
     $: searchValue = searches[collection] || ""
     export let collection = "Himnario Adventista"
     $: currentRoot = $hymnFolders[collection] || ""
@@ -58,13 +52,14 @@
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
         setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: false }, false, output.id)
     }
-    function sendToSecondary(video: typeof shown[number], outputId: string) {
-        if ($outLocked || !hasSecondaryControls || outputId === primaryId) return
-        const output = $outputs[outputId]
-        if (!output?.enabled || !output.active) return
-        const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
-        sendToJAOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle }, outputId)
-        targetVideoPath = ""
+    function sendToSelected(video: typeof shown[number], ids: string[]) {
+        if ($outLocked) return
+        ids.forEach((id) => {
+            const output = $outputs[id]
+            if (!output?.enabled || !output.active) return
+            const style = getMediaStyle($media[video.path], $styles[output.style || ""])
+            sendToJAOutputs("background", { path: video.path, type: "video", loop: false, startAt: 0, ...style }, [id])
+        })
     }
     onMount(() => { void updateCatalog() })
 </script>
@@ -72,18 +67,6 @@
 <section class="jaHymns">
     <header><strong>Videohimnario</strong><span>{shown.length} videos</span><button type="button" disabled={updating} on:click={updateCatalog}>{updating ? "Actualizando…" : "Actualizar"}</button></header>
     <div class="search"><input aria-label={"Buscar en " + collection} type="search" placeholder={"Buscar número o título en " + collection} value={searchValue} on:input={(e) => changeSearch(e.currentTarget.value)} />{#if searchValue}<button type="button" on:click={() => changeSearch("")}>Limpiar</button>{/if}</div>
-    {#if hasSecondaryControls && targetVideoPath}
-        <div class="destinationBar">
-            <span>Enviar sin audio: {shown.find((v) => v.path === targetVideoPath)?.name || "Video"}</span>
-            {#each secondaryOutputs as destination (destination.id)}
-                <button type="button" on:click={() => {
-                    const video = shown.find((v) => v.path === targetVideoPath)
-                    if (video) sendToSecondary(video, destination.id)
-                }}>{destination.name}</button>
-            {/each}
-            <button type="button" on:click={() => targetVideoPath = ""} aria-label="Cerrar selección">✕</button>
-        </div>
-    {/if}
     <div class="catalogScroll">
     {#if $hymnLibraryError}<p class="error">{$hymnLibraryError}</p>{/if}
     {#if !shown.length}<p>Sin videos en esta colección. Copia tus himnos a Documentos / JA Proyecciones 2 / {collection} y pulsa Actualizar.</p>{/if}
@@ -100,9 +83,7 @@
                 </button>
                 <div class="sendActions">
                     <button class="project" type="button" disabled={$outLocked} on:click={() => project(video)}>Proyectar</button>
-                    {#if hasSecondaryControls}
-                        <button class="destToggle" type="button" disabled={$outLocked} aria-label={"Enviar " + video.name + " a otra pantalla"} aria-expanded={targetVideoPath === video.path} on:click={() => targetVideoPath = targetVideoPath === video.path ? "" : video.path}>▾</button>
-                    {/if}
+                    <JADestinationChooser onSend={(ids) => sendToSelected(video, ids)} />
                 </div>
 
             </article>
