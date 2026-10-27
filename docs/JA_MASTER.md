@@ -109,3 +109,6 @@ Panel contextual vinculado al fondo del cuadro de texto seleccionado, usando est
 
 ## 2026-10-26 — E1: menús de fondos reubicados
 Captura del operador muestra el control de color cortado en la esquina inferior derecha y los paneles flotantes bloqueando el lienzo. Cambios: `bc8e23c` elimina paneles flotantes de `TemplateEditor.svelte`; `8077906` sitúa las opciones plegables `Fondo de Escrituras` y `Fondo de lectura` en `EditTools.svelte` (panel derecho), reutilizando `MaterialColorInput`, `MaterialFilePicker`, `MaterialCheckbox` y el historial de plantillas. Se mantiene un solo estado de plantilla. CI y validación Windows pendientes, sobre todo el tamaño de popover de color y el scroll lateral.
+
+## 2026-10-26 — E1 selector color del inspector
+Se constató en captura que el selector original de color queda recortado dentro de la subárea de controles laterales. Commits `b144f36` y `1773619` eliminan `max-height:44vh` y `overflow-y:auto` del contenedor secundario, manteniendo el desplazamiento del inspector original FreeShow, y presentan radio de esquinas con valor en px. Se conserva `MaterialColorInput` para mantener colores y opacidad sin duplicar el componente. CI y prueba visual Windows pendientes; confirmar que ningún ancestro aún recorta el selector.
