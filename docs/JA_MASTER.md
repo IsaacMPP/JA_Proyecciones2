@@ -88,3 +88,6 @@ Se añadió al editor de plantillas un control para alternar a una vista de los 
 
 ## E1: edición con vista en vivo simultánea
 Editor de plantillas bíblicas con dos paneles al activar vista en vivo: plantilla editable a un lado y contenido proyectado al otro. Se mantienen las herramientas nativas de estilo/fondos, en vez de duplicarlas. Código en Git pendiente de aceptación Windows y de verificar que la proyección actualiza la apariencia sin parpadeos.
+
+## 2026-10-26 — Corrección de vista bíblica ausente
+E1: corregida detección de plantillas bíblicas predeterminadas para que la vista real no dependa de configurar una plantilla personalizada. Código `81e00ed`, sin aceptación Windows aún.
