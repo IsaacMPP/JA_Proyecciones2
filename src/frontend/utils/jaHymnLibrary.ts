@@ -47,3 +47,22 @@ export async function refreshJAHymnLibrary(): Promise<void> {
     hymnVideos.set([...byPath.values()].sort((a, b) => a.name.localeCompare(b.name, "es", { numeric: true })))
     hymnLibraryError.set(failed ? "No se pudieron leer una o más carpetas del Himnario." : "")
 }
+
+let syncListenersInstalled = false
+let lastRefreshTime = 0
+
+// Refresh on returning to JA after files were copied, renamed or removed in
+// Windows Explorer. A full reconciliation also runs on startup.
+export function installJAHymnLibrarySync(): void {
+    if (syncListenersInstalled || typeof window === "undefined") return
+    syncListenersInstalled = true
+    const reconcile = () => {
+        if (document.visibilityState === "hidden") return
+        const now = Date.now()
+        if (now - lastRefreshTime < 1000) return
+        lastRefreshTime = now
+        void refreshJAHymnLibrary()
+    }
+    window.addEventListener("focus", reconcile)
+    document.addEventListener("visibilitychange", reconcile)
+}
