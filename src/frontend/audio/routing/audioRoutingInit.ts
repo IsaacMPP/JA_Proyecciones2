@@ -88,6 +88,24 @@ export async function resetAudioRouting() {
 }
 
 // make sure at least one "active" output is connected to the main channel when creating a new output
+// JA M1-03: follow the operator's explicitly chosen primary projector.
+// Move only the physical video-output input feeding the main speaker bus;
+// do not modify microphone, playlists, metronome or network routes.
+export function setJAPrimaryAudioRouting(outputId: string): boolean {
+    const target = get(outputs)[outputId]
+    if (!target?.enabled || !target?.active || target.stageOutput || target.ndi || target.webrtc || target.rtmp || target.omt || target.blackmagic) return false
+    const from = `output_win_sub_${outputId}`
+    const existing = get(audioRouting)
+    if (!existing) return false
+    audioRouting.update((config) => {
+        if (!config) return config
+        const connections = config.connections.filter((c) => !(c.from.startsWith("output_win_sub_") && c.to === "main"))
+        connections.push({ from, to: "main" })
+        return { ...config, connections }
+    })
+    return true
+}
+
 export function checkPrimaryOutputRouting() {
     const outputsList = getAllOutputs()
     const primaryOutputs = outputsList.filter((out) => out.enabled && !out.ndi && !out.webrtc && !out.rtmp && !out.stageOutput)
