@@ -54,12 +54,10 @@
     }
     function sendToSelected(video: typeof shown[number], ids: string[]) {
         if ($outLocked) return
-        ids.forEach((id) => {
-            const output = $outputs[id]
-            if (!output?.enabled || !output.active) return
-            const style = getMediaStyle($media[video.path], $styles[output.style || ""])
-            sendToJAOutputs("background", { path: video.path, type: "video", loop: false, startAt: 0, ...style }, [id])
-        })
+        const selected = ids.filter((id) => $outputs[id]?.enabled && $outputs[id]?.active)
+        if (!selected.length) return
+        const style = getMediaStyle($media[video.path], $styles[$outputs[selected[0]].style || ""])
+        sendToJAOutputs("background", { path: video.path, type: "video", loop: false, startAt: 0, ...style, muted: false }, selected)
     }
     onMount(() => { void updateCatalog() })
 </script>
