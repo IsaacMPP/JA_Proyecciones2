@@ -191,7 +191,11 @@ export class VideoPlayer {
         else startPlayback()
 
         const type = options.muted && options.loop ? "background" : !options.muted && !options.loop ? "foreground" : null
-        videoStarting(type)
+        // JA: an intentionally muted auxiliary output must not emit global
+        // video-start actions, which may duck/stop audio on the main output.
+        const jaPrimary = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        const auxiliaryOnly = !!jaPrimary && !!linkedOutputIds?.length && linkedOutputIds.every((outId) => outId !== jaPrimary)
+        if (!auxiliaryOnly) videoStarting(type)
 
         // AudioAnalyser.attach(path, audio)
 
@@ -455,7 +459,11 @@ export class VideoPlayer {
             audio.timeTick.play()
         }
 
-        if (get(special).muteAudioWhenVideoPlays && this.hasAudibleVideo()) {
+        // Global ducking is only appropriate when the requested playback
+        // belongs to an audible output, not a muted JA secondary.
+        const jaPrimaryForAudio = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        const mutedJASecondary = !!outputId && !!jaPrimaryForAudio && outputId !== jaPrimaryForAudio
+        if (!mutedJASecondary && get(special).muteAudioWhenVideoPlays && this.hasAudibleVideo()) {
             fadeoutAllPlayingAudio()
         }
 
