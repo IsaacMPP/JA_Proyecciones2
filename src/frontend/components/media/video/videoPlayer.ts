@@ -65,6 +65,9 @@ export type PlayingVideoState = {
 
 export class VideoPlayer {
     private static replayGainCache: Map<string, number> = new Map()
+    // A source path can have multiple independent sessions. Track asynchronous
+    // stops by their exact session, not by media path shared with other outputs.
+    private static stoppingSessions = new Set<VideoAudioData>()
 
     private static isStarting = new Set<string>()
     static async start(id: string, options: VideoOptions = {}, linkedOutputIds?: string[]): Promise<boolean> {
@@ -138,8 +141,9 @@ export class VideoPlayer {
         const toTime = globalOpts.toTime || audio.duration
         const volume = options.volume !== undefined ? options.volume : globalOpts.volume
 
+        const session: VideoAudioData = { path: id, audio, linkedOutputIds: linkedOutputIds || [], type: options.type || "background", isOnline: options.isOnline, softLoop, loop, fromTime, toTime, volume }
         playingVideos.update((a) => {
-            a.push({ path: id, audio, linkedOutputIds: linkedOutputIds || [], type: options.type || "background", isOnline: options.isOnline, softLoop, loop, fromTime, toTime, volume })
+            a.push(session)
             return a
         })
 
@@ -150,7 +154,7 @@ export class VideoPlayer {
                     if (gain === 1) return
 
                     playingVideos.update((a) => {
-                        const item = a.find((v) => v.path === id)
+                        const item = a.find((v) => v === session)
                         if (item) item.replayGainMultiplier = gain
                         return a
                     })
@@ -176,7 +180,9 @@ export class VideoPlayer {
         }
 
         const startPlayback = () => {
-            if (audio instanceof HTMLAudioElement) this.attachToAnalyser(id, audio, linkedOutputIds || [])
+            // Transitions can replace an output while the previous audio is still loading.
+            if (!get(playingVideos).includes(session)) return
+            if (audio instanceof HTMLAudioElement) this.attachToAnalyser(id, audio, session.linkedOutputIds)
 
             if (!options.paused) this.play(id, linkedOutputIds?.[0])
 
@@ -234,10 +240,10 @@ export class VideoPlayer {
     }
 
     static updateVolume(specificVideoPath: string | null = null, fadeDuration = 0) {
-        const videos = (specificVideoPath ? get(playingVideos).filter((v) => v.path === specificVideoPath) : get(playingVideos)).filter((v) => !this.isFadingOut.includes(v.path))
+        const videos = (specificVideoPath ? get(playingVideos).filter((v) => v.path === specificVideoPath) : get(playingVideos)).filter((v) => !this.isFadingOut.includes(v.path) && !this.stoppingSessions.has(v))
         videos.forEach((v) => {
-            const vol = this.getVolume(v.path) * (v.replayGainMultiplier || 1)
-            const audio = this.getAudio(v.path)
+            const vol = this.getVolume(v.path, v.linkedOutputIds) * (v.replayGainMultiplier || 1)
+            const audio = v.audio
             if (audio && "volume" in audio) audio.volume = Math.min(1, Math.max(0, vol))
 
             v.linkedOutputIds.forEach((outputId) => {
@@ -500,18 +506,23 @@ export class VideoPlayer {
     }
 
     static isFadingOut: string[] = []
-    static isStopping = new Set<string>()
     static async stop(path: string, outputId?: string, reachedEnd = false) {
-        if (!this.audioExists(path, outputId ? [outputId] : undefined)) return
+        const sessions = get(playingVideos).filter((v) => v.path === path && (!outputId || v.linkedOutputIds.includes(outputId)))
+        if (!sessions.length) return
 
-        // One playing audio instance can be attached to several outputs.
-        // Detaching a secondary must never fade/pause/clear the main output.
-        const scopedPlaying = outputId ? this.getPlaying(path, [outputId]) : null
-        if (outputId && scopedPlaying && scopedPlaying.linkedOutputIds.length > 1) {
+        if (!outputId) {
+            await Promise.all(sessions.map((session) => this.stopSession(session, reachedEnd)))
+            return
+        }
+
+        const session = sessions[0]
+        // Detaching one output of a group must preserve the shared clock and
+        // audio of the other outputs. A later single-output send creates its own
+        // session; it must not stop the first session merely because paths match.
+        if (session.linkedOutputIds.length > 1) {
             AudioAnalyser.detach(path, outputId)
             playingVideos.update((entries) => {
-                const instance = entries.find((v) => v === scopedPlaying)
-                if (instance) instance.linkedOutputIds = instance.linkedOutputIds.filter((id) => id !== outputId)
+                if (entries.includes(session)) session.linkedOutputIds = session.linkedOutputIds.filter((id) => id !== outputId)
                 return entries
             })
             playingVideoState.update((state) => {
@@ -522,110 +533,82 @@ export class VideoPlayer {
             return
         }
 
-        if (this.isFadingOut.includes(path)) return
+        await this.stopSession(session, reachedEnd)
+    }
 
-        // multiple outputs at once
-        if (this.isStopping.has(path)) return
-        this.isStopping.add(path)
-        setTimeout(() => this.isStopping.delete(path), 20)
+    private static async stopSession(session: VideoAudioData, reachedEnd = false) {
+        if (this.stoppingSessions.has(session)) return
+        this.stoppingSessions.add(session)
 
-        const audio = this.getAudio(path, outputId)
-        const playing = get(playingVideos).find((v) => v.path === path)
-
-        const nonActiveOutputs = getAllOutputs()
-            .filter((a) => !a.enabled || !a.active)
-            .map((a) => a.id)
-        const linkedOutputIds = clone(playing?.linkedOutputIds || [])
-        const stopInOutputIds = linkedOutputIds.filter((id) => !nonActiveOutputs.includes(id))
-        const shouldStop = linkedOutputIds.length === stopInOutputIds.length
-
-        if (shouldStop && audio && !reachedEnd && !audio.paused) {
-            const durationMs = get(transitionData)?.media?.duration ?? 800
-            if (durationMs > 0) {
-                if (audio instanceof HTMLAudioElement) {
-                    const faded = await this.fadeOut(path, audio, durationMs)
-                    if (!faded) return
-                } else if ("timeTick" in audio) {
-                    // silent / video-only files use a virtual clock — no audio to fade, but we still
-                    // need to hold off pausing the video element until the visual transition finishes
-                    this.isFadingOut.push(path)
+        const path = session.path
+        const audio = session.audio
+        const outputIds = [...session.linkedOutputIds]
+        try {
+            if (!reachedEnd && !audio.paused) {
+                const durationMs = get(transitionData)?.media?.duration ?? 800
+                if (durationMs > 0) {
+                    // Only fade the actual output(s) being replaced. Never use
+                    // the legacy path-wide gain operation for an independent session.
+                    outputIds.forEach((id) => AudioAnalyser.rampSourceVolume(path, 0, durationMs, id))
                     await new Promise<void>((resolve) => setTimeout(resolve, durationMs))
-                    const fadeIndex = this.isFadingOut.indexOf(path)
-                    if (fadeIndex === -1) return
-
-                    this.isFadingOut.splice(fadeIndex, 1)
                 }
             }
-        }
 
-        if (shouldStop) this.pause(path, outputId)
-
-        const detachOutputIds = Array.from(new Set(shouldStop ? [...stopInOutputIds, ...(outputId ? [outputId] : [])] : stopInOutputIds))
-        detachOutputIds.forEach((outId) => AudioAnalyser.detach(path, outId))
-
-        playingVideos.update((a) => {
-            const index = a.findIndex((v) => v.path === path)
-            if (index === -1) return a
-
-            // reset
-            if (shouldStop) {
-                if (a[index].audio instanceof HTMLAudioElement) a[index].audio.src = ""
-                a.splice(index, 1)
-            } else {
-                a[index].linkedOutputIds = linkedOutputIds.filter((id) => nonActiveOutputs.includes(id))
+            if (!get(playingVideos).includes(session)) return
+            if (audio instanceof HTMLAudioElement) {
+                audio.pause()
+                audio.removeAttribute("src")
+                audio.load()
+            } else if ("timeTick" in audio) {
+                audio.paused = true
+                audio.timeTick.pause()
             }
 
-            return a
-        })
-
-        playingVideoState.update((state) => {
-            const targets = outputId && !shouldStop ? [outputId, ...stopInOutputIds] : stopInOutputIds
-            targets.forEach((outId) => {
-                delete state[`${path}_${outId}`]
+            outputIds.forEach((id) => AudioAnalyser.detach(path, id))
+            playingVideos.update((entries) => entries.filter((v) => v !== session))
+            playingVideoState.update((state) => {
+                outputIds.forEach((id) => delete state[`${path}_${id}`])
+                return state
             })
 
-            if (shouldStop) {
-                Object.keys(state).forEach((key) => {
-                    if (key.startsWith(`${path}_`)) delete state[key]
-                })
-            }
-
-            return state
-        })
-
-        videoEnding()
+            if (get(special).muteAudioWhenVideoPlays && !this.hasAudibleVideo()) fadeinAllPlayingAudio()
+            videoEnding()
+        } finally {
+            this.stoppingSessions.delete(session)
+            this.initSyncClock()
+        }
     }
 
     private static async fadeOut(path: string, audio: HTMLAudioElement, durationMs: number): Promise<boolean> {
         if (!audio) return true
+        const session = get(playingVideos).find((v) => v.path === path && v.audio === audio)
+        if (!session) return false
         if (!this.isFadingOut.includes(path)) this.isFadingOut.push(path)
 
-        // WIP account for transition offset
-        // if (!clearOutput) duration /= 2.4 // a little less than half the time
-
         if (audio.volume > 0 && !audio.muted) {
-            AudioAnalyser.rampSourceVolume(path, 0, durationMs)
+            session.linkedOutputIds.forEach((id) => AudioAnalyser.rampSourceVolume(path, 0, durationMs, id))
         }
 
         await new Promise<void>((resolve) => setTimeout(resolve, durationMs))
 
+        if (!get(playingVideos).includes(session)) return false
         if (!this.isFadingOut.includes(path)) return false
-
         try {
             audio.volume = 0
         } catch {}
-        AudioAnalyser.setSourceVolume(path, 0)
+        session.linkedOutputIds.forEach((id) => AudioAnalyser.setSourceVolume(path, 0, id))
         return true
     }
 
     static isFadingIn: string[] = []
     private static async fadeIn(path: string, audio: HTMLAudioElement, durationMs: number): Promise<void> {
+        const playing = get(playingVideos).find((v) => v.path === path && v.audio === audio)
+        if (!playing) return
         if (!this.isFadingIn.includes(path)) this.isFadingIn.push(path)
-        const targetVolume = this.getVolume(path) * (this.getPlaying(path)?.replayGainMultiplier ?? 1)
-        const playing = this.getPlaying(path)
-        const linkedOutputIds = playing?.linkedOutputIds || []
+        const targetVolume = this.getVolume(path, playing.linkedOutputIds) * (playing.replayGainMultiplier ?? 1)
+        const linkedOutputIds = [...playing.linkedOutputIds]
 
-        AudioAnalyser.setSourceVolume(path, 0)
+        linkedOutputIds.forEach((outputId) => AudioAnalyser.setSourceVolume(path, 0, outputId))
         try {
             audio.volume = Math.min(1, Math.max(0, targetVolume))
         } catch {}
@@ -645,7 +628,7 @@ export class VideoPlayer {
         const fadeIndex = this.isFadingIn.indexOf(path)
         if (fadeIndex !== -1) this.isFadingIn.splice(fadeIndex, 1)
 
-        this.updateVolume(path)
+        if (get(playingVideos).includes(playing)) this.updateVolume(path)
     }
 
     static stopByOutputIds(outputIds: string[]) {
@@ -690,7 +673,7 @@ export class VideoPlayer {
     static isAudible(video: VideoAudioData | null | undefined): boolean {
         if (!video || !video.audio) return false
         if (video.audio.paused || video.audio.muted) return false
-        if (this.isFadingOut.includes(video.path) || this.isStopping.has(video.path)) return false
+        if (this.isFadingOut.includes(video.path) || this.stoppingSessions.has(video)) return false
         if (this.getVolume(video.path) <= 0) return false
         if (video.linkedOutputIds?.length && video.linkedOutputIds.every((outId) => this.isOutputMuted(outId))) return false
         return true
@@ -903,7 +886,7 @@ export class VideoPlayer {
                         softLoop,
                         softLoopOpacity,
                         type: video.type || "background",
-                        isFadingOut: this.isFadingOut.includes(video.path)
+                        isFadingOut: this.isFadingOut.includes(video.path) || this.stoppingSessions.has(video)
                     }
                 })
 

@@ -240,13 +240,12 @@ export class AudioAnalyser {
             }
         }
 
-        let stillPlayingVideo = false
-        for (let i = 0; i < currentVideos.length; i++) {
-            if (currentVideos[i].path !== id) {
-                stillPlayingVideo = true
-                break
-            }
-        }
+        // A video using the same file on another output is still a live input.
+        // Count remaining routed sources, not just videos with different paths.
+        const stillPlayingVideo = currentVideos.some((video) => video.linkedOutputIds.some((linkedId) => {
+            const otherKey = `${video.path}_${linkedId}`
+            return otherKey !== key && !!this.sources[otherKey]
+        }))
 
         for (let i = 0; i < nodeIds.length; i++) {
             const nodeId = nodeIds[i]

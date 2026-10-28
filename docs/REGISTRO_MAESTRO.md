@@ -243,3 +243,13 @@ Usuario autorizó reutilizar sistema de proyección del Himnario en todo JA; evi
 
 **Ajuste preventivo de eventos (mismo ciclo, 2026-10-28):** captura temprana consume sólo flechas destinadas a navegar versículos. Si el foco está en un input, editor, control o diálogo, `Scripture.svelte` deja propagarse el evento hasta el elemento. `Preview.svelte` no ejecuta avance general con flechas simples cuando la pestaña Biblia tiene el control. Se mantiene un único algoritmo de navegación bíblica (`_moveSelection`). Pendiente CI y pruebas físicas.
 
+## 2026-10-28 — M1-03/M1-05: aislar sesiones audiovisuales al reemplazar una salida (por validar)
+
+**Reporte Windows del operador:** enviar un mismo video a Primario + Output 1 reproduce inicialmente, pero al enviar luego otro video de Multimedia/Himnario el audio de Primario desaparece y el video puede retroceder/repetir segundos. Biblia con flechas YA validada por el usuario, no intervenir el navegador.
+
+**Causa estructural inspeccionada:** `VideoPlayer.stop(path, outputId)` localizaba posteriormente la primera sesión por `path` aun cuando el `outputId` pertenecía a otra instancia. `fadeOut`/`fadeIn` y `updateVolume` podían mutear varios `AudioAnalyser` con la misma ruta, ignorando la propiedad de sesión; `AudioAnalyser.detach` comprobaba “otros videos” comparando rutas distintas, ignorando otras salidas con el MISMO archivo.
+
+**Corrección:** conservar un mismo reloj para los outputs de un envío agrupado, pero separar la parada completa por instancia real de audio/reproducción. Detach del grupo retira solo el ID solicitado; el fade de stop y la recuperación de volumen del nuevo inicio se dirigen exclusivamente a los outputs propietarios. `updateVolume` toma el objeto de audio de cada sesión, no la primera ruta coincidente. `AudioAnalyser.detach` conserva el nodo compartido si quedan otras fuentes activas, aunque reproduzcan el mismo path. No crear reproductor ni menú nuevos, mantener FreeShow y diseño JA.
+
+**Estado:** cambios en rama, compilar con CI del nuevo HEAD; NO afirmar validación física. Comprobar en Windows: A+B mismo video, A nuevo/B antiguo, B nuevo/A antiguo, mismo archivo enviado separadamente, pausa/seek por salida, detener por salida, audio solo primario, loops naturales, scrubbing, desconexión y recurso de baja potencia. Revisar cronómetro/sincronización y posibles callbacks asíncronos si persisten saltos. M1-03 universal, M1-05 grupos, M1-06 consola/prónter, M1-07 robustez, H1, T1, F1 continúan abiertos. No fusionar PR #2 ni modificar main.
+
