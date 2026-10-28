@@ -1,3 +1,5 @@
+**Compatibilidad TypeScript del mismo cambio:** `OutSlide` ya recibe `categoryId` al crear una diapositiva bíblica temporal; se declara ese campo como opcional en `src/types/Show.ts` para validar de forma tipada el destino al que se aplica navegación, evitando conversiones `any`. No cambia el formato de persistencia ni el renderer. CI y pruebas Windows pendientes.
+
 ## 2026-10-28 — M1-03F/05A: navegación de Biblia también en destinos seleccionados (CI/Windows pendientes)
 
 **Reporte real del usuario:** «Enviar a…» proyecta el pasaje en secundaria, pero al navegar con flechas la vista previa y principal cambian mientras la secundaria queda congelada. Causa confirmada: `Scripture.svelte:_moveSelection()` llama al `playScripture()` principal-only introducido al integrar selector. El envío era estático, pero el usuario requiere que los destinos que se eligieron sigan la navegación, sin afectar pantallas con otros contenidos.

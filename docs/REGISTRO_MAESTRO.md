@@ -275,3 +275,5 @@ Usuario autorizó reutilizar sistema de proyección del Himnario en todo JA; evi
 
 **Verificación requerida:** CI y Windows: elegir solo Samsung mientras Primario muestra video con audio y navegar sin cambiarlo; elegir Primario+iPad y avanzar ambos, cambios de capítulo y split verse; cambiar Biblia en un output por multimedia (debe dejar de seguir); cambiar traducción/importada, fondos/restablecer estilos, desconexión/reconexión, 3 monitores. Aún NO representa grupos guardados/sincronización temporal de video M1-05. Conserva M1-03 universal en otros módulos, M1-04/05/06/07, H1, T1, F1 y backlog completo. PR #2 continúa draft; no fusionar.
 
+**Compatibilidad TypeScript del mismo cambio:** `OutSlide` ya recibe `categoryId` al crear una diapositiva bíblica temporal; se declara ese campo como opcional en `src/types/Show.ts` para validar de forma tipada el destino al que se aplica navegación, evitando conversiones `any`. No cambia el formato de persistencia ni el renderer. CI y pruebas Windows pendientes.
+

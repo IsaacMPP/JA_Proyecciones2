@@ -622,6 +622,7 @@ export interface OutBackground {
 
 export interface OutSlide {
     id: ID
+    categoryId?: string // temporary Scripture slide: currently selected Bible/collection ID
     layout?: ID
     index?: number
     projectIndex?: number // only used to reference back to the project item index
