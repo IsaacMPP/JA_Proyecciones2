@@ -715,6 +715,21 @@ export function getAllActiveOutputs() {
 export function getAllActiveOutputIds() {
     return getAllActiveOutputs().map(({ id }) => id)
 }
+// Resolve the operator-selected JA projector for all modules that inspect a live
+// projection. Never replace a missing configured output with a different active one.
+// Without JA configuration, preserve FreeShow's single-output workflow only.
+export function getJAMainOutput(_updater: any = null) {
+    const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+    if (primaryId) {
+        const primary = get(outputs)[primaryId]
+        if (!primary?.enabled || !primary.active || primary.stageOutput) return null
+        return { ...primary, id: primaryId }
+    }
+
+    const active = getAllActiveOutputs()
+    return active.length === 1 ? active[0] : null
+}
+
 export function getFirstActiveOutput(_updater: any = null) {
     const firstActive = getAllActiveOutputs()[0]
     if (firstActive) return firstActive

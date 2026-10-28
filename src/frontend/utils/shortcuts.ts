@@ -251,19 +251,6 @@ export function keydown(e: KeyboardEvent) {
         return
     }
 
-    // JA scripture navigation: handle arrow keys before FreeShow's generic
-    // typing/focus shortcut filter. Never steal caret movement in text fields.
-    if (get(activePage) === "show" && get(activeDrawerTab) === "scripture" && (e.key === "ArrowRight" || e.key === "ArrowLeft") && !e.altKey && !e.ctrlKey && !e.metaKey) {
-        const target = e.target as HTMLElement | null
-        const focused = document.activeElement as HTMLElement | null
-        if (!target?.closest("input,textarea,select,[contenteditable='true'],[role='textbox']") &&
-            !focused?.closest("input,textarea,select,[contenteditable='true'],[role='textbox']")) {
-            e.preventDefault()
-            OutputHelper.advanceOutputs(e)
-            return
-        }
-    }
-
     if (isTypingTarget(document.activeElement) && e.key !== "Escape") return
 
     // change tab with number keys
@@ -408,13 +395,6 @@ export const previewShortcuts = {
     },
     ArrowRight: (e: any) => {
         if (e.ctrlKey || e.metaKey) return
-        if (get(activePage) === "show" && get(activeDrawerTab) === "scripture") {
-            const target = e.target as HTMLElement | null
-            if (target?.closest("input,textarea,[contenteditable='true'],[role='textbox']")) return
-            e.preventDefault()
-            OutputHelper.advanceOutputs(e)
-            return
-        }
         if (!e.preview && (get(activeEdit).items.length || get(activeStage).items.length)) return
 
         // e.preventDefault()

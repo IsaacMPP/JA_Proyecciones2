@@ -6,7 +6,7 @@
     import { onMount, onDestroy } from "svelte"
     import { get } from "svelte/store"
     import { defaultBibleBookNames } from "../../../converters/bebliaBible"
-    import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureMode, scriptures, scriptureSettings, selected, templates } from "../../../stores"
+    import { activeDrawerTab, activePage, activePopup, activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureMode, scriptures, scriptureSettings, selected, templates } from "../../../stores"
     import { escapeRegExp, wait } from "../../../utils/common"
     import { translateText } from "../../../utils/language"
     import { getNormalizedKey } from "../../../utils/shortcuts"
@@ -886,6 +886,7 @@
     }
 
     function keydown(e: KeyboardEvent) {
+        const scriptureModuleActive = get(activePage) === "show" && get(activeDrawerTab) === "scripture"
         if (e.key === "Escape") {
             resetContentSearch()
             return
@@ -916,6 +917,7 @@
 
         // assign chapter:verse divider when pressing arrow right
         if (e.key === "ArrowRight" && document.activeElement?.classList?.contains("search")) {
+            if (scriptureModuleActive) e.stopImmediatePropagation()
             if (searchValue.includes(" ") && searchValue.length > 3 && /\d/.test(searchValue) && !searchValue.includes(":")) {
                 searchValue += ":"
 
@@ -927,14 +929,16 @@
             return
         }
 
-        // JA: when Scripture owns the live projection, plain arrow keys move
-        // the visible verse. Never take navigation keys from editable fields,
-        // focused controls or element editing. Ctrl+arrows remain available.
-        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && isActiveInOutput && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        // Scripture is the single owner of unmodified arrows while its tab is
+        // active. The capture-phase listener runs before Preview/App shortcuts.
+        // Keep native caret/control behavior, but prevent generic slide navigation.
+        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && scriptureModuleActive && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            const editable = "input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']"
             const target = e.target as HTMLElement | null
-            if (target?.closest("input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']")) return
-            e.preventDefault()
+            const focused = document.activeElement as HTMLElement | null
             e.stopImmediatePropagation()
+            if (get(activePopup) || target?.closest(editable) || focused?.closest(editable)) return
+            e.preventDefault()
             void _moveSelection(e.key === "ArrowLeft")
             return
         }
@@ -968,11 +972,13 @@
         }
 
         if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
-        if ((e.target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable]")) return
+        if (!scriptureModuleActive || get(activePopup)) return
+        if ((e.target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable], [role='textbox']")) return
 
-        // go to next/previous verse
-        let left = e.key.includes("Left")
-        _moveSelection(left)
+        // Preserve the original Ctrl+arrow Scripture navigation.
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        void _moveSelection(e.key === "ArrowLeft")
     }
 
     /// MOVE SELECTION ///
@@ -1083,7 +1089,7 @@
     }
 </script>
 
-<svelte:window on:keydown={keydown} on:mouseup={mouseup} />
+<svelte:window on:keydown|capture={keydown} on:mouseup={mouseup} />
 
 <div class="scroll" style="flex: 1;overflow-y: auto;">
     <div class="main scripture">

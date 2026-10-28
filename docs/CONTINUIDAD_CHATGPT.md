@@ -1,3 +1,14 @@
+## 2026-10-28 — Corrección estructural de flechas bíblicas (pendiente CI y Windows)
+
+- Se comprobó HEAD `c720ce1`, PR #2 draft y Actions #40635140956 (intento 2 exitoso en código `7d7c459`).
+- Causa: `outputIsScripture` identificaba la primera salida FreeShow y no la principal JA; App/Preview y Scripture tenían listeners sobre window y `shortcuts.ts` duplicaba avance con `OutputHelper.advanceOutputs` para flechas bíblicas.
+- Solución: `getJAMainOutput` identifica la principal por ID exacto, no cambia de salida cuando desaparece; sin selección JA sólo permite compatibilidad con salida nativa única. `playScripture` inspecciona, aplica estilo/fondo y proyecta explícitamente a ese ID, revalidándolo tras preparación asíncrona.
+- `Scripture.svelte` captura las flechas en fase de captura sólo en la pestaña Biblia; reutiliza `_moveSelection` para capítulo, verso y división. Respeta edición y caret. Se retiraron las rutas JA redundantes de `shortcuts.ts` que enviaban flechas bíblicas a diapositivas.
+- Riesgos/pruebas pendientes: compilar y comprobar Windows con principal+secundaria, entrada de texto, transición de capítulo, RV1909 y FSB locales, ausencia/desconexión de principal, restaurar fondo, escenas y teclas fuera de Biblia. CI verde no implica prueba funcional real.
+- No se modificó `main` ni se fusionó PR #2. Se preservan M1-03 (destinos universales), M1-05 (grupos), M1-06 (consola/prónter), M1-07 (robustez), H1, T1, F1 y demás pendientes documentados.
+
+---
+
 ## CONTINUIDAD PRIORITARIA — 28 de octubre de 2026 — Biblia: flechas no avanzan (DIAGNÓSTICO; NO CORREGIDO)
 
 **Este bloque prevalece como estado de continuidad más reciente.** Repositorio `IsaacMPP/JA_Proyecciones2`, rama `feature/base-freeshow-diseno-ja`, PR #2 **abierto en borrador, no fusionar**. HEAD funcional auditado: `7d7c4590fb9b5298a14ff702bd8d80a4e0ec0fc7`. GitHub Actions #40635140956, **segundo intento completado con éxito**; el primer intento falló al instalar dependencia nativa `grandiose/node-gyp`. CI verde NO prueba comportamiento en Windows.

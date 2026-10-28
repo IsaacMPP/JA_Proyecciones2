@@ -21,7 +21,7 @@ import { getItemText } from "../../edit/scripts/textStyle"
 import { clone, removeDuplicates } from "../../helpers/array"
 import { history } from "../../helpers/history"
 import { getMediaStyle } from "../../helpers/media"
-import { getAllNormalOutputs, getFirstActiveOutput, setOutput } from "../../helpers/output"
+import { getAllNormalOutputs, getJAMainOutput, setOutput } from "../../helpers/output"
 import { checkName } from "../../helpers/show"
 
 const SCRIPTURE_API_URL = "https://api.churchapps.org/content/bibles"
@@ -282,6 +282,9 @@ export function sortScriptureSelection(selection: (string | number)[]) {
 export async function playScripture() {
     if (get(outLocked)) return
 
+    const mainOutput = getJAMainOutput()
+    if (!mainOutput) return
+
     const biblesContent = await getActiveScripturesContent()
     if (!biblesContent?.length || !biblesContent[0]) return
 
@@ -324,7 +327,7 @@ export async function playScripture() {
     const templateId = getScriptureTemplateId()
     const _template = new TemplateHelper(templateId)
 
-    const outputIsScripture = getFirstActiveOutput()?.out?.slide?.id === "temp"
+    const outputIsScripture = mainOutput.out?.slide?.id === "temp"
     if (!outputIsScripture) {
         // trigger action activation
         customActionActivation("scripture_start")
@@ -342,7 +345,9 @@ export async function playScripture() {
 
     const [previousSlides, nextSlides] = await Promise.all([getPreviousSlides(), getNextSlides()])
 
-    setOutput("slide", { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] })
+    // Recheck after asynchronous slide preparation: no late send to a former primary.
+    if (getJAMainOutput()?.id !== mainOutput.id) return
+    setOutput("slide", { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }, false, mainOutput.id)
 
     // track
     const reference = `${biblesContent[0].book} ${fullReferenceRange || biblesContent[0].chapters[0]}`.trim()
@@ -359,16 +364,15 @@ export async function playScripture() {
     // appearance"), the output must clear the previously projected media.
     // Otherwise the editor updates while the live output keeps the old image.
     if (!templateBackground) {
-        setOutput("background", null)
+        setOutput("background", null, false, mainOutput.id)
         return
     }
 
     // get style (for media "fit")
-    const currentOutput = getFirstActiveOutput()
-    const currentStyle = get(styles)[currentOutput?.style || ""] || {}
+    const currentStyle = get(styles)[mainOutput.style || ""] || {}
 
     const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
-    setOutput("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle })
+    setOutput("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, false, mainOutput.id)
 
     ///
 
@@ -397,7 +401,7 @@ export async function playScripture() {
 }
 
 export function outputIsScripture(_updater: any = null) {
-    const output = getFirstActiveOutput()
+    const output = getJAMainOutput()
     return output?.out?.slide?.id === "temp"
 }
 

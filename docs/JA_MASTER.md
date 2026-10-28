@@ -1,3 +1,14 @@
+## 2026-10-28 — Corrección estructural de flechas bíblicas (pendiente CI y Windows)
+
+- Se comprobó HEAD `c720ce1`, PR #2 draft y Actions #40635140956 (intento 2 exitoso en código `7d7c459`).
+- Causa: `outputIsScripture` identificaba la primera salida FreeShow y no la principal JA; App/Preview y Scripture tenían listeners sobre window y `shortcuts.ts` duplicaba avance con `OutputHelper.advanceOutputs` para flechas bíblicas.
+- Solución: `getJAMainOutput` identifica la principal por ID exacto, no cambia de salida cuando desaparece; sin selección JA sólo permite compatibilidad con salida nativa única. `playScripture` inspecciona, aplica estilo/fondo y proyecta explícitamente a ese ID, revalidándolo tras preparación asíncrona.
+- `Scripture.svelte` captura las flechas en fase de captura sólo en la pestaña Biblia; reutiliza `_moveSelection` para capítulo, verso y división. Respeta edición y caret. Se retiraron las rutas JA redundantes de `shortcuts.ts` que enviaban flechas bíblicas a diapositivas.
+- Riesgos/pruebas pendientes: compilar y comprobar Windows con principal+secundaria, entrada de texto, transición de capítulo, RV1909 y FSB locales, ausencia/desconexión de principal, restaurar fondo, escenas y teclas fuera de Biblia. CI verde no implica prueba funcional real.
+- No se modificó `main` ni se fusionó PR #2. Se preservan M1-03 (destinos universales), M1-05 (grupos), M1-06 (consola/prónter), M1-07 (robustez), H1, T1, F1 y demás pendientes documentados.
+
+---
+
 ## ESTADO DE DESARROLLO ACTUALIZADO — 2026-10-28 (continuidad entre chats)
 
 **Prioridad inmediata: regresión de flechas de Biblia NO RESUELTA.** Tras la proyección principal JA exclusiva, `scripture.ts:outputIsScripture()` todavía utiliza `getFirstActiveOutput()`, de FreeShow, y `Scripture.svelte` depende de esa detección para habilitar su `_moveSelection()`. A la vez `shortcuts.ts` llama `OutputHelper.advanceOutputs()` para las flechas, mecanismo de diapositivas distinto del lector bíblico con `slide.id="temp"`. Revisar también listener nativo de `Scripture.svelte` y filtros de foco; no añadir otro parche de teclado.
