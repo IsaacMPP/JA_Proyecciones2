@@ -298,8 +298,8 @@
 </SelectElem>
 
 <style>
-    .jaMediaDest {position:absolute;right:5px;top:5px;z-index:4;opacity:0;pointer-events:none;transition:opacity .12s ease}
-    :global(.media_card:hover) .jaMediaDest, .jaMediaDest:focus-within {opacity:1;pointer-events:auto}
+    .jaMediaDest {position:absolute;right:6px;bottom:7px;z-index:5;pointer-events:auto;opacity:1}
+    .jaMediaDest :global(button) {min-width:32px;background:var(--primary-darkest);border:1px solid var(--secondary);box-shadow:0 2px 6px #0008}
 
     .icon {
         display: flex;
