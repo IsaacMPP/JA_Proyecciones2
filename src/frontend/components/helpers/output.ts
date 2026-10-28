@@ -146,11 +146,16 @@ let resetActionTrigger = false
 // projection action, not temporal synchronization of independent videos.
 // Video clock sync/group transport remains a separate M1-05 requirement.
 export function sendToJAOutputs(type: string, data: any, outputIds: string[]): string[] {
-    const sent: string[] = []
-    for (const id of Array.from(new Set(outputIds))) {
-        if (sendToJAOutput(type, data, id)) sent.push(id)
+    const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+    const valid = Array.from(new Set(outputIds)).filter((id) => !!makeJAProjectionRequest(type, data, id, primaryId, get(outputs)))
+    if (!valid.length) return []
+    // One native FreeShow dispatch creates one media clock for all destinations.
+    // Unlike repeated single sends, this intentionally links group transport.
+    if (valid.length > 1) {
+        setOutput(type, clone(data), false, valid)
+        return valid
     }
-    return sent
+    return sendToJAOutput(type, data, valid[0]) ? valid : []
 }
 
 // Shared destination entry point for JA modules. The native FreeShow
@@ -163,7 +168,7 @@ export function sendToJAOutput(type: string, data: any, outputId: string, toggle
     return true
 }
 
-export function setOutput(type: string, data: any, toggle = false, outputId = "", add = false) {
+export function setOutput(type: string, data: any, toggle = false, outputId: string | string[] = "", add = false) {
     const ref = data?.layout ? _show(data.id).layouts([data.layout]).ref()[0] || [] : []
 
     // stop any active break slide recording when the slide changes
@@ -172,12 +177,12 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     const bindings = data?.bindings || (data?.layout ? ref[data.index]?.data?.bindings || [] : [])
     const resolvedBindings = bindings.length ? resolveOutputIds(bindings) : []
     const allOutputIds = resolvedBindings.length ? resolvedBindings : getActiveOutputs(get(outputs), true, false, true)
-    const resolvedOutputId = outputId ? resolveOutputId(outputId) || outputId : ""
+    const resolvedOutputIds = Array.isArray(outputId) ? outputId.map((id) => resolveOutputId(id) || id) : (outputId ? [resolveOutputId(outputId) || outputId] : [])
     // JA normal projection always follows the manually selected primary.
     // An explicit outputId is used only for deliberately chosen destination(s).
     // Original FreeShow broadcasting remains available if no JA primary is set.
     let implicitTargets = allOutputIds
-    if (!resolvedOutputId && typeof localStorage !== "undefined") {
+    if (!resolvedOutputIds.length && typeof localStorage !== "undefined") {
         const primaryId = localStorage.getItem("ja-main-projector") || ""
         if (primaryId) {
             const resolvedPrimary = resolveOutputId(primaryId) || primaryId
@@ -189,7 +194,7 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
             return
         }
     }
-    const outs = resolvedOutputId ? [resolvedOutputId] : implicitTargets
+    const outs = resolvedOutputIds.length ? resolvedOutputIds : implicitTargets
 
     // track usage (& set attributionString)
     if (type === "slide" && data?.id) {
