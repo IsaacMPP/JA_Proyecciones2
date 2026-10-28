@@ -282,7 +282,9 @@
             <ClearButtons bind:autoChange activeClear={updatedActiveClear} on:update={(e) => (activeClear = e.detail)} />
 
             {#if updatedActiveClear === "background"}
-                <MediaControls currentOutput={currentBgOutput} outputId={backgroundOutputId} />
+                {#if !$jaControlledOutputId}
+                    <MediaControls currentOutput={currentBgOutput} outputId={backgroundOutputId} />
+                {/if}
             {:else if updatedActiveClear === "slide"}
                 <Show {currentOutput} {ref} {linesIndex} {maxLines} />
             {:else if updatedActiveClear === "overlays"}
