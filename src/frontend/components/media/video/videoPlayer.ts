@@ -252,6 +252,10 @@ export class VideoPlayer {
     }
 
     static isOutputMuted(outputId: string): boolean {
+        // Only the user-selected JA primary can feed the main speaker bus.
+        // Auxiliary screens remain silent, including shared group playback.
+        const jaPrimary = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        if (jaPrimary && outputId !== jaPrimary) return true
         const output = get(outputs)[outputId]
         const scene = output?.out?.scene
         const styleId = scene ? scene.style : output?.style
