@@ -1,3 +1,13 @@
+## ESTADO DE DESARROLLO ACTUALIZADO — 2026-10-28 (continuidad entre chats)
+
+**Prioridad inmediata: regresión de flechas de Biblia NO RESUELTA.** Tras la proyección principal JA exclusiva, `scripture.ts:outputIsScripture()` todavía utiliza `getFirstActiveOutput()`, de FreeShow, y `Scripture.svelte` depende de esa detección para habilitar su `_moveSelection()`. A la vez `shortcuts.ts` llama `OutputHelper.advanceOutputs()` para las flechas, mecanismo de diapositivas distinto del lector bíblico con `slide.id="temp"`. Revisar también listener nativo de `Scripture.svelte` y filtros de foco; no añadir otro parche de teclado.
+
+**Estado verificado:** HEAD anterior a esta actualización documental `7d7c459`; GitHub Actions #40635140956 intento 2 **success**, no equivale a pruebas Windows. PR #2 sigue en borrador. Solo se autoriza ajustar documentación en el presente cierre de chat; siguiente conversación audita, diseña e implementa después, con CI y pruebas reales. Mantener Biblia RV1909, Himnario separado de Multimedia, estilo JA, vistas independientes, audio solo principal, miniaturas persistentes y compatibilidad PC modestos. No modificar `main` ni fusionar PR sin autorización.
+
+**Secuencia no desplazable:** regresión Biblia -> terminar M1-03 proyección universal (clic normal solo a principal y selector de destinos) -> M1-05 agrupación/duplicado y control compartido -> M1-06 consola/prónter -> M1-07 pruebas -> demás entregas H1/T1/F1.
+
+---
+
 # JA Proyecciones 2 — documento maestro
 
 Fecha de inicio: 2026-10-26. Repositorio: `IsaacMPP/JA_Proyecciones2`.

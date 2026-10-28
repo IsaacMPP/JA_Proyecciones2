@@ -1,3 +1,23 @@
+## CONTINUIDAD PRIORITARIA — 28 de octubre de 2026 — Biblia: flechas no avanzan (DIAGNÓSTICO; NO CORREGIDO)
+
+**Este bloque prevalece como estado de continuidad más reciente.** Repositorio `IsaacMPP/JA_Proyecciones2`, rama `feature/base-freeshow-diseno-ja`, PR #2 **abierto en borrador, no fusionar**. HEAD funcional auditado: `7d7c4590fb9b5298a14ff702bd8d80a4e0ec0fc7`. GitHub Actions #40635140956, **segundo intento completado con éxito**; el primer intento falló al instalar dependencia nativa `grandiose/node-gyp`. CI verde NO prueba comportamiento en Windows.
+
+**Fallo real que sigue abierto:** usuario comprobó reiteradamente que las flechas izquierda/derecha no cambian los versículos de la Biblia después de introducir proyección JA solo a la principal. La Biblia sí se proyecta en la principal; no confundir con fallo de descarga/importación RV1909.
+
+**Hallazgos verificados en código (no prueba de resolución):**
+1. `src/frontend/components/drawer/bible/scripture.ts` usa `getFirstActiveOutput()` en `outputIsScripture()` (~399-402) y también en `playScripture()` para detección/estilo (~327, ~367). La primera salida activa de FreeShow puede ser distinta de la principal JA guardada en `localStorage["ja-main-projector"]`. Entonces la Biblia proyectada en principal podría pasar inadvertida para su propio módulo.
+2. `src/frontend/components/drawer/bible/Scripture.svelte` deriva `isActiveInOutput = outputIsScripture($outputs)` (~194), y **ya dispone** de manejador de teclado y `_moveSelection(moveLeft)` (~888, ~933, ~983) que actualiza referencia/versículos y reproyecta con `playScripture()`. No reconstruir ese mecanismo.
+3. `src/frontend/utils/shortcuts.ts` incluye lógica añadida para ArrowLeft/ArrowRight que aún llama `OutputHelper.advanceOutputs(e)` (~254-264 y ~409-435). Este controlador general es para diapositivas/ítems, NO es la selección nativa de versículos de Biblia. `src/frontend/components/helpers/OutputHelper.ts` busca presentaciones/elementos de salida; la Biblia genera diapositivas temporales `slide.id === "temp"` y su navegación es distinta. Hay posibles interacciones con el filtro de foco (`isTypingTarget`), pero NO continuar acumulando atajos.
+4. `Scripture.svelte` también suscribe un `<svelte:window on:keydown={keydown}>`; investigar prioridad/propagación real entre ese listener y atajos globales, especialmente cuando Biblia está proyectada en principal y otra salida muestra contenido distinto.
+
+**Siguiente tarea obligatoria (PRIMERA EN NUEVO CHAT):** verificar HEAD/CI/docs actuales; auditar en conjunto `scripture.ts`, `Scripture.svelte`, `shortcuts.ts`, `OutputHelper.ts` y lógica común de selección de principal; diseñar y después implementar corrección mínima estructural: un único resolvedor de salida principal JA aplicable a detección bíblica, sin caer silenciosamente a otra salida; flechas manejadas por el controlador propio de Escrituras cuando el módulo Biblia está activo, con campos editables respetados; eliminar rutas duplicadas/conflictivas tras comprobar su alcance. Probar sin perturbar contenido secundario, presentaciones y atajos generales. No afirmar corregido sin prueba de Windows.
+
+**Pruebas de aceptación:** (A) con TV principal JA y iPad/spacedesk secundaria mostrando otro contenido, avanzar/retroceder versículos con flechas en Biblia, incluida transición de capítulo y versículos divididos; (B) al escribir en búsqueda no interceptar flechas/caret; (C) fuera del módulo Biblia mantener atajos de FreeShow; (D) reproyección y vista previa coherentes; (E) principal desconectada no se sustituye sola; (F) CI verde y Windows real. **No se modificó código en esta revisión de continuidad.**
+
+**Ruta crítica permanece intacta:** primero cerrar esta regresión de M1-03; luego terminar `Enviar a…` universal (Biblia, PowerPoint, presentaciones, textos, imágenes, videos, escenas), audio independiente, M1-05 grupos/salida lógica, M1-06 consola/prónter, M1-07 robustez y rendimiento; H1, T1 y F1 no se descartan. Respetar diseño JA azul/amarillo, miniaturas cacheadas, scrubbing de Multimedia, carpetas autodescubiertas, instalador versionado, FreeShow nativo y pruebas en Windows. Primero auditar y proponer; no crear parches, duplicar componentes ni hacer merges.
+
+---
+
 # Continuidad obligatoria entre conversaciones
 
 **Proyecto nuevo:** https://github.com/IsaacMPP/JA_Proyecciones2
