@@ -18,7 +18,12 @@ type Options = { isSpace: boolean; slideLayers: boolean; playNext: boolean }
 
 export class OutputHelper {
     static advanceOutputs(e: KeyboardEvent | "next" | "previous" = "next") {
-        getAllActiveOutputIds().forEach((id) => {
+        // In JA normal operation, keyboard navigation must advance the
+        // operator-designated main projector, never unrelated secondary output.
+        const allIds = getAllActiveOutputIds()
+        const primary = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        const targets = primary ? (allIds.includes(primary) ? [primary] : []) : allIds
+        targets.forEach((id) => {
             if (typeof e === "string") this.advanceOutput(id, e === "next" ? "ArrowRight" : "ArrowLeft")
             else this.advanceOutput(id, e.key, { slideLayers: !e.altKey })
         })
