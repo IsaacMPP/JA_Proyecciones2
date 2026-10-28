@@ -145,12 +145,11 @@
         const loop = contentProvider || videoType === "foreground" ? false : true
         const muted = videoType === "background"
         // Preserve native renderer and source-specific style per output.
-        ids.forEach((id) => {
-            const output = $outputs[id]
-            if (!output?.enabled || !output.active) return
-            const style = getMediaStyle($media[path], $styles[output.style || ""])
-            sendToJAOutputs("background", { path, type, loop, muted, startAt: 0, ...style, ignoreLayer: videoType === "foreground" }, [id])
-        })
+        const selected = ids.filter((id) => $outputs[id]?.enabled && $outputs[id]?.active)
+        if (!selected.length) return
+        const firstOutput = $outputs[selected[0]]
+        const style = getMediaStyle($media[path], $styles[firstOutput.style || ""])
+        sendToJAOutputs("background", { path, type, loop, muted, startAt: 0, ...style, ignoreLayer: videoType === "foreground" }, selected)
     }
 
     function dblclick(e: any) {
