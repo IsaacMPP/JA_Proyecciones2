@@ -395,6 +395,13 @@ export const previewShortcuts = {
     },
     ArrowRight: (e: any) => {
         if (e.ctrlKey || e.metaKey) return
+        if (get(activePage) === "show" && get(activeDrawerTab) === "scripture") {
+            const target = e.target as HTMLElement | null
+            if (target?.closest("input,textarea,[contenteditable='true'],[role='textbox']")) return
+            e.preventDefault()
+            OutputHelper.advanceOutputs(e)
+            return
+        }
         if (!e.preview && (get(activeEdit).items.length || get(activeStage).items.length)) return
 
         // e.preventDefault()
@@ -402,6 +409,13 @@ export const previewShortcuts = {
     },
     ArrowLeft: (e: any) => {
         if (e.ctrlKey || e.metaKey) return
+        if (get(activePage) === "show" && get(activeDrawerTab) === "scripture") {
+            const target = e.target as HTMLElement | null
+            if (target?.closest("input,textarea,[contenteditable='true'],[role='textbox']")) return
+            e.preventDefault()
+            OutputHelper.advanceOutputs(e)
+            return
+        }
         if (!e.preview && (get(activeEdit).items.length || get(activeStage).items.length)) return
 
         // e.preventDefault()
