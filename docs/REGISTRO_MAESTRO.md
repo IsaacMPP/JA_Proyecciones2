@@ -241,3 +241,5 @@ Usuario autorizó reutilizar sistema de proyección del Himnario en todo JA; evi
 - Riesgos/pruebas pendientes: compilar y comprobar Windows con principal+secundaria, entrada de texto, transición de capítulo, RV1909 y FSB locales, ausencia/desconexión de principal, restaurar fondo, escenas y teclas fuera de Biblia. CI verde no implica prueba funcional real.
 - No se modificó `main` ni se fusionó PR #2. Se preservan M1-03 (destinos universales), M1-05 (grupos), M1-06 (consola/prónter), M1-07 (robustez), H1, T1, F1 y demás pendientes documentados.
 
+**Ajuste preventivo de eventos (mismo ciclo, 2026-10-28):** captura temprana consume sólo flechas destinadas a navegar versículos. Si el foco está en un input, editor, control o diálogo, `Scripture.svelte` deja propagarse el evento hasta el elemento. `Preview.svelte` no ejecuta avance general con flechas simples cuando la pestaña Biblia tiene el control. Se mantiene un único algoritmo de navegación bíblica (`_moveSelection`). Pendiente CI y pruebas físicas.
+

@@ -917,7 +917,6 @@
 
         // assign chapter:verse divider when pressing arrow right
         if (e.key === "ArrowRight" && document.activeElement?.classList?.contains("search")) {
-            if (scriptureModuleActive) e.stopImmediatePropagation()
             if (searchValue.includes(" ") && searchValue.length > 3 && /\d/.test(searchValue) && !searchValue.includes(":")) {
                 searchValue += ":"
 
@@ -936,9 +935,10 @@
             const editable = "input, textarea, select, [contenteditable], [role='textbox'], button, [role='slider']"
             const target = e.target as HTMLElement | null
             const focused = document.activeElement as HTMLElement | null
-            e.stopImmediatePropagation()
+            // Don't block target-level keyboard handlers of text fields or popups.
             if (get(activePopup) || target?.closest(editable) || focused?.closest(editable)) return
             e.preventDefault()
+            e.stopImmediatePropagation()
             void _moveSelection(e.key === "ArrowLeft")
             return
         }

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { actions, activePage, activePopup, activeShow, activeTimers, contextActive, groups, guideActive, outLocked, outputs, overlayTimers, playingAudio, playingMetronome, resized, slideTimers, special } from "../../../stores"
+    import { actions, activeDrawerTab, activePage, activePopup, activeShow, activeTimers, contextActive, groups, guideActive, outLocked, outputs, overlayTimers, playingAudio, playingMetronome, resized, slideTimers, special } from "../../../stores"
     import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import { DEFAULT_WIDTH, isDarkTheme } from "../../../utils/common"
     import { formatSearch } from "../../../utils/search"
@@ -40,6 +40,10 @@
     let numberKeyTimeout: NodeJS.Timeout | null = null
     let previousNumberKey = ""
     function keydown(e: KeyboardEvent) {
+        // Scripture owns its navigation keys when that drawer module is active.
+        // Keep editable controls' native keyboard handlers intact and never
+        // let Preview interpret their arrows as normal presentation advances.
+        if ($activePage === "show" && $activeDrawerTab === "scripture" && (e.key === "ArrowLeft" || e.key === "ArrowRight") && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) return
         if ($contextActive) return
         if ($guideActive || $activePopup === "assign_shortcut") return
 

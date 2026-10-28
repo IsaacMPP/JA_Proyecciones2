@@ -1,3 +1,5 @@
+**Ajuste preventivo de eventos (mismo ciclo, 2026-10-28):** captura temprana consume sólo flechas destinadas a navegar versículos. Si el foco está en un input, editor, control o diálogo, `Scripture.svelte` deja propagarse el evento hasta el elemento. `Preview.svelte` no ejecuta avance general con flechas simples cuando la pestaña Biblia tiene el control. Se mantiene un único algoritmo de navegación bíblica (`_moveSelection`). Pendiente CI y pruebas físicas.
+
 ## 2026-10-28 — Corrección estructural de flechas bíblicas (pendiente CI y Windows)
 
 - Se comprobó HEAD `c720ce1`, PR #2 draft y Actions #40635140956 (intento 2 exitoso en código `7d7c459`).
