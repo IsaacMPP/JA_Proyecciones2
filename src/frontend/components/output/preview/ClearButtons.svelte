@@ -13,6 +13,8 @@
 
     export let autoChange: any
     export let activeClear: any
+    // Set only by the existing Controlar pantalla button. Empty = FreeShow mode.
+    export let controlledOutputId = ""
 
     $: audioCleared = !Object.keys($playingAudio).length && !$playingMetronome
     $: audioClearedWithoutMics = !Object.values($playingAudio).filter((a) => !a.isMic).length && !$playingMetronome
@@ -34,12 +36,13 @@
     // ACTIONS
 
     const clearActions = {
-        background: () => clearBackground(),
-        slide: () => clearSlide(),
-        overlays: () => clearOverlays(),
+        background: () => clearBackground(effectiveControlledOutputId),
+        slide: () => clearSlide(false, effectiveControlledOutputId),
+        overlays: () => clearOverlays(effectiveControlledOutputId),
+        // Audio is managed through FreeShow's global audio mixer, not output layers.
         audio: () => clearAudio("", { clearPlaylist: true, clearMicrophones: true, commonClear: true }),
-        nextTimer: () => clearTimers(),
-        scene: () => clearScene()
+        nextTimer: () => clearTimers(effectiveControlledOutputId),
+        scene: () => clearScene(effectiveControlledOutputId)
     }
 
     function clear(key: string) {
@@ -63,10 +66,12 @@
         dispatch("update", key)
     }
 
-    $: outputContent = getOutputContent("", $outputs)
+    $: effectiveControlledOutputId = controlledOutputId && $outputs[controlledOutputId]?.enabled && $outputs[controlledOutputId]?.active && !$outputs[controlledOutputId]?.stageOutput ? controlledOutputId : ""
+    $: outputId = effectiveControlledOutputId || getActiveOutputs($outputs, true, true, true)[0] || ""
+    $: clearScope = effectiveControlledOutputId ? { [effectiveControlledOutputId]: $outputs[effectiveControlledOutputId] } : $outputs
+    $: outputContent = getOutputContent(outputId, $outputs)
 
-    $: backgroundCleared = isOutCleared("background", $outputs)
-    $: outputId = getActiveOutputs($outputs, true, true, true)[0] || ""
+    $: backgroundCleared = isOutCleared("background", clearScope)
     $: output = $outputs[outputId] || {}
     $: outputStyle = $styles[output.style || ""] || {}
     $: canDisplayStyleBG = !outputStyle.clearStyleBackgroundOnText || (!output.out?.slide && !output.out?.background)
@@ -78,15 +83,15 @@
     $: isMetronome = $playingMetronome && !Object.keys($playingAudio).length
     $: isTimer = !output.out?.transition && !Object.values($overlayTimers).find((a) => a.outputId === outputId) && Object.keys($activeTimers).length
 
-    $: slideCleared = isOutCleared("slide", $outputs)
+    $: slideCleared = isOutCleared("slide", clearScope)
 
-    $: effectsCleared = isOutCleared("effects", $outputs, true)
-    $: overlayCleared = isOutCleared("overlays", $outputs, true)
-    $: lockedOverlay = !overlayCleared && isOutCleared("overlays", $outputs, false)
+    $: effectsCleared = isOutCleared("effects", clearScope, true)
+    $: overlayCleared = isOutCleared("overlays", clearScope, true)
+    $: lockedOverlay = !overlayCleared && isOutCleared("overlays", clearScope, false)
 
-    $: slideTimerCleared = [isOutCleared("transition", $outputs), !!$overlayTimers, !!$activeTimers][0]
+    $: slideTimerCleared = isOutCleared("transition", clearScope)
 
-    $: sceneCleared = isOutCleared("scene", $outputs)
+    $: sceneCleared = isOutCleared("scene", clearScope)
 
     // audio fade out
     let audioIcon = "audio"

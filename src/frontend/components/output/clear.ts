@@ -27,7 +27,9 @@ export function clearAll(button = false) {
 
     const keepLastSlide = get(focusMode)
     clearBackground()
-    clearSlide(!keepLastSlide)
+    // JA multipantalla: "Borrar todo" must clear each actual projection,
+    // not only the implicit manually selected primary.
+    clearSlide(!keepLastSlide, getAllActiveOutputIds())
     clearOverlays()
     clearAudio("", { clearPlaylist: true, commonClear: true })
     clearTimers()
@@ -95,7 +97,7 @@ export function clearBackground(specificOutputId = "") {
 }
 
 // shouldClearAll = don't keep cached previous slide
-export function clearSlide(shouldClearAll = false) {
+export function clearSlide(shouldClearAll = false, specificOutputIds: string | string[] = "") {
     if (!shouldClearAll) {
         // store position
         const slideCache: { [key: string]: OutSlide } = {}
@@ -118,8 +120,19 @@ export function clearSlide(shouldClearAll = false) {
         ;(document.activeElement as any)?.blur()
     }
 
-    clearTimers("", false) // clear "Next slide timers"
-    setOutput("slide", null)
+    // Keep FreeShow's implicit-primary behavior for legacy callers. Explicit
+    // output IDs (including Borrar todo) are cleared independently, so a
+    // different Bible reference on a secondary cannot remain stuck.
+    const targeted = Array.isArray(specificOutputIds) ? specificOutputIds : (specificOutputIds ? [specificOutputIds] : [])
+    if (targeted.length) {
+        targeted.forEach((outputId) => {
+            clearTimers(outputId, false)
+            setOutput("slide", null, false, outputId)
+        })
+    } else if (!Array.isArray(specificOutputIds)) {
+        clearTimers("", false)
+        setOutput("slide", null)
+    }
     customActionActivation("slide_cleared")
 }
 

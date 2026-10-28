@@ -283,7 +283,7 @@
 
     {#if $activePage === "show"}
         <div class="section clear-btns" style="margin-top: 2px;">
-            <ClearButtons bind:autoChange activeClear={updatedActiveClear} on:update={(e) => (activeClear = e.detail)} />
+            <ClearButtons bind:autoChange activeClear={updatedActiveClear} controlledOutputId={$jaControlledOutputId && allActiveOutputs.includes($jaControlledOutputId) ? $jaControlledOutputId : ""} on:update={(e) => (activeClear = e.detail)} />
 
             {#if updatedActiveClear === "background"}
                 <MediaControls currentOutput={currentBgOutput} outputId={backgroundOutputId} />
