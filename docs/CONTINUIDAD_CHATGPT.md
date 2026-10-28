@@ -1,3 +1,5 @@
+**Aislamiento del caché de diapositivas (mismo incidente):** cuando `clearSlide` recibe una salida específica, la copia de recuperación se limita a esa salida. Evita que la limpieza de Samsung almacene también un estado de Primario no afectado por la operación. Borrar todo mantiene el caché global anterior. No cambia la navegación bíblica ni el motor de reproducción.
+
 ## 2026-10-28 — M1-03 regresión: "Borrar todo" no retira Escrituras de salidas JA secundarias (pendiente CI/Windows)
 
 **Reporte de Windows:** proyectar versículos distintos en Primario y una secundaria; al limpiar, el versículo de la secundaria permanece visible/bloqueado, aunque la principal responde. **Causa verificada:** `clearAll()` llamaba `clearSlide(!keepLastSlide)`; dentro `clearSlide()` se usaba `setOutput("slide", null)` sin ID. Por la política JA, un `setOutput` implícito limpia solamente la pantalla principal. A diferencia de ello, `clearBackground()` ya enumeraba salidas activas. Asimismo `ClearButtons.svelte` ignoraba `jaControlledOutputId` para el borrado de diapositivas y para determinar si esa salida contenía diapositivas.

@@ -98,10 +98,12 @@ export function clearBackground(specificOutputId = "") {
 
 // shouldClearAll = don't keep cached previous slide
 export function clearSlide(shouldClearAll = false, specificOutputIds: string | string[] = "") {
+    const targeted = Array.isArray(specificOutputIds) ? specificOutputIds : (specificOutputIds ? [specificOutputIds] : [])
     if (!shouldClearAll) {
-        // store position
+        // Preserve output-specific slide cache when clearing a supervised
+        // secondary; otherwise an unrelated primary slide enters the cache.
         const slideCache: { [key: string]: OutSlide } = {}
-        const activeOutputs = getAllActiveOutputs()
+        const activeOutputs = getAllActiveOutputs().filter((output) => !targeted.length || targeted.includes(output.id))
         activeOutputs.forEach((output) => {
             const slide = output?.out?.slide || null
             if (!slide?.id || slide.index === undefined) return
@@ -123,7 +125,6 @@ export function clearSlide(shouldClearAll = false, specificOutputIds: string | s
     // Keep FreeShow's implicit-primary behavior for legacy callers. Explicit
     // output IDs (including Borrar todo) are cleared independently, so a
     // different Bible reference on a secondary cannot remain stuck.
-    const targeted = Array.isArray(specificOutputIds) ? specificOutputIds : (specificOutputIds ? [specificOutputIds] : [])
     if (targeted.length) {
         targeted.forEach((outputId) => {
             clearTimers(outputId, false)

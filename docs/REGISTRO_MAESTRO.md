@@ -289,3 +289,5 @@ Usuario autorizó reutilizar sistema de proyección del Himnario en todo JA; evi
 
 **Validar con Windows:** Biblia distinta en Primario y Samsung: Borrar todo despeja ambas; seleccionar Controlar Samsung y pulsar borrar diapositiva despeja solo Samsung; misma prueba sin contenido en principal; enviar nuevos versículos después del borrado; 3 pantallas, repetir con Himnario/Multimedia independientes y audio sin cortes. CI por nuevo HEAD es solo compilación; el fallo real se cierra tras pruebas. Preservar M1-03 universal pendiente, M1-04, M1-05 grupos, M1-06 consola/prónter, M1-07 hotplug/estabilidad, H1, T1, F1 y pendientes documentados. PR #2 draft, no tocar main.
 
+**Aislamiento del caché de diapositivas (mismo incidente):** cuando `clearSlide` recibe una salida específica, la copia de recuperación se limita a esa salida. Evita que la limpieza de Samsung almacene también un estado de Primario no afectado por la operación. Borrar todo mantiene el caché global anterior. No cambia la navegación bíblica ni el motor de reproducción.
+
