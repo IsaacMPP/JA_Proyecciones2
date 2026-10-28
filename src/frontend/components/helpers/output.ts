@@ -173,20 +173,21 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
     const resolvedBindings = bindings.length ? resolveOutputIds(bindings) : []
     const allOutputIds = resolvedBindings.length ? resolvedBindings : getActiveOutputs(get(outputs), true, false, true)
     const resolvedOutputId = outputId ? resolveOutputId(outputId) || outputId : ""
-    // M1-03: an explicit target must own its media transport as well as its visual output.
-    // Do not silently broadcast playback commands to every active output.
-    // M1-03: normal sends use the chosen JA primary output once multiple JA
-    // projection outputs are active. Explicit output IDs and intentional bindings win.
-    // Do not guess a replacement if a saved primary is disconnected.
+    // JA normal projection always follows the manually selected primary.
+    // An explicit outputId is used only for deliberately chosen destination(s).
+    // Original FreeShow broadcasting remains available if no JA primary is set.
     let implicitTargets = allOutputIds
-    if (!resolvedOutputId && !resolvedBindings.length && allOutputIds.length > 1 && typeof localStorage !== "undefined") {
+    if (!resolvedOutputId && typeof localStorage !== "undefined") {
         const primaryId = localStorage.getItem("ja-main-projector") || ""
-        // With multiple outputs, never choose a destination on the user's behalf.
-        // Explicit targets and intentional bindings are handled above.
-        if (!primaryId) return
-        const resolvedPrimary = resolveOutputId(primaryId) || primaryId
-        if (!allOutputIds.includes(resolvedPrimary)) return
-        implicitTargets = [resolvedPrimary]
+        if (primaryId) {
+            const resolvedPrimary = resolveOutputId(primaryId) || primaryId
+            const activePhysicalOutputs = getActiveOutputs(get(outputs), true, false, true)
+            if (!activePhysicalOutputs.includes(resolvedPrimary)) return
+            implicitTargets = [resolvedPrimary]
+        } else if (allOutputIds.length > 1 && !resolvedBindings.length) {
+            // Never guess a primary when multiple JA projection outputs are enabled.
+            return
+        }
     }
     const outs = resolvedOutputId ? [resolvedOutputId] : implicitTargets
 
