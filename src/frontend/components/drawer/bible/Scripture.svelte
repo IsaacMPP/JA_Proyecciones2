@@ -21,9 +21,10 @@
     import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
     import MaterialNumberInput from "../../inputs/MaterialNumberInput.svelte"
     import TextInput from "../../inputs/TextInput.svelte"
+    import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
-    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, sanitizeVerseText, scriptureRangeSelect, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
+    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
 
     // JA: refresh the current projected verse when its active Scripture template
     // changes. The template is stored once and reused for subsequent verses.
@@ -1326,6 +1327,9 @@
         <MaterialButton disabled={$outLocked} title={isActiveInOutput ? "preview._update [Ctrl+R]" : "menu._title_display"} on:click={playScripture}>
             <Icon size={isActiveInOutput ? 1.1 : 1.3} id={isActiveInOutput ? "refresh" : "play"} white={!isActiveInOutput} />
         </MaterialButton>
+        {#if !$outLocked}
+            <JADestinationChooser label="Enviar pasaje bíblico a…" onSend={(ids) => { void sendScriptureToJAOutputs(ids) }} />
+        {/if}
 
         <div class="divider" />
 

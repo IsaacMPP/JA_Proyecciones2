@@ -12,8 +12,9 @@ import { defaultBibleBookNames } from "../../../converters/bebliaBible"
 import { createCategory } from "../../../converters/importHelpers"
 import { requestMain, sendMain } from "../../../IPC/main"
 import { findBestBreak, splitTextContentInHalf } from "../../../show/slides"
-import { activeProject, activeScripture, activeShow, drawerTabsData, media, notFound, outLocked, overlays, scriptureHistory, scriptures, scripturesCache, scriptureSettings, styles, templates } from "../../../stores"
+import { activeProject, activeScripture, activeShow, drawerTabsData, media, notFound, outLocked, outputs, overlays, scriptureHistory, scriptures, scripturesCache, scriptureSettings, styles, templates } from "../../../stores"
 import { trackScriptureUsage } from "../../../utils/analytics"
+import { getJADestinations } from "../../../utils/jaProjectionDestinations"
 import { TemplateHelper } from "../../../utils/templates"
 import { getKey } from "../../../values/keys"
 import { customActionActivation } from "../../actions/actions"
@@ -21,7 +22,7 @@ import { getItemText } from "../../edit/scripts/textStyle"
 import { clone, removeDuplicates } from "../../helpers/array"
 import { history } from "../../helpers/history"
 import { getMediaStyle } from "../../helpers/media"
-import { getAllNormalOutputs, getJAMainOutput, setOutput } from "../../helpers/output"
+import { getAllNormalOutputs, getJAMainOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
 import { checkName } from "../../helpers/show"
 
 const SCRIPTURE_API_URL = "https://api.churchapps.org/content/bibles"
@@ -279,7 +280,28 @@ export function sortScriptureSelection(selection: (string | number)[]) {
 
 // OUTPUT
 
+// Keep the existing primary-only entry point used by Bible navigation, verse
+// editing, and live style refresh. No secondary is subscribed to navigation.
 export async function playScripture() {
+    const mainOutput = getJAMainOutput()
+    if (!mainOutput) return
+    await projectScripture([mainOutput.id], false)
+}
+
+// An explicit one-shot projection of the currently selected Bible passage.
+// The operator chooses the exact physical displays in the shared JA dialog;
+// future verse changes still update only the selected JA primary (M1-05 later).
+export async function sendScriptureToJAOutputs(outputIds: string[]) {
+    if (!outputIds?.length || get(outLocked)) return
+    const mainOutput = getJAMainOutput()
+    if (!mainOutput) return
+    const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
+    const selected = [...new Set(outputIds)].filter((id) => eligible.has(id))
+    if (!selected.length) return
+    await projectScripture(selected, true)
+}
+
+async function projectScripture(outputIds: string[], explicit: boolean) {
     if (get(outLocked)) return
 
     const mainOutput = getJAMainOutput()
@@ -299,8 +321,9 @@ export async function playScripture() {
     const showSplitSuffix = get(scriptureSettings).splitLongVersesSuffix
     const value = `${id}${showSplitSuffix && subverse ? getVersePartLetter(subverse) : ""}`
 
-    // scripture usage history
-    scriptureHistory.update((a) => {
+    // Record the original primary projection workflow once; sending a static
+    // copy to a secondary must not repeat navigation history or live triggers.
+    if (!explicit) scriptureHistory.update((a) => {
         const tabId = get(drawerTabsData).scripture?.activeSubTab || ""
         const tabData = get(scriptures)[tabId]
         const version = tabData?.customName || tabData?.name || biblesContent[0].version || ""
@@ -328,7 +351,7 @@ export async function playScripture() {
     const _template = new TemplateHelper(templateId)
 
     const outputIsScripture = mainOutput.out?.slide?.id === "temp"
-    if (!outputIsScripture) {
+    if (!explicit && !outputIsScripture) {
         // trigger action activation
         customActionActivation("scripture_start")
         // trigger template action(s)
@@ -345,13 +368,25 @@ export async function playScripture() {
 
     const [previousSlides, nextSlides] = await Promise.all([getPreviousSlides(), getNextSlides()])
 
-    // Recheck after asynchronous slide preparation: no late send to a former primary.
+    // Revalidate after asynchronous verse/template preparation. Never redirect
+    // to a different projector when the configured JA primary changes or a
+    // selected auxiliary display disconnects while content is loading.
     if (getJAMainOutput()?.id !== mainOutput.id) return
-    setOutput("slide", { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }, false, mainOutput.id)
+    if (explicit) {
+        const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
+        if (outputIds.some((id) => !eligible.has(id))) return
+    }
+    const slidePayload = { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }
+    if (explicit) {
+        const sent = sendToJAOutputs("slide", slidePayload, outputIds)
+        if (sent.length !== outputIds.length) return
+    } else {
+        setOutput("slide", slidePayload, false, mainOutput.id)
+    }
 
     // track
     const reference = `${biblesContent[0].book} ${fullReferenceRange || biblesContent[0].chapters[0]}`.trim()
-    biblesContent.forEach((translation) => {
+    if (!explicit) biblesContent.forEach((translation) => {
         if (!translation) return
         const name = translation.version || ""
         const apiId = translation.isApi ? get(scriptures)[translation.id]?.id || translation.id || "" : null
@@ -364,15 +399,27 @@ export async function playScripture() {
     // appearance"), the output must clear the previously projected media.
     // Otherwise the editor updates while the live output keeps the old image.
     if (!templateBackground) {
-        setOutput("background", null, false, mainOutput.id)
+        if (explicit) sendToJAOutputs("background", null, outputIds)
+        else setOutput("background", null, false, mainOutput.id)
         return
     }
 
-    // get style (for media "fit")
-    const currentStyle = get(styles)[mainOutput.style || ""] || {}
-
-    const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
-    setOutput("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, false, mainOutput.id)
+    // Preserve each target's own output media style rather than borrowing the
+    // primary's for an unrelated secondary display. Existing primary behavior
+    // is unchanged and Scripture backgrounds remain muted.
+    if (explicit) {
+        for (const outputId of outputIds) {
+            const target = get(outputs)[outputId]
+            if (!target?.active || !target.enabled || getJAMainOutput()?.id !== mainOutput.id) return
+            const currentStyle = get(styles)[target.style || ""] || {}
+            const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
+            sendToJAOutputs("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, [outputId])
+        }
+    } else {
+        const currentStyle = get(styles)[mainOutput.style || ""] || {}
+        const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
+        setOutput("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, false, mainOutput.id)
+    }
 
     ///
 
