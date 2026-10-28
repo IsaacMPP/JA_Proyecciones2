@@ -9,7 +9,6 @@
     import Top from "./components/main/Top.svelte"
     import Preview from "./components/output/preview/Preview.svelte"
     import PreviewOutput from "./components/output/preview/PreviewOutput.svelte"
-    import MediaControls from "./components/output/tools/MediaControls.svelte"
     import JAGlobalDestinationDialog from "./components/output/tools/JAGlobalDestinationDialog.svelte"
     import { jaControlledOutputId } from "./utils/jaControlledOutput"
     import SettingsTabs from "./components/settings/SettingsTabs.svelte"
@@ -71,7 +70,7 @@
                     <LazyLoad component={() => import("./components/show/focus/FocusMode.svelte")} show={$focusMode} />
                 {:else}
                     {#if $jaControlledOutputId && $outputs[$jaControlledOutputId]?.enabled && $outputs[$jaControlledOutputId]?.active}
-                        <div class="jaSelectedCenter"><div class="jaSelectedCaption">Supervisando: {$outputs[$jaControlledOutputId]?.name || $jaControlledOutputId}<button type="button" on:click={() => jaControlledOutputId.set("")}>Vista previa normal</button></div><div class="jaSelectedCanvas" bind:clientWidth={selectedCanvasWidth} bind:clientHeight={selectedCanvasHeight}><div class="jaSelectedFrame" style:width={selectedFrameWidth + "px"} style:height={selectedFrameHeight + "px"}><PreviewOutput outputId={$jaControlledOutputId} /></div></div><div class="jaSelectedTransport"><MediaControls currentOutput={$outputs[$jaControlledOutputId]} outputId={$jaControlledOutputId} /></div></div>
+                        <div class="jaSelectedCenter"><div class="jaSelectedCaption">Supervisando: {$outputs[$jaControlledOutputId]?.name || $jaControlledOutputId}<button type="button" on:click={() => jaControlledOutputId.set("")}>Vista previa normal</button></div><div class="jaSelectedCanvas" bind:clientWidth={selectedCanvasWidth} bind:clientHeight={selectedCanvasHeight}><div class="jaSelectedFrame" style:width={selectedFrameWidth + "px"} style:height={selectedFrameHeight + "px"}><PreviewOutput outputId={$jaControlledOutputId} /></div></div></div>
                     {:else}<Show />{/if}
                 {/if}
             {:else if page === "edit"}
@@ -148,7 +147,6 @@
 .jaSelectedCaption button{background:var(--primary);color:var(--text);padding:5px;border:1px solid var(--primary-lighter)}
 .jaSelectedCanvas{flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px;box-sizing:border-box}
 .jaSelectedFrame{flex:0 0 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.jaSelectedTransport{flex:0 0 auto;max-height:90px;overflow:auto;padding:4px 12px 8px;background:var(--primary-darker)}
 .jaSelectedFrame :global(.previewOutput){width:100%;height:100%;max-height:100%;max-width:100%;object-fit:contain}
 
     .column,
