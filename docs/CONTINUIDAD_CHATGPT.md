@@ -1,3 +1,5 @@
+**Ajuste reactivo asociado:** las banderas de Biblia proyectada `isActiveInOutput` y `hasLiveScripture` deben depender tanto de `$outputs` como de `$jaControlledOutputId`: pulsar Controlar Samsung no cambia el estado de las salidas, pero sí el dueño de las flechas. Además, al abandonar/reabrir Escrituras se reinicia la llave de hidratación para restaurar la referencia correspondiente. Pendiente CI/Windows; no se modifica el listener de teclado.
+
 ## 2026-10-28 — M1-03/05 regresión: flechas de Escrituras en secundaria con referencias independientes
 
 **Reporte operativo:** incluso antes de corregir "Borrar todo", las flechas no navegaban los versículos de la pantalla secundaria. Con pasajes diferentes en Primario y Samsung, solo Primario avanzaba. **Causa real inspeccionada:** `MultiOutputs.svelte` cambia `jaControlledOutputId` para supervisión, pero el módulo `Scripture.svelte` seguía leyendo un único `activeReference`; `getLiveScriptureOutputIds()` recogía simultáneamente todos los destinos de la misma colección, sin identificar el destino bajo Controlar ni distinguir un envío conjunto de dos independientes.

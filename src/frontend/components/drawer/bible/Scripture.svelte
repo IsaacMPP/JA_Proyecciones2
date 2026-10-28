@@ -193,13 +193,14 @@
             .filter((v) => v.text)
     }
 
-    $: isActiveInOutput = outputIsScripture($outputs)
-    $: hasLiveScripture = hasLiveScriptureOutput($outputs)
+    $: isActiveInOutput = outputIsScripture([$outputs, $jaControlledOutputId])
+    $: hasLiveScripture = hasLiveScriptureOutput([$outputs, $jaControlledOutputId])
 
     // Rehydrate the existing Bible navigator when Controlar changes screens.
     // Never overwrite the operator's verse selection on ordinary clicks.
     let lastScriptureControlRoute = ""
     $: controlledScripture = getControlledScriptureReference([$outputs, $jaControlledOutputId])
+    $: if ($activePage !== "show" || $activeDrawerTab !== "scripture" || !controlledScripture) lastScriptureControlRoute = ""
     $: if ($activePage === "show" && $activeDrawerTab === "scripture" && controlledScripture && data[previewBibleId]?.bibleData) {
         const route = controlledScripture.id + "|" + controlledScripture.categoryId
         if (route !== lastScriptureControlRoute) {
