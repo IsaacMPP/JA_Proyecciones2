@@ -623,6 +623,7 @@ export interface OutBackground {
 export interface OutSlide {
     id: ID
     categoryId?: string // temporary Scripture slide: currently selected Bible/collection ID
+    scriptureReference?: { book: number | string | null; chapters: (number | string)[]; verses: (number | string)[][] } // per-output Bible navigation cursor
     layout?: ID
     index?: number
     projectIndex?: number // only used to reference back to the project item index

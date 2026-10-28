@@ -15,6 +15,7 @@ import { findBestBreak, splitTextContentInHalf } from "../../../show/slides"
 import { activeProject, activeScripture, activeShow, drawerTabsData, media, notFound, outLocked, outputs, overlays, scriptureHistory, scriptures, scripturesCache, scriptureSettings, styles, templates } from "../../../stores"
 import { trackScriptureUsage } from "../../../utils/analytics"
 import { getJADestinations } from "../../../utils/jaProjectionDestinations"
+import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
 import { TemplateHelper } from "../../../utils/templates"
 import { getKey } from "../../../values/keys"
 import { customActionActivation } from "../../actions/actions"
@@ -283,8 +284,10 @@ export function sortScriptureSelection(selection: (string | number)[]) {
 // Outputs deliberately selected with "Enviar a…" follow verse navigation.
 // This is an ephemeral route, not a persistent M1-05 saved screen group.
 // If a target stops showing this Bible, it is removed from the route.
-type ScriptureFollowingOutput = { categoryId: string; backgroundKey: string }
+type ScriptureReference = { book: number | string | null; chapters: (number | string)[]; verses: (number | string)[][] }
+type ScriptureFollowingOutput = { categoryId: string; backgroundKey: string; navigationGroup: number }
 const scriptureFollowingOutputs = new Map<string, ScriptureFollowingOutput>()
+let nextNavigationGroup = 0
 const supersededPrimaryOutputs = new Set<string>()
 
 function projectedBackgroundKey(output: any): string {
@@ -293,30 +296,59 @@ function projectedBackgroundKey(output: any): string {
 }
 let scriptureProjectionGeneration = 0
 
-export function getLiveScriptureOutputIds() {
+// Controlar selects the navigation target without changing the JA primary.
+// Never fall back to another screen if the selected output disconnects.
+function getScriptureControlId(): string {
+    return get(jaControlledOutputId) || getJAMainOutput()?.id || ""
+}
+
+function isCurrentScriptureSlide(id: string, categoryId: string, current = get(outputs)): boolean {
+    const slide = current[id]?.out?.slide
+    return !!(current[id]?.enabled && current[id]?.active && !current[id]?.stageOutput && slide?.id === "temp" && slide?.categoryId === categoryId)
+}
+
+function isFollowedScreenValid(id: string, followed: ScriptureFollowingOutput, current = get(outputs)): boolean {
+    return isCurrentScriptureSlide(id, followed.categoryId, current) && projectedBackgroundKey(current[id]) === followed.backgroundKey
+}
+
+export function getLiveScriptureOutputIds(): string[] {
     const main = getJAMainOutput()
     if (!main) return []
     const mainId = main.id
     const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
     const current = get(outputs)
     const eligible = new Set(getJADestinations(current, mainId).map((o) => o.id))
-    const live: string[] = []
+    const controlledId = getScriptureControlId()
+    if (!eligible.has(controlledId)) return []
 
-    // A later foreground video may leave the old temp slide in FreeShow.
-    // If this operator-selected primary was previously tracked and the backing
-    // media changed, do not adopt it again until Biblia is projected explicitly.
     const trackedMain = scriptureFollowingOutputs.get(mainId)
     if (trackedMain && projectedBackgroundKey(current[mainId]) !== trackedMain.backgroundKey) supersededPrimaryOutputs.add(mainId)
-    if (!supersededPrimaryOutputs.has(mainId) && (!trackedMain || projectedBackgroundKey(current[mainId]) === trackedMain.backgroundKey) && current[mainId]?.out?.slide?.id === "temp" && current[mainId]?.out?.slide?.categoryId === categoryId) live.push(mainId)
-
-    for (const [outputId, followed] of scriptureFollowingOutputs) {
-        if (!eligible.has(outputId) || followed.categoryId !== categoryId || current[outputId]?.out?.slide?.id !== "temp" || current[outputId]?.out?.slide?.categoryId !== followed.categoryId || projectedBackgroundKey(current[outputId]) !== followed.backgroundKey) {
-            scriptureFollowingOutputs.delete(outputId)
-            continue
-        }
-        if (!live.includes(outputId)) live.push(outputId)
+    for (const [id, followed] of scriptureFollowingOutputs) {
+        // A switch to another Bible tab must NOT erase this output's session.
+        if (!eligible.has(id) || !isFollowedScreenValid(id, followed, current)) scriptureFollowingOutputs.delete(id)
     }
-    return live
+    if (!isCurrentScriptureSlide(controlledId, categoryId, current)) return []
+    if (controlledId === mainId && supersededPrimaryOutputs.has(mainId)) return []
+
+    const owner = scriptureFollowingOutputs.get(controlledId)
+    if (!owner) return controlledId === mainId ? [mainId] : []
+    if (owner.categoryId !== categoryId) return []
+    // Only one explicit multi-output send links navigation; separately sent
+    // passages have independent groups, even when using the same Bible version.
+    return [...scriptureFollowingOutputs.entries()]
+        .filter(([id, followed]) => followed.navigationGroup === owner.navigationGroup && eligible.has(id) && isFollowedScreenValid(id, followed, current) && !(id === mainId && supersededPrimaryOutputs.has(mainId)))
+        .map(([id]) => id)
+}
+
+// Restore the exact reference of the supervised output to the *existing*
+// book/chapter/verse picker; _moveSelection remains its sole navigator.
+export function getControlledScriptureReference(_updater: any = null) {
+    const id = getScriptureControlId()
+    if (!id || !getLiveScriptureOutputIds().includes(id)) return null
+    const slide = get(outputs)[id]?.out?.slide
+    const reference = slide?.scriptureReference as ScriptureReference | undefined
+    if (!reference?.book || !reference.chapters?.length || !reference.verses?.[0]?.length) return null
+    return { id, categoryId: slide?.categoryId || "", reference: clone(reference) }
 }
 
 export function hasLiveScriptureOutput(_updater: any = null) {
@@ -333,7 +365,6 @@ export async function refreshLiveScripture() {
         for (const outputId of targets) {
             const followed = scriptureFollowingOutputs.get(outputId)
             if (followed) followed.backgroundKey = projectedBackgroundKey(current[outputId])
-            else scriptureFollowingOutputs.set(outputId, { categoryId: get(drawerTabsData).scripture?.activeSubTab || "", backgroundKey: projectedBackgroundKey(current[outputId]) })
         }
     }
 }
@@ -343,7 +374,7 @@ export async function playScripture() {
     const mainOutput = getJAMainOutput()
     if (!mainOutput) return
     if (await projectScripture([mainOutput.id], false)) {
-        scriptureFollowingOutputs.set(mainOutput.id, { categoryId: get(drawerTabsData).scripture?.activeSubTab || "", backgroundKey: projectedBackgroundKey(get(outputs)[mainOutput.id]) })
+        scriptureFollowingOutputs.set(mainOutput.id, { categoryId: get(drawerTabsData).scripture?.activeSubTab || "", backgroundKey: projectedBackgroundKey(get(outputs)[mainOutput.id]), navigationGroup: ++nextNavigationGroup })
         supersededPrimaryOutputs.delete(mainOutput.id)
     }
 }
@@ -360,8 +391,9 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
     const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
     if (await projectScripture(selected, true) && categoryId === (get(drawerTabsData).scripture?.activeSubTab || "")) {
         const current = get(outputs)
+        const navigationGroup = ++nextNavigationGroup
         for (const id of selected) {
-            scriptureFollowingOutputs.set(id, { categoryId, backgroundKey: projectedBackgroundKey(current[id]) })
+            scriptureFollowingOutputs.set(id, { categoryId, backgroundKey: projectedBackgroundKey(current[id]), navigationGroup })
             supersededPrimaryOutputs.delete(id)
         }
     }
@@ -369,6 +401,7 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
 
 async function projectScripture(outputIds: string[], explicit: boolean, recordMainHistory = false): Promise<boolean> {
     const generation = ++scriptureProjectionGeneration
+    const referenceSnapshot = clone(get(activeScripture).reference) as ScriptureReference
     if (get(outLocked)) return false
 
     const mainOutput = getJAMainOutput()
@@ -443,7 +476,7 @@ async function projectScripture(outputIds: string[], explicit: boolean, recordMa
         const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
         if (outputIds.some((id) => !eligible.has(id))) return false
     }
-    const slidePayload = { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }
+    const slidePayload = { id: "temp", categoryId, scriptureReference: referenceSnapshot, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }
     if (explicit) {
         // FreeShow's generic slide handler clears foreground backgrounds
         // globally when it encounters one. Clear only chosen displays first
@@ -525,8 +558,8 @@ async function projectScripture(outputIds: string[], explicit: boolean, recordMa
 }
 
 export function outputIsScripture(_updater: any = null) {
-    const output = getJAMainOutput()
-    return output?.out?.slide?.id === "temp"
+    const controlledId = getScriptureControlId()
+    return !!controlledId && getLiveScriptureOutputIds().includes(controlledId)
 }
 
 export function getMergedAttribution(biblesContent: BibleContent[], customAttributions: string[] = []) {

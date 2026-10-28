@@ -22,9 +22,10 @@
     import MaterialNumberInput from "../../inputs/MaterialNumberInput.svelte"
     import TextInput from "../../inputs/TextInput.svelte"
     import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
+    import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
-    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, hasLiveScriptureOutput, refreshLiveScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
+    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, getControlledScriptureReference, hasLiveScriptureOutput, refreshLiveScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
 
     // JA: refresh the current projected verse when its active Scripture template
     // changes. The template is stored once and reused for subsequent verses.
@@ -194,6 +195,19 @@
 
     $: isActiveInOutput = outputIsScripture($outputs)
     $: hasLiveScripture = hasLiveScriptureOutput($outputs)
+
+    // Rehydrate the existing Bible navigator when Controlar changes screens.
+    // Never overwrite the operator's verse selection on ordinary clicks.
+    let lastScriptureControlRoute = ""
+    $: controlledScripture = getControlledScriptureReference([$outputs, $jaControlledOutputId])
+    $: if ($activePage === "show" && $activeDrawerTab === "scripture" && controlledScripture && data[previewBibleId]?.bibleData) {
+        const route = controlledScripture.id + "|" + controlledScripture.categoryId
+        if (route !== lastScriptureControlRoute) {
+            lastScriptureControlRoute = route
+            const target = controlledScripture.reference
+            void openBook(target.book || 1, target.chapters, target.verses)
+        }
+    }
 
     type Reference = {
         book: number | string | null
