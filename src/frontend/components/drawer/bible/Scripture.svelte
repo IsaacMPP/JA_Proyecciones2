@@ -24,7 +24,7 @@
     import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
-    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
+    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, hasLiveScriptureOutput, refreshLiveScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
 
     // JA: refresh the current projected verse when its active Scripture template
     // changes. The template is stored once and reused for subsequent verses.
@@ -43,9 +43,9 @@
         if (signature === lastLiveStyle) return
         lastLiveStyle = signature
         if (liveStyleTimer) clearTimeout(liveStyleTimer)
-        if (!templateId || !outputIsScripture(get(outputs))) return
+        if (!templateId || !hasLiveScriptureOutput(get(outputs))) return
         liveStyleTimer = setTimeout(() => {
-            if (outputIsScripture(get(outputs))) void playScripture()
+            if (hasLiveScriptureOutput(get(outputs))) void refreshLiveScripture()
         }, 160)
     })
     onDestroy(() => {
@@ -193,6 +193,7 @@
     }
 
     $: isActiveInOutput = outputIsScripture($outputs)
+    $: hasLiveScripture = hasLiveScriptureOutput($outputs)
 
     type Reference = {
         book: number | string | null
@@ -604,7 +605,7 @@
 
         const next = selectedChapters.map((chapter, index) => (index === selectedChapters.length - 1 ? [firstPart.id] : chapter))
         openVerse(next)
-        if (isActiveInOutput) setTimeout(playScripture)
+        if (hasLiveScripture) setTimeout(refreshLiveScripture)
     }
 
     $: if ($activeTriggerFunction === "scripture_selectAll") selectAllVerses()
@@ -952,9 +953,9 @@
 
         // Refresh
         if (ctrlKey === "r") {
-            if (!isActiveInOutput) return
+            if (!hasLiveScripture) return
             e.preventDefault()
-            playScripture()
+            void refreshLiveScripture()
             return
         }
 
@@ -1219,8 +1220,8 @@
                                     draggable="true"
                                     on:mousedown={(e) => openVerse(updateVersesSelection(e, content.id))}
                                     on:click={(e) => openVerse(updateVersesSelection(e, content.id, true))}
-                                    on:click={(e) => (isActiveInOutput && !e.ctrlKey && !e.metaKey ? playScripture() : false)}
-                                    on:dblclick={(e) => (isActiveInOutput && !e.ctrlKey && !e.metaKey ? false : playScripture())}
+                                    on:click={(e) => (hasLiveScripture && !e.ctrlKey && !e.metaKey ? refreshLiveScripture() : false)}
+                                    on:dblclick={(e) => (hasLiveScripture && !e.ctrlKey && !e.metaKey ? false : playScripture())}
                                     role="none"
                                 >
                                     <span class="v" style={endNumber && subverse && showSuffixInPicker ? "width: 60px;" : ""}
@@ -1315,7 +1316,7 @@
     </FloatingInputs>
 {:else if $scriptureMode !== "grid" || $resized.rightPanelDrawer > 5}
     <FloatingInputs>
-        {#if isActiveInOutput}
+        {#if hasLiveScripture}
             <MaterialButton disabled={activeReference.book?.toString() === "1" && !!activeReference.chapters?.find((a) => a.toString() === "1") && !!activeReference.verses[0]?.find((a) => a.toString() === "1")} title="{translateText('preview._previous_slide')} [Ctrl+Arrow Left]" on:click={() => _moveSelection(true)}>
                 <Icon size={1.3} id="previous" />
             </MaterialButton>

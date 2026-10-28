@@ -280,8 +280,46 @@ export function sortScriptureSelection(selection: (string | number)[]) {
 
 // OUTPUT
 
-// Keep the existing primary-only entry point used by Bible navigation, verse
-// editing, and live style refresh. No secondary is subscribed to navigation.
+// Outputs deliberately selected with "Enviar a…" follow verse navigation.
+// This is an ephemeral route, not a persistent M1-05 saved screen group.
+// If a target stops showing this Bible, it is removed from the route.
+const scriptureFollowingOutputs = new Map<string, string>()
+let scriptureProjectionGeneration = 0
+
+export function getLiveScriptureOutputIds() {
+    const main = getJAMainOutput()
+    if (!main) return []
+    const mainId = main.id
+    const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
+    const current = get(outputs)
+    const eligible = new Set(getJADestinations(current, mainId).map((o) => o.id))
+    const live: string[] = []
+
+    if (current[mainId]?.out?.slide?.id === "temp" && current[mainId]?.out?.slide?.categoryId === categoryId) live.push(mainId)
+
+    for (const [outputId, expectedCategory] of scriptureFollowingOutputs) {
+        if (!eligible.has(outputId) || expectedCategory !== categoryId || current[outputId]?.out?.slide?.id !== "temp" || current[outputId]?.out?.slide?.categoryId !== expectedCategory) {
+            scriptureFollowingOutputs.delete(outputId)
+            continue
+        }
+        if (!live.includes(outputId)) live.push(outputId)
+    }
+    return live
+}
+
+export function hasLiveScriptureOutput(_updater: any = null) {
+    return getLiveScriptureOutputIds().length > 0
+}
+
+// Advance/refresh the existing Bible selection on its live destinations only.
+export async function refreshLiveScripture() {
+    const targets = getLiveScriptureOutputIds()
+    if (!targets.length) return
+    const main = getJAMainOutput()
+    await projectScripture(targets, true, !!main && targets.includes(main.id))
+}
+
+// Ordinary "Proyectar" remains primary-only.
 export async function playScripture() {
     const mainOutput = getJAMainOutput()
     if (!mainOutput) return
@@ -298,17 +336,21 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
     const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
     const selected = [...new Set(outputIds)].filter((id) => eligible.has(id))
     if (!selected.length) return
-    await projectScripture(selected, true)
+    const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
+    if (await projectScripture(selected, true) && categoryId === (get(drawerTabsData).scripture?.activeSubTab || "")) {
+        for (const id of selected) scriptureFollowingOutputs.set(id, categoryId)
+    }
 }
 
-async function projectScripture(outputIds: string[], explicit: boolean) {
-    if (get(outLocked)) return
+async function projectScripture(outputIds: string[], explicit: boolean, recordMainHistory = false): Promise<boolean> {
+    const generation = ++scriptureProjectionGeneration
+    if (get(outLocked)) return false
 
     const mainOutput = getJAMainOutput()
-    if (!mainOutput) return
+    if (!mainOutput) return false
 
     const biblesContent = await getActiveScripturesContent()
-    if (!biblesContent?.length || !biblesContent[0]) return
+    if (!biblesContent?.length || !biblesContent[0]) return false
 
     const selectedChapters = biblesContent[0].chapters || []
     const selectedVerses = biblesContent[0].activeVerses || []
@@ -323,7 +365,7 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
 
     // Record the original primary projection workflow once; sending a static
     // copy to a secondary must not repeat navigation history or live triggers.
-    if (!explicit) scriptureHistory.update((a) => {
+    if (!explicit || recordMainHistory) scriptureHistory.update((a) => {
         const tabId = get(drawerTabsData).scripture?.activeSubTab || ""
         const tabData = get(scriptures)[tabId]
         const version = tabData?.customName || tabData?.name || biblesContent[0].version || ""
@@ -351,7 +393,7 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
     const _template = new TemplateHelper(templateId)
 
     const outputIsScripture = mainOutput.out?.slide?.id === "temp"
-    if (!explicit && !outputIsScripture) {
+    if ((!explicit || recordMainHistory) && !outputIsScripture) {
         // trigger action activation
         customActionActivation("scripture_start")
         // trigger template action(s)
@@ -371,10 +413,10 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
     // Revalidate after asynchronous verse/template preparation. Never redirect
     // to a different projector when the configured JA primary changes or a
     // selected auxiliary display disconnects while content is loading.
-    if (getJAMainOutput()?.id !== mainOutput.id) return
+    if (generation !== scriptureProjectionGeneration || getJAMainOutput()?.id !== mainOutput.id) return false
     if (explicit) {
         const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
-        if (outputIds.some((id) => !eligible.has(id))) return
+        if (outputIds.some((id) => !eligible.has(id))) return false
     }
     const slidePayload = { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }
     if (explicit) {
@@ -388,14 +430,14 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
         })
         if (foregroundTargets.length) sendToJAOutputs("background", null, foregroundTargets)
         const sent = sendToJAOutputs("slide", slidePayload, outputIds)
-        if (sent.length !== outputIds.length) return
+        if (sent.length !== outputIds.length) return false
     } else {
         setOutput("slide", slidePayload, false, mainOutput.id)
     }
 
     // track
     const reference = `${biblesContent[0].book} ${fullReferenceRange || biblesContent[0].chapters[0]}`.trim()
-    if (!explicit) biblesContent.forEach((translation) => {
+    if (!explicit || recordMainHistory) biblesContent.forEach((translation) => {
         if (!translation) return
         const name = translation.version || ""
         const apiId = translation.isApi ? get(scriptures)[translation.id]?.id || translation.id || "" : null
@@ -410,7 +452,7 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
     if (!templateBackground) {
         if (explicit) sendToJAOutputs("background", null, outputIds)
         else setOutput("background", null, false, mainOutput.id)
-        return
+        return true
     }
 
     // Preserve each target's own output media style rather than borrowing the
@@ -419,7 +461,7 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
     if (explicit) {
         for (const outputId of outputIds) {
             const target = get(outputs)[outputId]
-            if (!target?.active || !target.enabled || getJAMainOutput()?.id !== mainOutput.id) return
+            if (generation !== scriptureProjectionGeneration || !target?.active || !target.enabled || getJAMainOutput()?.id !== mainOutput.id || target.out?.slide?.id !== "temp") return false
             const currentStyle = get(styles)[target.style || ""] || {}
             const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
             sendToJAOutputs("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, [outputId])
@@ -429,6 +471,7 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
         const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
         setOutput("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, false, mainOutput.id)
     }
+    return true
 
     ///
 
