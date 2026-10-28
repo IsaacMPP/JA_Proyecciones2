@@ -1,3 +1,5 @@
+**Aislamiento adicional del seguimiento bíblico (2026-10-28):** `setOutput("background")` de FreeShow puede reemplazar el video/imagen de una salida sin borrar inmediatamente su `out.slide.id="temp"`. Por eso el seguimiento efímero registra también el identificador del fondo con el que se envió la Biblia. Si el operador proyecta un video o fondo distinto en una secundaria, esa salida deja de recibir versos y NO se pisa su sesión audiovisual al pulsar flechas. Tras un refresco de estilo autorizado se actualiza el identificador esperado. No se toca el reproductor, la lógica general de `setOutput` ni la lista de pendientes.
+
 **Compatibilidad TypeScript del mismo cambio:** `OutSlide` ya recibe `categoryId` al crear una diapositiva bíblica temporal; se declara ese campo como opcional en `src/types/Show.ts` para validar de forma tipada el destino al que se aplica navegación, evitando conversiones `any`. No cambia el formato de persistencia ni el renderer. CI y pruebas Windows pendientes.
 
 ## 2026-10-28 — M1-03F/05A: navegación de Biblia también en destinos seleccionados (CI/Windows pendientes)

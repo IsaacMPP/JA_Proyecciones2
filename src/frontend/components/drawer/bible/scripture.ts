@@ -283,7 +283,13 @@ export function sortScriptureSelection(selection: (string | number)[]) {
 // Outputs deliberately selected with "Enviar a…" follow verse navigation.
 // This is an ephemeral route, not a persistent M1-05 saved screen group.
 // If a target stops showing this Bible, it is removed from the route.
-const scriptureFollowingOutputs = new Map<string, string>()
+type ScriptureFollowingOutput = { categoryId: string; backgroundKey: string }
+const scriptureFollowingOutputs = new Map<string, ScriptureFollowingOutput>()
+
+function projectedBackgroundKey(output: any): string {
+    const background = output?.out?.background
+    return background?.path || background?.id || ""
+}
 let scriptureProjectionGeneration = 0
 
 export function getLiveScriptureOutputIds() {
@@ -297,8 +303,8 @@ export function getLiveScriptureOutputIds() {
 
     if (current[mainId]?.out?.slide?.id === "temp" && current[mainId]?.out?.slide?.categoryId === categoryId) live.push(mainId)
 
-    for (const [outputId, expectedCategory] of scriptureFollowingOutputs) {
-        if (!eligible.has(outputId) || expectedCategory !== categoryId || current[outputId]?.out?.slide?.id !== "temp" || current[outputId]?.out?.slide?.categoryId !== expectedCategory) {
+    for (const [outputId, followed] of scriptureFollowingOutputs) {
+        if (!eligible.has(outputId) || followed.categoryId !== categoryId || current[outputId]?.out?.slide?.id !== "temp" || current[outputId]?.out?.slide?.categoryId !== followed.categoryId || projectedBackgroundKey(current[outputId]) !== followed.backgroundKey) {
             scriptureFollowingOutputs.delete(outputId)
             continue
         }
@@ -316,7 +322,13 @@ export async function refreshLiveScripture() {
     const targets = getLiveScriptureOutputIds()
     if (!targets.length) return
     const main = getJAMainOutput()
-    await projectScripture(targets, true, !!main && targets.includes(main.id))
+    if (await projectScripture(targets, true, !!main && targets.includes(main.id))) {
+        const current = get(outputs)
+        for (const outputId of targets) {
+            const followed = scriptureFollowingOutputs.get(outputId)
+            if (followed) followed.backgroundKey = projectedBackgroundKey(current[outputId])
+        }
+    }
 }
 
 // Ordinary "Proyectar" remains primary-only.
@@ -338,7 +350,8 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
     if (!selected.length) return
     const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
     if (await projectScripture(selected, true) && categoryId === (get(drawerTabsData).scripture?.activeSubTab || "")) {
-        for (const id of selected) scriptureFollowingOutputs.set(id, categoryId)
+        const current = get(outputs)
+        for (const id of selected) scriptureFollowingOutputs.set(id, { categoryId, backgroundKey: projectedBackgroundKey(current[id]) })
     }
 }
 
