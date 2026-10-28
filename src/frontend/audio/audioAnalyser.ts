@@ -221,6 +221,7 @@ export class AudioAnalyser {
         if (!source) return
 
         const processor = this.processors[key]
+        const gainNode = this.gainNodes[key]
         const nodeIds = this.attachedInputIds.get(key) || this.getInputNodeIds(id, outputId)
         this.attachedInputIds.delete(key)
 
@@ -262,7 +263,7 @@ export class AudioAnalyser {
             processor?.dispose()
         } catch {}
         try {
-            this.gainNodes[key]?.disconnect()
+            gainNode?.disconnect()
         } catch {}
 
         delete this.processors[key]
@@ -280,8 +281,10 @@ export class AudioAnalyser {
         }
 
         try {
-            if (isShared) source.disconnect(this.gainNodes[key])
-            else source.disconnect()
+            // Preserve the target GainNode until its source edge is removed.
+            // The registry entry has already been deleted at this point.
+            if (isShared && gainNode) source.disconnect(gainNode)
+            else if (!isShared) source.disconnect()
         } catch {}
     }
 
