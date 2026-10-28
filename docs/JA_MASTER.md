@@ -1,3 +1,5 @@
+**Auditoría de carreras asociadas (2026-10-28):** se complementa el aislamiento de sesión en `createAudio(...).ended` (el callback consulta los outputs actuales del objeto de audio, no la lista original ya obsoleta); `checkIfEnding` bloquea por instancia en lugar de path; el cálculo de soft-loop ocurre una vez por reloj compartido en vez de una vez por pantalla. Una carga de audio fallida no detiene otras instancias con igual ruta. El inicio consulta opciones de la sesión solicitada. Pendientes CI nuevo HEAD y validación Windows de cambios rápidos, finales y soft-loop.
+
 ## 2026-10-28 — M1-03/M1-05: aislar sesiones audiovisuales al reemplazar una salida (por validar)
 
 **Reporte Windows del operador:** enviar un mismo video a Primario + Output 1 reproduce inicialmente, pero al enviar luego otro video de Multimedia/Himnario el audio de Primario desaparece y el video puede retroceder/repetir segundos. Biblia con flechas YA validada por el usuario, no intervenir el navegador.

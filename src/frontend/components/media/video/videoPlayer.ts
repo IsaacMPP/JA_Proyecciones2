@@ -127,14 +127,14 @@ export class VideoPlayer {
             return false
         }
 
-        const startTime = this.getStartTime(id, options.startAt)
+        const startTime = this.getStartTime(id, options.startAt, linkedOutputIds)
         if (startTime) {
             const initialTime = audio.duration > 0 && startTime > audio.duration ? 0 : startTime
             audio.currentTime = initialTime
             if ("timeTick" in audio) audio.timeTick.update(initialTime)
         }
 
-        const globalOpts = { ...this.getOptions(id), ...options }
+        const globalOpts = { ...this.getOptions(id, linkedOutputIds), ...options }
         const softLoop = globalOpts.softLoop || 0
         const loop = globalOpts.loop ?? false
         const fromTime = globalOpts.fromTime || 0
@@ -292,10 +292,16 @@ export class VideoPlayer {
         const audio = new Audio(encodeFilePath(audioPath))
 
         audio.addEventListener("ended", async () => {
-            if (this.getOptions(originalId, outputIds)?.loop) {
-                if (await checkNextAfterMedia(originalId, "media", outputIds)) return
+            // The same path can exist in independent sessions. This callback
+            // must follow the owner of THIS audio, not the original output set
+            // (which may have changed after a grouped output was detached).
+            const owner = get(playingVideos).find((v) => v.path === originalId && v.audio === audio)
+            if (!owner) return
+            const currentOutputIds = [...owner.linkedOutputIds]
+            if (this.getOptions(originalId, currentOutputIds)?.loop) {
+                if (await checkNextAfterMedia(originalId, "media", currentOutputIds)) return
 
-                const startTime = this.getStartTime(originalId, undefined, outputIds)
+                const startTime = this.getStartTime(originalId, undefined, currentOutputIds)
                 audio.currentTime = startTime
                 if ("timeTick" in audio) (audio as any).timeTick.update(startTime)
                 if (audio.paused && audio instanceof HTMLAudioElement) audio.play().catch(() => {})
@@ -312,7 +318,7 @@ export class VideoPlayer {
                 if (!audio.paused) timeTick.play()
 
                 playingVideos.update((list) => {
-                    const item = list.find((v) => v.path === originalId)
+                    const item = list.find((v) => v === owner)
                     if (item) {
                         item.audio = { currentTime, timeTick, duration, paused: audio.paused, loop: !!item.loop, muted: true }
                     }
@@ -326,7 +332,7 @@ export class VideoPlayer {
             }
 
             // absolute end
-            this.checkIfEnding(originalId, outputIds, true)
+            this.checkIfEnding(originalId, currentOutputIds, true)
         })
         const loaded = await this.waitForAudio(originalId, audio)
         if (!loaded) return null
@@ -347,22 +353,23 @@ export class VideoPlayer {
             function error(err: ErrorEvent) {
                 if (resolved) return
                 console.error("Could not get audio:", err)
-                VideoPlayer.stop(pathOrId)
+                // Failure of one loading instance must not stop another live
+                // instance of the same media file on the main projector.
+                audio.removeAttribute("src")
+                audio.load()
                 resolve(null)
             }
         })
     }
 
-    private static isCheckingEnding = new Set<string>()
+    private static isCheckingEnding = new Set<VideoAudioData>()
     static async checkIfEnding(path: string, outputIds?: string[], force = false) {
-        if (this.isCheckingEnding.has(path)) return
-        this.isCheckingEnding.add(path)
-
         const playing = this.getPlaying(path, outputIds || [])
-        if (!playing || (playing.audio.paused && !force)) return finish()
+        if (!playing || this.isCheckingEnding.has(playing)) return
+        this.isCheckingEnding.add(playing)
+        if (playing.audio.paused && !force) return finish()
 
-        const audio = this.getAudio(path, outputIds ? outputIds[0] : undefined)
-        if (!audio) return finish()
+        const audio = playing.audio
 
         const endingTime = this.getEndTime(path, audio.duration, outputIds)
 
@@ -436,7 +443,7 @@ export class VideoPlayer {
         }, 200) // WAIT FOR NEXT AFTER MEDIA TO FINISH
 
         function finish() {
-            VideoPlayer.isCheckingEnding.delete(path)
+            VideoPlayer.isCheckingEnding.delete(playing)
         }
     }
 
@@ -858,8 +865,8 @@ export class VideoPlayer {
 
                 const outputIds = video.linkedOutputIds || []
 
-                // check if ended before it actually ends, so we can fade out while next starts
-                // this also accounts for clearing player videos
+                // Check the exact session: two independent sessions may use the
+                // same file but have different clocks and endpoint lifetimes.
                 this.checkIfEnding(video.path, outputIds)
 
                 let audibleOnlineOutputId: string | null = null
@@ -869,10 +876,12 @@ export class VideoPlayer {
                     audibleOnlineOutputId = unmutedOutputIds.find((outId) => !get(outputs)[outId]?.invisible) || unmutedOutputIds[0] || null
                 }
 
+                // Handle the loop once per shared audio clock (not once per
+                // display), to avoid duplicate time jumps/crossfade operations.
+                const softLoop = video.softLoop || 0
+                const softLoopOpacity = this.handleSoftLoop(video, video.audio, softLoop, video.loop || false)
                 outputIds.forEach((outputId) => {
                     const id = `${video.path}_${outputId}`
-                    const softLoop = video.softLoop || 0
-                    const softLoopOpacity = this.handleSoftLoop(video, video.audio, softLoop, video.loop || false)
                     const activeAudio = video.audio
                     const outputMuted = this.isOutputMuted(outputId)
                     const isMuted = video.isOnline ? activeAudio.muted || outputId !== audibleOnlineOutputId : activeAudio.muted || outputMuted
@@ -966,7 +975,7 @@ export class VideoPlayer {
             }
 
             const fadeProgress = (softLoop - remaining) / softLoop
-            const baseVol = this.getVolume(video.path) * (video.replayGainMultiplier ?? 1)
+            const baseVol = this.getVolume(video.path, video.linkedOutputIds) * (video.replayGainMultiplier ?? 1)
 
             // Scale GainNode via AudioAnalyser to support volumes above 1.0 (e.g. 1.25 / 125%)
             const currentVol = Math.max(0, baseVol * (1 - fadeProgress))
