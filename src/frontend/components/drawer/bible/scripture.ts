@@ -21,7 +21,7 @@ import { customActionActivation } from "../../actions/actions"
 import { getItemText } from "../../edit/scripts/textStyle"
 import { clone, removeDuplicates } from "../../helpers/array"
 import { history } from "../../helpers/history"
-import { getMediaStyle } from "../../helpers/media"
+import { getMediaLayerType, getMediaStyle } from "../../helpers/media"
 import { getAllNormalOutputs, getJAMainOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
 import { checkName } from "../../helpers/show"
 
@@ -378,6 +378,15 @@ async function projectScripture(outputIds: string[], explicit: boolean) {
     }
     const slidePayload = { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] }
     if (explicit) {
+        // FreeShow's generic slide handler clears foreground backgrounds
+        // globally when it encounters one. Clear only chosen displays first
+        // to keep unrelated JA outputs and their audio untouched.
+        const foregroundTargets = outputIds.filter((outputId) => {
+            const background = get(outputs)[outputId]?.out?.background
+            const path = background?.path || background?.id || ""
+            return getMediaLayerType(path, get(media)[path] || {}) === "foreground"
+        })
+        if (foregroundTargets.length) sendToJAOutputs("background", null, foregroundTargets)
         const sent = sendToJAOutputs("slide", slidePayload, outputIds)
         if (sent.length !== outputIds.length) return
     } else {

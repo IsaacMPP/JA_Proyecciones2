@@ -1,3 +1,5 @@
+**Salvaguarda de salida M1-03 Biblia (2026-10-28):** la ruta original `setOutput("slide")` limpia todos los fondos mediante `clearBackground()` si la primera salida destino usa foreground. Para evitar que Biblia enviada únicamente a auxiliar borre un video de Primario, el envío explícito despeja fondos foreground únicamente en IDs seleccionados antes de proyectar el versículo, usando el mismo `sendToJAOutputs`. No cambia la proyección normal ni el controlador de video. Probar video foreground en auxiliar y video con audio en Primario.
+
 ## 2026-10-28 — M1-03 Fase 0 + Fase 1 (selector explícito en Biblia, pendiente Windows)
 
 **Estado base protegido:** rama `feature/base-freeshow-diseno-ja`, HEAD de inicio `b8bf51c890969a7e83a47dc7a54a7a7a9292b07f`; Actions #40743618059 success; PR #2 draft, `main` no tocar. Usuario confirmó en Windows que flechas bíblicas y reproducción de dos videos ya funcionan; no volver a intervenir sus controladores.
