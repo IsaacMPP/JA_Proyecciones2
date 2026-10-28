@@ -15,6 +15,8 @@
     import SelectElem from "../../system/SelectElem.svelte"
     import Card from "../Card.svelte"
     import MediaLoader from "./MediaLoader.svelte"
+    import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
+    import { sendToJAOutputs } from "../../helpers/output"
 
     export let name: string
     export let path: string
@@ -117,25 +119,16 @@
             wait = false
         }, 800)
 
-        const activeOutputs = getAllActiveOutputs()
-
-        const isActive = activeOutputs.some((a) => (a.out?.background?.path || a.out?.background?.id) === path)
+        const savedPrimary = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        const allActive = getAllActiveOutputs()
+        const primary = savedPrimary ? allActive.find((o) => o.id === savedPrimary) : (allActive.length === 1 ? allActive[0] : null)
+        if (!primary) return
+        const isActive = (primary.out?.background?.path || primary.out?.background?.id) === path
         if (isActive) {
-            clearBackground()
+            setOutput("background", null, false, primary.id)
             return
         }
-
-        let videoType = getMediaLayerType(path, mediaStyle)
-        let loop = contentProvider || videoType === "foreground" ? false : true
-        let muted = videoType === "background" ? true : false
-        if (videoType === "foreground") clearSlide()
-
-        // get style per output
-        activeOutputs.forEach((output) => {
-            const currentOutputStyle = $styles[output.style || ""]
-            const currentMediaStyle = getMediaStyle($media[path], currentOutputStyle)
-            setOutput("background", { path, type, loop, muted, startAt: 0, ...currentMediaStyle, ignoreLayer: videoType === "foreground" }, false, output.id)
-        })
+        projectTo([primary.id])
 
         // unsplash requires the download to be triggered when using their images
         if (credits && credits.type === "unsplash" && credits.trigger_download) {
@@ -144,6 +137,20 @@
         } else {
             customMessageCredits.set("")
         }
+    }
+
+    function projectTo(ids: string[]) {
+        if ($outLocked || !ids.length) return
+        const videoType = getMediaLayerType(path, mediaStyle)
+        const loop = contentProvider || videoType === "foreground" ? false : true
+        const muted = videoType === "background"
+        // Preserve native renderer and source-specific style per output.
+        ids.forEach((id) => {
+            const output = $outputs[id]
+            if (!output?.enabled || !output.active) return
+            const style = getMediaStyle($media[path], $styles[output.style || ""])
+            sendToJAOutputs("background", { path, type, loop, muted, startAt: 0, ...style, ignoreLayer: videoType === "foreground" }, [id])
+        })
     }
 
     function dblclick(e: any) {
@@ -271,6 +278,9 @@
             {/if}
         </div>
 
+        <div class="jaMediaDest" on:click|stopPropagation on:mousedown|stopPropagation>
+            <JADestinationChooser label={"Enviar " + displayName + " a…"} onSend={projectTo} />
+        </div>
         {#if failed}
             <div class="icon">
                 <Icon size={2.5} id="close" style="color: var(--disconnected);" white />
@@ -288,6 +298,9 @@
 </SelectElem>
 
 <style>
+    .jaMediaDest {position:absolute;right:5px;top:5px;z-index:4;opacity:0;pointer-events:none;transition:opacity .12s ease}
+    :global(.media_card:hover) .jaMediaDest, .jaMediaDest:focus-within {opacity:1;pointer-events:auto}
+
     .icon {
         display: flex;
         justify-content: center;
