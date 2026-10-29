@@ -469,7 +469,12 @@
             })
         }
 
-        if (playWhenLoaded) setTimeout(playScripture)
+        if (playWhenLoaded) {
+            // Explicit external "play" remains primary-only unless the
+            // operator is already controlling a live Bible output.
+            if (hasLiveScripture) setTimeout(refreshLiveScripture)
+            else setTimeout(playScripture)
+        }
         playWhenLoaded = false
     }
 
@@ -1027,8 +1032,8 @@
                     }
 
                     await wait(1) // this fixes API next not changing selection
-                    openVerse([newSelection])
-                    if (isActiveInOutput) setTimeout(playScripture)
+                    await openVerse([newSelection])
+                    if (hasLiveScripture) await refreshLiveScripture()
                     return
                 } else if (newIndex < 0 || newIndex + selectionCount - 1 >= splittedVerses.length) {
                     // Need to move to next/previous chapter or book
@@ -1067,9 +1072,8 @@
 
         const newSelection = moveSelection(lengths, selection, moveLeft)
 
-        openBook(newSelection.book, newSelection.chapters, [newSelection.verses])
-
-        if (isActiveInOutput) setTimeout(playScripture)
+        const didNavigate = await openBook(newSelection.book, newSelection.chapters, [newSelection.verses])
+        if (didNavigate && hasLiveScripture) await refreshLiveScripture()
     }
 
     $: reference = getReference({ data, activeReference })

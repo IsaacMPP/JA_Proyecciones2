@@ -295,6 +295,7 @@ function projectedBackgroundKey(output: any): string {
     return background?.path || background?.id || ""
 }
 let scriptureProjectionGeneration = 0
+const scriptureOutputGenerations = new Map<string, number>()
 
 // Controlar selects the navigation target without changing the JA primary.
 // Never fall back to another screen if the selected output disconnects.
@@ -396,11 +397,20 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
             scriptureFollowingOutputs.set(id, { categoryId, backgroundKey: projectedBackgroundKey(current[id]), navigationGroup })
             supersededPrimaryOutputs.delete(id)
         }
+        // The just-sent group becomes the Scripture navigation target. Keep a
+        // previously inspected output if it belongs to this group; otherwise
+        // prefer the JA primary if selected, or the first explicit destination.
+        const controlled = get(jaControlledOutputId)
+        const nextControl = selected.includes(controlled) ? controlled : selected.includes(mainOutput.id) ? mainOutput.id : selected[0]
+        jaControlledOutputId.set(nextControl)
     }
 }
 
 async function projectScripture(outputIds: string[], explicit: boolean, recordMainHistory = false): Promise<boolean> {
     const generation = ++scriptureProjectionGeneration
+    for (const outputId of outputIds) scriptureOutputGenerations.set(outputId, generation)
+    const isLatestForTargets = () => outputIds.every((id) => scriptureOutputGenerations.get(id) === generation)
+    const projectionCategoryId = get(drawerTabsData).scripture?.activeSubTab || ""
     const referenceSnapshot = clone(get(activeScripture).reference) as ScriptureReference
     if (get(outLocked)) return false
 
@@ -464,14 +474,14 @@ async function projectScripture(outputIds: string[], explicit: boolean, recordMa
     const settings = { backgroundColor: _template.getSetting("backgroundColor") }
 
     const tempItems: Item[] = slides[0] || []
-    const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
+    const categoryId = projectionCategoryId
 
     const [previousSlides, nextSlides] = await Promise.all([getPreviousSlides(), getNextSlides()])
 
     // Revalidate after asynchronous verse/template preparation. Never redirect
     // to a different projector when the configured JA primary changes or a
     // selected auxiliary display disconnects while content is loading.
-    if (generation !== scriptureProjectionGeneration || getJAMainOutput()?.id !== mainOutput.id) return false
+    if (!isLatestForTargets() || (get(drawerTabsData).scripture?.activeSubTab || "") !== projectionCategoryId || getJAMainOutput()?.id !== mainOutput.id) return false
     if (explicit) {
         const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
         if (outputIds.some((id) => !eligible.has(id))) return false
@@ -519,7 +529,7 @@ async function projectScripture(outputIds: string[], explicit: boolean, recordMa
     if (explicit) {
         for (const outputId of outputIds) {
             const target = get(outputs)[outputId]
-            if (generation !== scriptureProjectionGeneration || !target?.active || !target.enabled || getJAMainOutput()?.id !== mainOutput.id || target.out?.slide?.id !== "temp") return false
+            if (!isLatestForTargets() || !target?.active || !target.enabled || getJAMainOutput()?.id !== mainOutput.id || target.out?.slide?.id !== "temp") return false
             const currentStyle = get(styles)[target.style || ""] || {}
             const mediaStyle = getMediaStyle(get(media)[templateBackground], currentStyle)
             sendToJAOutputs("background", { path: templateBackground, loop: true, muted: true, ...mediaStyle }, [outputId])
