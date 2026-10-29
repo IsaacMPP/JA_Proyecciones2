@@ -1,3 +1,13 @@
+## 2026-10-29 — M1-03: corregir «Abrir» para presentaciones mientras «Controlar» está activo
+
+**Reporte y reproducción por lectura de código:** el operador muestra «Hola» en Presentaciones > menú contextual > «Abrir»; la vista central sigue supervisando video y no aparecen las diapositivas. `contextMenus.ts` resuelve «Abrir» como `preview`; `menuClick.ts` selecciona `activeShow`, pero `MainLayout.svelte` prioriza `jaControlledOutputId` y sustituye `Show` por `PreviewOutput`. Es un bloqueo de navegación/visibilidad, no evidencia de fallo del formato PPT ni del motor de diapositivas.
+
+**Corrección mínima:** solo en `menuClick.ts`, acción `preview` con `sel.id === "show_drawer"`, validar que el show existe y salir del modo supervisión con `jaControlledOutputId.set("")` antes de invocar `openShow(showId)`. `Abrir` vuelve a presentar las diapositivas en el centro; «Controlar» permanece disponible para reactivarse expresamente. No llamar a `setOutput`, `clearSlide`, `VideoPlayer` ni alterar destino principal, audio o sesiones multipantalla.
+
+**Validación:** revisión estática de causa, ruta del menú y cambio acotado realizada. GitHub Actions del nuevo commit y aceptación en Windows **pendientes**: iniciar YouTube o Himnario en principal, pulsar Controlar, menú contextual «Abrir» en «Hola», comprobar que aparecen sus diapositivas y que el video sigue reproduciéndose en principal con sonido; elegir una diapositiva y verificar proyección solo al principal. Probar también «Abrir» sin supervisión, «Editar», presentación ya seleccionada, retorno manual a Controlar, diferentes pantallas y presentación fuera de proyecto. Si el show no carga aun con la vista central libre, diagnosticar por separado caché/lectura de `showsCache`; si abre pero no proyecta, diagnosticar enrutamiento/capas de M1-03. No confundir CI verde con prueba física.
+
+**Estado / continuidad:** unidad de reparación de M1-03; PR #2 draft, `main` intacta; conservar commit funcional anterior `312f2a5` y CI previo verde #40914729997. Pendientes M1-03/04/05/06/07, H1, T1 y F1 no eliminados. Tras esta corrección, revisar Actions/Windows antes de abordar el resto de Presentaciones y «Enviar a…».
+
 ## 2026-10-29 — M1: controles ausentes en el monitor central de «Controlar»
 
 **Evidencia del operador:** con la versión basada en `2792ca1`, YouTube ya pausa en una y varias pantallas. El centro reproduce la imagen pero no muestra pausa ni barra de tiempo; también afecta la supervisión de Multimedia e Himnario. Audio funcional; medidor iframe sigue como mejora independiente.

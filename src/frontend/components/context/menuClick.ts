@@ -90,6 +90,7 @@ import {
     variables
 } from "../../stores"
 import { escapeRegExp, hideDisplay, isOutputWindow, newToast, triggerFunction, wait } from "../../utils/common"
+import { jaControlledOutputId } from "../../utils/jaControlledOutput"
 import { setExampleEffects, setExampleOverlays, setExampleTemplates } from "../../utils/createData"
 import { translateText } from "../../utils/language"
 import { confirmCustom } from "../../utils/popup"
@@ -1629,8 +1630,13 @@ const clickActions = {
         if (!obj.sel) return
 
         if (obj.sel.id === "show_drawer") {
-            activePage.set("show")
             const showId = obj.sel.data[0]?.id
+            if (!showId || !get(shows)[showId]) return
+
+            // "Abrir" requests the show editor/preview, not the controlled output mirror.
+            // Leave output playback and the operator-selected primary untouched.
+            jaControlledOutputId.set("")
+            activePage.set("show")
             openShow(showId)
             return
         }
