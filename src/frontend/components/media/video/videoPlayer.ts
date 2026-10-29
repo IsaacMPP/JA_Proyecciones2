@@ -275,18 +275,31 @@ export class VideoPlayer {
 
     private static async createAudio(audioPath: string, originalId: string, outputIds?: string[], isOnline?: boolean): Promise<HTMLAudioElement | VirtualAudioElement | null> {
         if (isOnline) {
-            const playerData = get(playerVideos)[originalId]
-            const path = playerData?.id || ""
-            const data = await (playerData?.type === "youtube" ? getYouTubeData(path) : playerData?.type === "vimeo" ? getVimeoData(path) : null)
-
-            return {
+            // The embedded YouTube/Vimeo iframe owns the actual sound. This
+            // virtual element only provides a shared position/mute clock.
+            // Never block the clock (and its initially unmuted output state)
+            // on external oEmbed/watch requests: they may be slow or blocked.
+            const audio: VirtualAudioElement = {
                 currentTime: 0,
                 timeTick: new TimeInterpolator(),
-                duration: data?.duration || 0,
+                duration: 0,
                 paused: true,
                 loop: false,
                 muted: false
             }
+            const playerData = get(playerVideos)[originalId]
+            const path = playerData?.id || ""
+            const metadata = playerData?.type === "youtube" ? getYouTubeData(path) : playerData?.type === "vimeo" ? getVimeoData(path) : null
+            if (metadata) {
+                void metadata.then((data) => {
+                    if (!data?.duration || data.duration <= 0) return
+                    audio.duration = data.duration
+                    // Only update a still-active instance; a replaced video
+                    // must not recreate a session after an async response.
+                    if (get(playingVideos).some((v) => v.audio === audio)) this.initSyncClock()
+                }).catch((error) => console.warn("[VideoPlayer] online metadata unavailable:", error))
+            }
+            return audio
         }
 
         const audio = new Audio(encodeFilePath(audioPath))

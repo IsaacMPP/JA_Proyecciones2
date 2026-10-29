@@ -34,13 +34,11 @@
     let loaded = false
     function onReady(e) {
         player = e.detail.target
-
-        // if (videoData.muted || (!preview && $currentWindow !== "output")) player.mute()
-
         loaded = true
-
+        // The JA video clock now starts immediately; reapply the correct
+        // primary/secondary audio policy once the iframe API is ready.
+        applyMuteState()
         videoData.paused = $focusMode
-
         dispatch("loaded", true)
     }
 
@@ -83,14 +81,27 @@
         else player.playVideo()
     }
 
-    // mute state
+    // The program preview and JA secondary output remain silent. For the
+    // audible primary, reconcile the actual YouTube iframe mute state after
+    // ready, after state updates, and when autoplay first begins.
     $: shouldBeMuted = preview || $currentWindow !== "output" ? true : !!videoData.muted
-    $: if (player && loaded && shouldBeMuted !== undefined) {
-        if (shouldBeMuted) {
-            if (!player.isMuted()) player.mute()
-        } else if ($currentWindow === "output" || preview) {
-            player.unMute()
+    function applyMuteState() {
+        if (!player || !loaded) return
+        try {
+            if (shouldBeMuted) {
+                if (!player.isMuted()) player.mute()
+            } else if (player.isMuted()) {
+                player.unMute()
+            }
+        } catch (error) {
+            console.warn("[YouTube] Could not update iframe audio:", error)
         }
+    }
+    $: if (player && loaded && shouldBeMuted !== undefined) applyMuteState()
+    function onVideoPlaying() {
+        // YouTube may start an autoplay request muted even after onReady.
+        // Do not change the JA mute policy, just apply it to the live iframe.
+        applyMuteState()
     }
 
     $: if (!id && player) player.stopVideo()
@@ -128,7 +139,7 @@
     {#if id}
         <!-- {#if $currentWindow === "output"} -->
         <!-- on:stateChange={change} -->
-        <YouTubePlayer class="yt" videoId={id} {options} on:ready={onReady} on:end={ended} />
+        <YouTubePlayer class="yt" videoId={id} {options} on:ready={onReady} on:play={onVideoPlaying} on:end={ended} />
         <!-- {:else}
             <div style="width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
                 <Icon id="youtube" size={6} white />
