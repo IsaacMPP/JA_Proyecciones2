@@ -378,9 +378,11 @@
 </script>
 
 {#key mediaPath || showId}
-    <div id={mediaPath || showId} class="media context #media{type === 'player' ? '_player' : ''}_preview" style="flex: 1;overflow: hidden;">
+    <div id={mediaPath || showId} class="media context #media{type === 'player' ? '_player' : ''}_preview" style="flex: 1;overflow: hidden;position:relative;">
         <!-- TODO: info about: CTRL click to play at current pos -->
-        <HoverButton hide={playingInOutput} icon="play" size={10} on:click={(e) => playVideo(e.ctrlKey || e.metaKey ? videoTime : 0)}>
+        <!-- Online iframe controls must remain clickable even before projection.
+             Its dedicated Proyectar button is separate from native YouTube controls. -->
+        <HoverButton hide={type === "player" || playingInOutput} icon="play" size={10} on:click={(e) => playVideo(e.ctrlKey || e.metaKey ? videoTime : 0)}>
             {#if type === "player"}
                 <Player id={showId} {outputId} preview bind:videoData bind:videoTime />
             {:else if mediaPath}
@@ -402,6 +404,14 @@
                 {/if}
             {/if}
         </HoverButton>
+        {#if type === "player" && !playingInOutput}
+            <div style="position:absolute;right:12px;top:12px;z-index:2;" on:click|stopPropagation>
+                <MaterialButton title="media.play" on:click={() => playVideo(0)}>
+                    <Icon id="play" white size={1.2} />
+                    Proyectar
+                </MaterialButton>
+            </div>
+        {/if}
     </div>
 {/key}
 

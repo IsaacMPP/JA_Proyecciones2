@@ -45,9 +45,12 @@
                 videoTime = data.currentTime
             }
 
-            videoData.loop = data.loop
-            videoData.paused = data.paused
-            videoData.muted = data.muted
+            // Assign a new object when transport properties change. Explicit
+            // Svelte invalidation makes pause/mute updates propagate reliably
+            // through Player -> YouTube and VideoShow's bound preview.
+            if (videoData.loop !== data.loop || videoData.paused !== data.paused || videoData.muted !== data.muted) {
+                videoData = { ...videoData, loop: data.loop, paused: data.paused, muted: data.muted }
+            }
         })
     }
 
