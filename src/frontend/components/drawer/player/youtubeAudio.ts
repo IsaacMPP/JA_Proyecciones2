@@ -8,6 +8,10 @@ export interface YouTubeAudioAPI {
     setVolume(volume: number): Promise<unknown>
 }
 
+export function shouldMuteYouTube(preview: boolean, inOutputWindow: boolean, sessionActive: boolean, muted: boolean): boolean {
+    return preview || !inOutputWindow || !sessionActive || muted
+}
+
 export async function reconcileYouTubeAudio(player: YouTubeAudioAPI, requestedMuted: boolean, restoreFirstAudibleVolume = false): Promise<void> {
     const actualMuted = await player.isMuted()
     if (requestedMuted) {

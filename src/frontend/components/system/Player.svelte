@@ -21,7 +21,9 @@
 
     $: video = $playerVideos[id] || data
 
-    export let videoData = { muted: true, paused: false, loop: false, duration: 0 }
+    export let videoData = { muted: true, paused: true, loop: false, duration: 0 }
+    // An iframe must never auto-start before its JA transport has synchronized.
+    let sessionActive = false
     export let videoTime = 0
 
     // TODO: looping player videos does not work!
@@ -31,9 +33,11 @@
     let unsubscribe: (() => void) | null = null
     $: if (id && outputId) {
         unsubscribe?.()
+        sessionActive = false
         actualVideoTime = 0
         unsubscribe = videoSync(id, outputId, (data) => {
             if (!video) return
+            sessionActive = true
 
             // update video time if significant difference
             const seekOffset = data.paused ? 0.5 : 2
@@ -54,7 +58,7 @@
 
 {#if video?.type === "youtube"}
     {#key video.id}
-        <YouTube id={video.id} bind:videoData bind:videoTime bind:actualVideoTime {preview} on:loaded on:ended />
+        <YouTube id={video.id} sessionId={id} {outputId} {sessionActive} bind:videoData bind:videoTime bind:actualVideoTime {preview} on:loaded on:ended />
     {/key}
 {:else if video?.type === "vimeo"}
     {#key video.id}

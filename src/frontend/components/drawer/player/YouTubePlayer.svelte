@@ -43,7 +43,8 @@
 
     // https://developers.google.com/youtube/iframe_api_reference#onReady
     function onPlayerReady(e) {
-        dispatch("ready", e)
+        // Supply youtube-player wrapper to consumers, not the synchronous raw event.target.
+        dispatch("ready", { target: player })
     }
 
     // https://developers.google.com/youtube/iframe_api_reference#onError

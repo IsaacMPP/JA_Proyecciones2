@@ -50,3 +50,17 @@ describe("youtube-player asynchronous mute API", () => {
         expect(player.mute).toHaveBeenCalledOnce()
     })
 })
+
+import { shouldMuteYouTube } from "./youtubeAudio"
+
+describe("YouTube JA output/preview audio policy", () => {
+    it("permits audio for an active unmuted output", () => {
+        expect(shouldMuteYouTube(false, true, true, false)).toBe(false)
+        expect(shouldMuteYouTube(false, true, true, true)).toBe(true)
+    })
+    it("keeps idle iframe and preview silent", () => {
+        expect(shouldMuteYouTube(false, true, false, false)).toBe(true)
+        expect(shouldMuteYouTube(true, true, true, false)).toBe(true)
+        expect(shouldMuteYouTube(false, false, true, false)).toBe(true)
+    })
+})
