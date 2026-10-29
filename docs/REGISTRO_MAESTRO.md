@@ -1,3 +1,11 @@
+## Regla permanente de continuidad — 2026-10-29
+
+Por solicitud expresa del propietario, después de cada modificación o entrega del proyecto, incluir en la respuesta un prompt actualizado, autocontenido y listo para copiar en un chat nuevo, sin esperar a que el usuario lo pida ni a agotar la conversación. Resumir objetivo, repositorio, rama, PR, HEAD conocido, último cambio funcional, CI con enlace y estado realmente verificado, aceptación Windows, pendientes y siguiente paso concreto. Incluir las reglas de conservación, lectura de documentos maestros y verificación de GitHub antes de actuar. Si CI sigue en curso o falta validación física, decirlo explícitamente; no presentar pruebas pendientes como aprobadas. Conservar todo el backlog y no reiniciar el desarrollo. Actualizar también la documentación maestra para que la continuidad no dependa de la memoria de un chat.
+
+**Estado al registrar:** último cambio funcional `312f2a52dab84ee01d078964adafd426f3f38945` (controles del centro en MainLayout); Actions #40914729997 en curso al consultar. Pausa de YouTube en una/varias pantallas confirmada por usuario; panel central nuevo aún pendiente Windows. Esta entrega sólo modifica documentación y no requiere instalador nuevo (paths-ignore del workflow). PR #2 permanece draft y main intacta.
+
+---
+
 ## 2026-10-29 — M1: controles ausentes en el monitor central de «Controlar»
 
 **Evidencia del operador:** con la versión basada en `2792ca1`, YouTube ya pausa en una y varias pantallas. El centro reproduce la imagen pero no muestra pausa ni barra de tiempo; también afecta la supervisión de Multimedia e Himnario. Audio funcional; medidor iframe sigue como mejora independiente.
