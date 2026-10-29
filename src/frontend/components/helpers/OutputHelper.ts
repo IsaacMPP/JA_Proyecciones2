@@ -5,7 +5,9 @@ import type { ProjectShowRef, ShowRef } from "../../../types/Projects"
 import type { LayoutRef, OutSlide, Slide } from "../../../types/Show"
 import { AudioPlayer } from "../../audio/audioPlayer"
 import { sendMain } from "../../IPC/main"
-import { activeFocus, activeProject, activeShow, focusMode, outLocked, outputs, outputSlideCache, projects, showsCache, special } from "../../stores"
+import { activeDrawerTab, activeFocus, activePage, activeProject, activeShow, focusMode, outLocked, outputs, outputSlideCache, projects, showsCache, special } from "../../stores"
+import { jaControlledOutputId } from "../../utils/jaControlledOutput"
+import { jaPresentationNavigation, resolveJAPresentationNavigationOutputs } from "../../utils/jaPresentationNavigation"
 import { playFolder, togglePlayingMedia } from "../../utils/shortcuts"
 import { openProjectItem } from "../show/project"
 import { clone } from "./array"
@@ -22,7 +24,11 @@ export class OutputHelper {
         // operator-designated main projector, never unrelated secondary output.
         const allIds = getAllActiveOutputIds()
         const primary = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
-        const targets = primary ? (allIds.includes(primary) ? [primary] : []) : allIds
+        const active = get(activeShow)
+        const activeShowId = get(activePage) === "show" && (!active?.type || active.type === "show") ? active?.id || "" : ""
+        const isScripture = get(activeDrawerTab) === "scripture"
+        const outputShows = Object.fromEntries(allIds.map((id) => [id, get(outputs)[id]?.out?.slide?.id || ""]))
+        const targets = resolveJAPresentationNavigationOutputs(allIds, primary, get(jaControlledOutputId), activeShowId, get(jaPresentationNavigation), outputShows, isScripture)
         targets.forEach((id) => {
             if (typeof e === "string") this.advanceOutput(id, e === "next" ? "ArrowRight" : "ArrowLeft")
             else this.advanceOutput(id, e.key, { slideLayers: !e.altKey })

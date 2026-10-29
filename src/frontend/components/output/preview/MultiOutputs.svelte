@@ -9,6 +9,7 @@
     import T from "../../helpers/T.svelte"
     import { clone, keysToID, sortByName, sortObject } from "../../helpers/array"
     import { defaultLayers, getOutputResolution, startRtmpStreaming, startStreaming, stopRtmpStreaming, stopStreaming } from "../../helpers/output"
+    import { setJASlideLayer } from "../../../utils/jaSlideLayer"
     import { getUnhealthyDestinations, hasStreamableDestination } from "../../helpers/rtmpDestinations"
     import { bindSlidesToOutput, getLayoutRef } from "../../helpers/show"
     import { _show } from "../../helpers/shows"
@@ -267,6 +268,14 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
                     </button>
                 {/if}
 
+                {#if !fullscreen && output.active && !output.stageOutput && output.out?.slide && output.out?.background}
+                    <button type="button" class="jaTextLayerMode"
+                        on:click|stopPropagation={() => setJASlideLayer(output.id, output.out?.jaSlideLayer?.showOverMedia === false)}
+                        title={output.out?.jaSlideLayer?.showOverMedia === false ? "Superponer el texto de la presentación sobre el contenido" : "Reemplazar: ocultar texto y mostrar únicamente el contenido"}>
+                        {output.out?.jaSlideLayer?.showOverMedia === false ? "Texto + contenido" : "Solo contenido"}
+                    </button>
+                {/if}
+
                 <!-- BADGES (LIVE / REC) -->
                 {#if !fullscreen}
                     <div class="badges">
@@ -356,6 +365,8 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
 <style>
     .jaSelectOutput {position:absolute;right:4px;bottom:4px;z-index:5;padding:3px 6px;background:var(--primary-darkest);color:var(--text);border:1px solid var(--primary-lighter);border-radius:4px;font-size:10px;cursor:pointer}
     .jaSelectOutput.chosen {border-color:var(--secondary);color:var(--secondary)}
+    .jaTextLayerMode {position:absolute;right:4px;top:4px;z-index:6;max-width:calc(100% - 8px);padding:4px 7px;background:var(--primary-darkest);color:var(--text);border:1px solid var(--secondary);border-radius:5px;font-size:10px;cursor:pointer}
+    .jaTextLayerMode:hover,.jaTextLayerMode:focus-visible {background:var(--primary)}
 
     .hiddenOutputTitles {
         display: flex;

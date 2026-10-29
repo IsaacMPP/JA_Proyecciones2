@@ -2,11 +2,16 @@
     import { fade } from "svelte/transition"
     import { Main } from "../../../types/IPC/Main"
     import { sendMain } from "../../IPC/main"
-    import { activePopup, autoOpenedTimeline, openToolsTab, outputs, showNotesActive, shows, showsCache, special, styles, templates } from "../../stores"
+    import { activePopup, autoOpenedTimeline, openToolsTab, outLocked, outputs, showNotesActive, shows, showsCache, special, styles, templates } from "../../stores"
+    import { jaPresentationNavigation } from "../../utils/jaPresentationNavigation"
     import { translateText } from "../../utils/language"
     import Icon from "../helpers/Icon.svelte"
-    import { allOutputsHasStyleTemplate, getFirstActiveOutput } from "../helpers/output"
+    import { allOutputsHasStyleTemplate, getFirstActiveOutput, getJAMainOutput, sendToJAOutputs } from "../helpers/output"
     import { removeTemplatesFromShow } from "../helpers/show"
+    import { updateOut } from "../helpers/showActions"
+    import { _show } from "../helpers/shows"
+    import { OutputHelper } from "../helpers/OutputHelper"
+    import JADestinationChooser from "../output/tools/JADestinationChooser.svelte"
     import T from "../helpers/T.svelte"
     import MaterialButton from "../inputs/MaterialButton.svelte"
 
@@ -79,6 +84,27 @@
     $: showTemplateId = currentShow?.settings?.template || ""
     $: showTemplateIcon = !!(showTemplateId && $templates[showTemplateId])
     $: enableShowTemplate = showTemplateIcon && (!referenceType || referenceType === "scripture" || open)
+
+    $: activeLayoutId = currentShow?.settings?.activeLayout || ""
+    $: hasSlides = !!currentShow?.layouts?.[activeLayoutId]?.slides?.length
+
+    function sendPresentationTo(outputIds: string[]) {
+        if ($outLocked || !hasSlides || !activeLayoutId || !outputIds.length) return
+        const layoutRef = _show(showId).layouts([activeLayoutId]).ref()[0] || []
+        let index = layoutRef.findIndex((slide) => !slide.data?.disabled)
+        if (index < 0) return
+
+        const primary = getJAMainOutput()
+        const liveSlide = primary ? $outputs[primary.id]?.out?.slide : null
+        if (liveSlide?.id === showId && liveSlide.layout === activeLayoutId && typeof liveSlide.index === "number" && layoutRef[liveSlide.index] && !layoutRef[liveSlide.index].data?.disabled) {
+            index = liveSlide.index
+        }
+
+        const sent = sendToJAOutputs("slide", { id: showId, layout: activeLayoutId, index, line: 0 }, outputIds)
+        if (!sent.length) return
+        jaPresentationNavigation.set({ showId, outputIds: sent })
+        sent.forEach((id) => updateOut(showId, index, layoutRef, true, id))
+    }
 </script>
 
 <svelte:window on:mousedown={mousedown} />
@@ -102,6 +128,13 @@
     </div>
 
     <div class="right">
+        {#if hasSlides}
+            <div class="jaPresentationControls">
+                <button type="button" title="Diapositiva anterior" aria-label="Diapositiva anterior" on:click={() => OutputHelper.advanceOutputs("previous")} disabled={$outLocked}>←</button>
+                <button type="button" title="Diapositiva siguiente" aria-label="Diapositiva siguiente" on:click={() => OutputHelper.advanceOutputs("next")} disabled={$outLocked}>→</button>
+                <JADestinationChooser label={"Enviar presentación a…"} onSend={sendPresentationTo} compact={false} />
+            </div>
+        {/if}
         <!-- template icon -->
         {#if enableStylePreview}
             <MaterialButton style="width: 32px;height: 100%;padding: 0.3em 0.5em;" title="formats.template: <b>{$templates[outputStyleTemplate]?.name || ''}</b>" on:click={() => activePopup.set("template_info")}>
@@ -173,6 +206,10 @@
 </div>
 
 <style>
+    .jaPresentationControls { display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end }
+    .jaPresentationControls button { cursor:pointer;color:var(--text);background:var(--primary-darker);border:1px solid var(--primary-lighter);border-radius:5px;min-height:28px;min-width:28px }
+    .jaPresentationControls button:disabled { opacity:.45;cursor:not-allowed }
+
     /* header */
 
     .header {

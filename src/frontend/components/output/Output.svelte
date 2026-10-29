@@ -154,6 +154,8 @@
 
     // scenes
     $: scene = out.scene || null
+    // A presentation can remain active beneath media without drawing over it.
+    $: showSlideOverMedia = !out.background || out.jaSlideLayer?.showOverMedia !== false
     $: sceneMedia = scene?.media || null
     $: sceneStyleId = scene?.style || ""
     $: sceneHiddenOverlays = scene?.hiddenOverlays || []
@@ -347,7 +349,7 @@
     $: drawZoom = $drawTool === "zoom" && zoomActive ? ($drawSettings.zoom?.size || 200) / 100 : 1
 
     // CLEARING
-    $: if (slide !== undefined || currentStyle || layers || sceneHideLayers !== undefined) updateSlide()
+    $: if (slide !== undefined || currentStyle || layers || sceneHideLayers !== undefined || showSlideOverMedia !== undefined) updateSlide()
     let actualSlide: OutSlide | null = null
     let actualSlideData: SlideData | null = null
     let actualCurrentSlide: Slide | null = null
@@ -366,7 +368,7 @@
 
     function updateSlide() {
         // update clearing variable before setting slide value (used for conditions to not show up again while clearing)
-        const slideActive = layers.includes("slide") && !sceneHideLayers
+        const slideActive = layers.includes("slide") && !sceneHideLayers && showSlideOverMedia
         isSlideClearing = !slide || !slideActive
 
         if (slideTimeout) clearTimeout(slideTimeout)

@@ -73,6 +73,8 @@ export interface OutData {
     refresh?: number
     background?: null | OutBackground
     slide?: null | OutSlide
+    /** Per-output visibility policy; keeps the slide and video sessions intact. */
+    jaSlideLayer?: { showOverMedia: boolean }
     effects?: string[]
     overlays?: string[]
     transition?: null | OutTransition

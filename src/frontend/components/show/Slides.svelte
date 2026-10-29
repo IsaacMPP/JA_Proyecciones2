@@ -8,7 +8,8 @@
     import { loadCustomFonts } from "../helpers/fonts"
     import { history } from "../helpers/history"
     import { encodeFilePath, getExtension } from "../helpers/media"
-    import { getActiveOutputs, refreshOut, setOutput } from "../helpers/output"
+    import { getActiveOutputs, getJAMainOutput, refreshOut, setOutput } from "../helpers/output"
+    import { jaPresentationNavigation } from "../../utils/jaPresentationNavigation"
     import { getCachedShow } from "../helpers/show"
     import { checkActionTrigger, getFewestOutputLines, getFewestOutputLinesReveal, getItemWithMostLines, updateOut } from "../helpers/showActions"
     import { _show } from "../helpers/shows"
@@ -140,6 +141,8 @@
                 if (revealCount > maxLines) revealCount = 0
             } else revealCount = 0
 
+            const primary = getJAMainOutput()
+            if (primary) jaPresentationNavigation.set({ showId, outputIds: [primary.id] })
             setOutput("slide", { id: showId, layout: activeLayout, index, line, revealCount, itemClickReveal })
             updateOut(showId, index, slideRef, !e.altKey)
         })
