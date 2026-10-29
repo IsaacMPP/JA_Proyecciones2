@@ -55,6 +55,8 @@
         opacity: 0.8;
     }
     .overlay.hidden {
+        /* A hidden overlay must not block native YouTube playback controls. */
+        pointer-events: none;
         transition: 0.4s opacity;
         cursor: default;
         opacity: 0;

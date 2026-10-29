@@ -6,6 +6,8 @@
     import type { MediaStyle } from "../../../types/Main"
     import { requestMain, sendMain } from "../../IPC/main"
     import { activeProject, activeRename, audioChannelsData, focusMode, media, outLocked, outputs, playingVideos, projects, videoMarkers } from "../../stores"
+    import { jaControlledOutputId } from "../../utils/jaControlledOutput"
+    import { resolveJAOnlinePreviewOutput } from "../../utils/jaOnlinePreviewOutput"
     import { translateText } from "../../utils/language"
     import Icon from "../helpers/Icon.svelte"
     import T from "../helpers/T.svelte"
@@ -103,7 +105,13 @@
     }
 
     // background output
-    $: outputId = $playingVideos.find((a) => a.path === mediaPath)?.linkedOutputIds?.[0] || getFirstActiveOutput()?.id || ""
+    // Online preview follows Controlar when that display is playing this
+    // video, then the selected JA primary, then a session's first destination.
+    // For local files preserve FreeShow's original preview selection.
+    $: onlinePreviewDestinations = $playingVideos.filter((a) => a.path === mediaPath).flatMap((a) => a.linkedOutputIds || [])
+    $: outputId = type === "player"
+        ? resolveJAOnlinePreviewOutput(onlinePreviewDestinations, $jaControlledOutputId, getJAMainOutput([$outputs])?.id || "", getFirstActiveOutput()?.id || "")
+        : $playingVideos.find((a) => a.path === mediaPath)?.linkedOutputIds?.[0] || getFirstActiveOutput()?.id || ""
     $: currentOutput = outputId ? $outputs[outputId] || null : null
 
     // outBackground.subscribe(backgroundChanged)
