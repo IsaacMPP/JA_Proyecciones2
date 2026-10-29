@@ -1,3 +1,5 @@
+**Cobertura en GitHub Actions:** `.github/workflows/validate-ja-base.yml` ejecuta ahora `npx vitest run --config config/testing/vitest.config.ts src/electron/data/jaYouthOnlineMigration.test.ts` después de `npm ci` y antes del build. Esto protege la preservación de videos de usuario, actualización de muestras originales e idempotencia, sin cambiar el paso de compilación/instalador existente. Pruebas de reproductor online y hardware siguen siendo manuales Windows.
+
 **Refinamiento de seguridad del mismo hito:** `PlayerVideos.svelte` conserva el indicador de tarjeta original `findMatchingOut` (solo muestra salidas activas válidas), y para un envío simultáneo limpia diapositivas exclusivamente de los IDs elegidos con UNA llamada `clearSlide(true, ids)`, evitando ejecutar varias veces las acciones globales de limpieza por pantalla. No cambia el audio, reproductores ni selección de destinos. CI del HEAD final + Windows pendientes.
 
 ## 2026-10-28 — M1-03 Fase 2: YouTube/Vimeo «Enviar a…» + cantos juveniles de muestra (CI y Windows pendientes)
