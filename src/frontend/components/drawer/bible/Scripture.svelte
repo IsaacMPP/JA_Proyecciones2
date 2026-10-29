@@ -25,7 +25,7 @@
     import { jaControlledOutputId } from "../../../utils/jaControlledOutput"
     import Loader from "../../main/Loader.svelte"
     import Center from "../../system/Center.svelte"
-    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, getControlledScriptureReference, hasLiveScriptureOutput, refreshLiveScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
+    import { createScriptureShow, formatBibleText, getShortBibleName, getVerseIdParts, getVersePartLetter, joinRange, loadJsonBible, moveSelection, outputIsScripture, playScripture, getControlledScriptureReference, getLiveScriptureOutputIds, hasLiveScriptureOutput, refreshLiveScripture, sanitizeVerseText, scriptureRangeSelect, sendScriptureToJAOutputs, sortScriptureSelection, splitText, swapPreviewBible } from "./scripture"
 
     // JA: refresh the current projected verse when its active Scripture template
     // changes. The template is stored once and reused for subsequent verses.
@@ -195,6 +195,7 @@
 
     $: isActiveInOutput = outputIsScripture([$outputs, $jaControlledOutputId])
     $: hasLiveScripture = hasLiveScriptureOutput([$outputs, $jaControlledOutputId])
+    $: liveScriptureDestinations = getLiveScriptureOutputIds([$outputs, $jaControlledOutputId]).map((id) => $outputs[id]?.name || id).join(" + ")
 
     // Rehydrate the existing Bible navigator when Controlar changes screens.
     // Never overwrite the operator's verse selection on ordinary clicks.
@@ -1336,6 +1337,7 @@
 {:else if $scriptureMode !== "grid" || $resized.rightPanelDrawer > 5}
     <FloatingInputs>
         {#if hasLiveScripture}
+            <span title={"Navegación bíblica: " + liveScriptureDestinations} style="max-width: 130px;min-width: 0;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;font-size: 10px;opacity: 0.85;">Controlando: {liveScriptureDestinations}</span>
             <MaterialButton disabled={activeReference.book?.toString() === "1" && !!activeReference.chapters?.find((a) => a.toString() === "1") && !!activeReference.verses[0]?.find((a) => a.toString() === "1")} title="{translateText('preview._previous_slide')} [Ctrl+Arrow Left]" on:click={() => _moveSelection(true)}>
                 <Icon size={1.3} id="previous" />
             </MaterialButton>

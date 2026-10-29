@@ -312,7 +312,7 @@ function isFollowedScreenValid(id: string, followed: ScriptureFollowingOutput, c
     return isCurrentScriptureSlide(id, followed.categoryId, current) && projectedBackgroundKey(current[id]) === followed.backgroundKey
 }
 
-export function getLiveScriptureOutputIds(): string[] {
+export function getLiveScriptureOutputIds(_updater: any = null): string[] {
     const main = getJAMainOutput()
     if (!main) return []
     const mainId = main.id
@@ -360,8 +360,27 @@ export function hasLiveScriptureOutput(_updater: any = null) {
 export async function refreshLiveScripture() {
     const targets = getLiveScriptureOutputIds()
     if (!targets.length) return
+    // An unrelated media send, a disconnect, or an independently replaced
+    // Bible session can happen while verse rendering awaits translation data.
+    // Never reproject an old navigation request over that newer content.
+    const before = get(outputs)
+    const route = targets.map((id) => ({
+        id,
+        group: scriptureFollowingOutputs.get(id)?.navigationGroup ?? null,
+        category: before[id]?.out?.slide?.categoryId || "",
+        background: projectedBackgroundKey(before[id])
+    }))
+    const routeStillCurrent = () => {
+        const now = get(outputs)
+        const active = getLiveScriptureOutputIds()
+        return active.length === targets.length && route.every(({ id, group, category, background }) =>
+            active.includes(id) && isCurrentScriptureSlide(id, category, now) &&
+            (scriptureFollowingOutputs.get(id)?.navigationGroup ?? null) === group &&
+            projectedBackgroundKey(now[id]) === background
+        )
+    }
     const main = getJAMainOutput()
-    if (await projectScripture(targets, true, !!main && targets.includes(main.id))) {
+    if (await projectScripture(targets, true, !!main && targets.includes(main.id), routeStillCurrent)) {
         const current = get(outputs)
         for (const outputId of targets) {
             const followed = scriptureFollowingOutputs.get(outputId)
@@ -406,7 +425,7 @@ export async function sendScriptureToJAOutputs(outputIds: string[]) {
     }
 }
 
-async function projectScripture(outputIds: string[], explicit: boolean, recordMainHistory = false): Promise<boolean> {
+async function projectScripture(outputIds: string[], explicit: boolean, recordMainHistory = false, canProject?: () => boolean): Promise<boolean> {
     const generation = ++scriptureProjectionGeneration
     for (const outputId of outputIds) scriptureOutputGenerations.set(outputId, generation)
     const isLatestForTargets = () => outputIds.every((id) => scriptureOutputGenerations.get(id) === generation)
@@ -481,7 +500,7 @@ async function projectScripture(outputIds: string[], explicit: boolean, recordMa
     // Revalidate after asynchronous verse/template preparation. Never redirect
     // to a different projector when the configured JA primary changes or a
     // selected auxiliary display disconnects while content is loading.
-    if (!isLatestForTargets() || (get(drawerTabsData).scripture?.activeSubTab || "") !== projectionCategoryId || getJAMainOutput()?.id !== mainOutput.id) return false
+    if (!isLatestForTargets() || (canProject && !canProject()) || (get(drawerTabsData).scripture?.activeSubTab || "") !== projectionCategoryId || getJAMainOutput()?.id !== mainOutput.id) return false
     if (explicit) {
         const eligible = new Set(getJADestinations(get(outputs), mainOutput.id).map((d) => d.id))
         if (outputIds.some((id) => !eligible.has(id))) return false
