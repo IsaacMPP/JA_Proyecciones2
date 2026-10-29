@@ -4,7 +4,7 @@
     import { translateText } from "../../../utils/language"
     import { clone, sortByName } from "../../helpers/array"
     import Icon from "../../helpers/Icon.svelte"
-    import { getJAMainOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
+    import { findMatchingOut, getJAMainOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
     import { getJADestinations } from "../../../utils/jaProjectionDestinations"
     import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import T from "../../helpers/T.svelte"
@@ -64,7 +64,8 @@
         const available = new Set(getJADestinations($outputs, primaryId).map((item) => item.id))
         const selected = [...new Set(outputIds)].filter((id) => available.has(id))
         if (!selected.length) return
-        selected.forEach((id) => { if ($outputs[id]?.out?.slide) clearSlide(true, id) })
+        const slidesToClear = selected.filter((id) => !!$outputs[id]?.out?.slide)
+        if (slidesToClear.length) clearSlide(true, slidesToClear)
         sendToJAOutputs("background", { id: videoId, type: "player", muted: false, loop: false, startAt: 0, ignoreLayer: true }, selected, { replaceScripture: true })
     }
 
@@ -105,8 +106,8 @@
             loaded={loaded[video.rid]}
             class="context #player_button"
             preview={$activeShow?.id === video.rid}
-            active={Object.values($outputs).some((o) => o.out?.background?.id === video.rid)}
-            outlineColor={Object.values($outputs).find((o) => o.out?.background?.id === video.rid)?.color || null}
+            active={findMatchingOut(video.rid, $outputs) !== null}
+            outlineColor={findMatchingOut(video.rid, $outputs)}
             label={video.name || ""}
             renameId="player_{video.rid}"
             title={video.id || ""}

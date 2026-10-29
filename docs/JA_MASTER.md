@@ -1,3 +1,5 @@
+**Refinamiento de seguridad del mismo hito:** `PlayerVideos.svelte` conserva el indicador de tarjeta original `findMatchingOut` (solo muestra salidas activas válidas), y para un envío simultáneo limpia diapositivas exclusivamente de los IDs elegidos con UNA llamada `clearSlide(true, ids)`, evitando ejecutar varias veces las acciones globales de limpieza por pantalla. No cambia el audio, reproductores ni selección de destinos. CI del HEAD final + Windows pendientes.
+
 ## 2026-10-28 — M1-03 Fase 2: YouTube/Vimeo «Enviar a…» + cantos juveniles de muestra (CI y Windows pendientes)
 
 **Estado base:** `a7ccd8676fee980df9792e078f1b196a8fd2f191`, Actions #40802211781 success, PR #2 draft. El usuario confirmó que la Biblia navega y sustituye la diapositiva temporal correctamente al proyectar imagen/video. Se mantiene sin modificar esa corrección.
