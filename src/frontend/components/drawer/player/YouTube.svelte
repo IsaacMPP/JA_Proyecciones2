@@ -2,6 +2,7 @@
     import { createEventDispatcher, onDestroy } from "svelte"
     import { currentWindow, focusMode, special } from "../../../stores"
     import YouTubePlayer from "./YouTubePlayer.svelte"
+    import { reconcileYouTubeAudio } from "./youtubeAudio"
 
     export let videoData = { paused: false, muted: true, loop: false, duration: 0 }
     export let videoTime = 0
@@ -35,8 +36,8 @@
     function onReady(e) {
         player = e.detail.target
         loaded = true
-        // The JA video clock now starts immediately; reapply the correct
-        // primary/secondary audio policy once the iframe API is ready.
+        // youtube-player returns Promises, including isMuted/getVolume.
+        // Never compare a Promise as though it were a Boolean.
         applyMuteState()
         videoData.paused = $focusMode
         dispatch("loaded", true)
@@ -44,35 +45,51 @@
 
     $: if (loaded) updateTime()
     let timeInterval: NodeJS.Timeout | null = null
+    let timePollPending = false
+    let disposed = false
     function updateTime() {
         if (timeInterval) clearInterval(timeInterval)
-        timeInterval = setInterval(() => {
-            if (!player) return
-            try {
-                if (player.getPlayerState() === 1) actualVideoTime = player.getCurrentTime()
-
-                // report back to the VideoShow preview
-                if (preview && !seeking) videoTime = player.getCurrentTime()
-                const duration = preview && !videoData.duration ? player.getDuration() : 0
-                if (duration) videoData.duration = duration
-            } catch {}
-        }, 250)
+        timeInterval = setInterval(() => { void updateTimeTick() }, 250)
+    }
+    async function updateTimeTick() {
+        if (!player || !loaded || disposed || timePollPending) return
+        timePollPending = true
+        try {
+            // Every youtube-player getter returns a Promise, unlike raw YT.Player.
+            const state = await player.getPlayerState()
+            const seconds = Number(await player.getCurrentTime())
+            if (disposed || !Number.isFinite(seconds)) return
+            if (state === 1) actualVideoTime = seconds
+            if (preview && !seeking) videoTime = seconds
+            if (preview && !videoData.duration) {
+                const duration = Number(await player.getDuration())
+                if (!disposed && Number.isFinite(duration) && duration > 0) videoData.duration = duration
+            }
+        } catch (error) {
+            console.warn("[YouTube] Could not read playback time:", error)
+        } finally {
+            timePollPending = false
+        }
     }
     onDestroy(() => {
+        disposed = true
         if (timeInterval) clearInterval(timeInterval)
     })
 
     let seeking = false
-    $: if (!seeking && videoTime !== undefined) seekPlayer()
-    function seekPlayer() {
-        if (!player || !loaded || Math.abs(player.getCurrentTime() - videoTime) < 2) return
-
+    $: if (!seeking && videoTime !== undefined) void seekPlayer()
+    async function seekPlayer() {
+        if (!player || !loaded || seeking || !Number.isFinite(Number(videoTime))) return
         seeking = true
-        player.seekTo(videoTime, true)
-
-        setTimeout(() => {
-            seeking = false
-        }, 500)
+        try {
+            const target = Number(videoTime)
+            const current = Number(await player.getCurrentTime())
+            if (!disposed && Number.isFinite(current) && Math.abs(current - target) >= 2) await player.seekTo(target, true)
+        } catch (error) {
+            console.warn("[YouTube] Seek failed:", error)
+        } finally {
+            setTimeout(() => { seeking = false }, 500)
+        }
     }
 
     // pause/play state
@@ -85,17 +102,23 @@
     // audible primary, reconcile the actual YouTube iframe mute state after
     // ready, after state updates, and when autoplay first begins.
     $: shouldBeMuted = preview || $currentWindow !== "output" ? true : !!videoData.muted
+    let muteQueue: Promise<void> = Promise.resolve()
+    let hasRestoredAudibleVolume = false
     function applyMuteState() {
-        if (!player || !loaded) return
-        try {
-            if (shouldBeMuted) {
-                if (!player.isMuted()) player.mute()
-            } else if (player.isMuted()) {
-                player.unMute()
-            }
-        } catch (error) {
-            console.warn("[YouTube] Could not update iframe audio:", error)
-        }
+        if (!player || !loaded || disposed) return
+        const requestedMuted = shouldBeMuted
+        // YouTube can retain volume=0 after a previous muted autoplay.
+        // Restore it only at first audible initialization, not on every tick,
+        // so later user adjustments in the embedded player remain respected.
+        const restoreVolume = !requestedMuted && !hasRestoredAudibleVolume
+        if (restoreVolume) hasRestoredAudibleVolume = true
+        const currentPlayer = player
+        // Serialize mute/unmute commands: a delayed async unMute must never
+        // undo a newer command to silence an auxiliary/preview window.
+        muteQueue = muteQueue.catch(() => {}).then(async () => {
+            if (disposed || currentPlayer !== player) return
+            await reconcileYouTubeAudio(currentPlayer, requestedMuted, restoreVolume)
+        }).catch((error) => console.warn("[YouTube] Could not update iframe audio:", error))
     }
     $: if (player && loaded && shouldBeMuted !== undefined) applyMuteState()
     function onVideoPlaying() {
