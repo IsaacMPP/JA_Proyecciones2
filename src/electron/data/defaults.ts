@@ -1,5 +1,26 @@
 import type { SaveListSettings, SaveListSyncedSettings } from "../../types/Save"
 
+// The old FreeShow samples are recognized only to migrate untouched demo
+// entries. User-added or edited online videos are always preserved.
+export const legacyDemoPlayerVideos = {
+    chosen: { name: "The Chosen Trailer", type: "youtube", id: "X-AJdKty74M" },
+    story: { name: "The Jesus Story", type: "youtube", id: "2Yvs-Pz8KK0" },
+    legacy: { name: "The Legacy of Adam", type: "youtube", id: "aPgbA6rVhWs" },
+    gospel: { name: "The Gospel Film", type: "youtube", id: "mIeRU12STNw" },
+    jesus: { name: "Jesus, Only Jesus", type: "vimeo", id: "426363743" },
+    messiah: { name: "Messiah", type: "vimeo", id: "144160599" }
+} as const
+
+// These are streaming YouTube links, not copyrighted video assets included in
+// the installer. Playlist/radio parameters are intentionally not stored.
+export const jaYouthPlayerVideos = {
+    jaYouthYoVoy: { name: "Yo voy", type: "youtube", id: "pyot7PtanJ0" },
+    jaYouthMaranata: { name: "Maranata", type: "youtube", id: "LXYpWEfQ0Tw" },
+    jaYouthTodoPorEl: { name: "Todo por Él", type: "youtube", id: "Qq1bzdb7fGs" },
+    jaYouthTuPoder: { name: "Tu poder", type: "youtube", id: "l48iGEI4a2A" },
+    jaYouthFieles: { name: "Fieles", type: "youtube", id: "Stphc6WBSoM" }
+} as const
+
 export const defaultConfig = { loaded: false, maximized: true, bounds: { width: 800, height: 600, x: 0, y: 0 }, dataPath: null, disableHardwareAcceleration: null, graphicsDevice: null }
 
 export const defaultGroups = {
@@ -145,14 +166,7 @@ export const defaultSyncedSettings: { [key in SaveListSyncedSettings]: any } = {
     groups: defaultGroups,
     midiIn: {},
     emitters: {},
-    playerVideos: {
-        chosen: { name: "The Chosen Trailer", type: "youtube", id: "X-AJdKty74M" },
-        story: { name: "The Jesus Story", type: "youtube", id: "2Yvs-Pz8KK0" },
-        legacy: { name: "The Legacy of Adam", type: "youtube", id: "aPgbA6rVhWs" },
-        gospel: { name: "The Gospel Film", type: "youtube", id: "mIeRU12STNw" },
-        jesus: { name: "Jesus, Only Jesus", type: "vimeo", id: "426363743" },
-        messiah: { name: "Messiah", type: "vimeo", id: "144160599" }
-    },
+    playerVideos: jaYouthPlayerVideos,
     videoMarkers: {},
     calendars: {},
     mediaTags: {},

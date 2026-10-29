@@ -19,6 +19,7 @@ import { dataFolderNames, deleteFile, doesPathExist, getDataFolderPath, getDataF
 import { clone, wait } from "../utils/helpers"
 import "./contentProviders"
 import { defaultConfig, defaultSettings, defaultSyncedSettings } from "./defaults"
+import { getMigratedJAYouthPlayers } from "./jaYouthOnlineMigration"
 
 // NOTE: defaults will always replace the keys with any in the default when they are removed
 
@@ -58,10 +59,24 @@ checkStores(appDataPath)
 export async function setupStores() {
     const oldLocation = await migrateConfig()
     createStores(oldLocation, true)
+    migrateLegacyOnlineVideoExamples()
 
     checkStores(getDataFolderPath("userData"))
 
     specialCaseFixer()
+}
+
+// Update untouched FreeShow samples on existing installations. The pure
+// migration checks each legacy item and preserves every custom entry.
+function migrateLegacyOnlineVideoExamples() {
+    const synced = _store.SYNCED_SETTINGS
+    if (!synced) return
+    try {
+        const updated = getMigratedJAYouthPlayers(synced.get("playerVideos"))
+        if (updated) synced.set("playerVideos", updated)
+    } catch (error) {
+        console.warn("JA: Could not migrate online video examples:", error)
+    }
 }
 
 // Check that files are parsed properly!

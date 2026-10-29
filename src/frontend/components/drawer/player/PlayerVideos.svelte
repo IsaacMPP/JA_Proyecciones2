@@ -4,7 +4,9 @@
     import { translateText } from "../../../utils/language"
     import { clone, sortByName } from "../../helpers/array"
     import Icon from "../../helpers/Icon.svelte"
-    import { findMatchingOut, setOutput } from "../../helpers/output"
+    import { getJAMainOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
+    import { getJADestinations } from "../../../utils/jaProjectionDestinations"
+    import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import T from "../../helpers/T.svelte"
     import Button from "../../inputs/Button.svelte"
     import { clearBackground, clearSlide } from "../../output/clear"
@@ -54,6 +56,30 @@
         return ""
     }
 
+    // One source and one FreeShow output pipeline for YouTube and Vimeo.
+    // Replace slides only in the chosen destination(s), never on other outputs.
+    function projectOnlineVideo(videoId: string, outputIds: string[]) {
+        if ($outLocked || !outputIds.length) return
+        const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
+        const available = new Set(getJADestinations($outputs, primaryId).map((item) => item.id))
+        const selected = [...new Set(outputIds)].filter((id) => available.has(id))
+        if (!selected.length) return
+        selected.forEach((id) => { if ($outputs[id]?.out?.slide) clearSlide(true, id) })
+        sendToJAOutputs("background", { id: videoId, type: "player", muted: false, loop: false, startAt: 0, ignoreLayer: true }, selected, { replaceScripture: true })
+    }
+
+    function projectOnlineToPrimary(videoId: string) {
+        if ($outLocked) return
+        const main = getJAMainOutput()
+        if (!main) return
+        if ($outputs[main.id]?.out?.background?.id === videoId) {
+            clearBackground(main.id)
+            return
+        }
+        if ($outputs[main.id]?.out?.slide) clearSlide(true, main.id)
+        setOutput("background", { id: videoId, type: "player", muted: false, loop: false, startAt: 0, ignoreLayer: true }, false, main.id)
+    }
+
     let iconClicked: NodeJS.Timeout | null = null
     function removeStyle(key: string, id: string | undefined) {
         if (!id) return
@@ -79,24 +105,16 @@
             loaded={loaded[video.rid]}
             class="context #player_button"
             preview={$activeShow?.id === video.rid}
-            active={findMatchingOut(video.rid, $outputs) !== null}
-            outlineColor={findMatchingOut(video.rid, $outputs)}
+            active={Object.values($outputs).some((o) => o.out?.background?.id === video.rid)}
+            outlineColor={Object.values($outputs).find((o) => o.out?.background?.id === video.rid)?.color || null}
             label={video.name || ""}
             renameId="player_{video.rid}"
             title={video.id || ""}
             showPlayOnHover
             on:click={(e) => {
                 if ($outLocked || e.ctrlKey || e.metaKey || iconClicked) return
-                if (e.target?.closest?.(".edit")) return
-
-                if (findMatchingOut(video.rid, $outputs)) {
-                    clearBackground()
-                    return
-                }
-
-                // set as "foreground" type (clear slide & ignore "background" layer)
-                clearSlide()
-                setOutput("background", { id: video.rid, type: "player", muted: false, loop: false, startAt: 0, ignoreLayer: true })
+                if (e.target?.closest?.(".edit, .jaPlayerDest")) return
+                projectOnlineToPrimary(video.rid)
             }}
             on:dblclick={() => {
                 if (iconClicked) return
@@ -104,6 +122,11 @@
                 else activeShow.set({ id: video.rid, type: "player" })
             }}
         >
+            <!-- Use the same JA modal as Himnario and Multimedia, without
+                 bubbling a click into the card's primary-only projection. -->
+            <div class="jaPlayerDest" on:click|stopPropagation on:mousedown|stopPropagation>
+                <JADestinationChooser label={"Enviar " + (video.name || "video") + " a…"} onSend={(ids) => projectOnlineVideo(video.rid, ids)} />
+            </div>
             <!-- icons -->
             <div class="icons">
                 {#if tags.length}
@@ -136,6 +159,8 @@
 {/if}
 
 <style>
+    .jaPlayerDest { position: absolute; right: 6px; bottom: 7px; z-index: 5; pointer-events: auto; opacity: 1; }
+    .jaPlayerDest :global(button) { min-width: 32px; background: var(--primary-darkest); border: 1px solid var(--secondary); box-shadow: 0 2px 6px #0008; }
     /* icons */
 
     .icons {
