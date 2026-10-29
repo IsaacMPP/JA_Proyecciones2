@@ -1,3 +1,5 @@
+**Protección contra colas de órdenes de YouTube:** `videoSync` refresca el mismo objeto `videoData` con frecuencia; el transporte del iframe ya no encola `getPlayerState/playVideo/pauseVideo` por cada tick, sino solo cuando cambia efectivamente `paused` (o se detecta inicio involuntario). Esto evita colas crecientes, latencia de pausa y consumo innecesario en PCs modestos. Sin cambios en audio o reproductor local.
+
 ## 2026-10-28 — M1-03 reparación conjunta: sonido + pausa + control desde vista previa YouTube (CI/Windows pendientes)
 
 **Problema Windows:** usuario confirma YouTube sin sonido, pausa del controlador no afecta iframe y la vista previa central perdió controles; captura con iPad proyectando y Primario vacío, además de pruebas previas con Primario. No confundir silencio esperado de vista previa/auxiliar con fallo de Primario. Previo commit `2c8e37f` pasó Actions #40812158506 pero no resolvió función física.

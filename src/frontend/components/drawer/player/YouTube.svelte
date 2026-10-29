@@ -102,8 +102,15 @@
     // The preview can still be played locally with native controls when idle.
     let transportQueue: Promise<void> = Promise.resolve()
     let commandedPlayback: boolean | null = null
-    function applyPlaybackState() {
+    let lastRequestedPlayback: boolean | null = null
+    $: if (!sessionActive) lastRequestedPlayback = null
+    function applyPlaybackState(force = false) {
         if (!player || !loaded || disposed || !sessionActive || seeking) return
+        const desiredPlaying = !videoData.paused
+        // videoSync updates time and other fields frequently; only enqueue
+        // a YouTube API command when play/pause actually changes.
+        if (!force && lastRequestedPlayback === desiredPlaying) return
+        lastRequestedPlayback = desiredPlaying
         const activePlayer = player
         transportQueue = transportQueue.catch(() => {}).then(async () => {
             if (disposed || activePlayer !== player || !sessionActive) return
@@ -159,6 +166,8 @@
     function onVideoPlaying() {
         applyMuteState()
         relayPreviewPlayback(true)
+        // A rogue iframe start must not override JA's paused output clock.
+        if (!preview && sessionActive && videoData.paused) applyPlaybackState(true)
     }
     function onVideoPaused() {
         relayPreviewPlayback(false)
