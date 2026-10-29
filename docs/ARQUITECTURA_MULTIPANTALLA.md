@@ -1,3 +1,17 @@
+## 2026-10-29 — M1: controles ausentes en el monitor central de «Controlar»
+
+**Evidencia del operador:** con la versión basada en `2792ca1`, YouTube ya pausa en una y varias pantallas. El centro reproduce la imagen pero no muestra pausa ni barra de tiempo; también afecta la supervisión de Multimedia e Himnario. Audio funcional; medidor iframe sigue como mejora independiente.
+
+**Causa confirmada:** `MainLayout.svelte` sustituye `Show` por `PreviewOutput` cuando existe `jaControlledOutputId` activo. Esa rama sólo tenía encabezado y monitor espejo, sin `MediaControls`. El espejo deshabilita interacción de sus contenidos por diseño. Cambiar `VideoShow` o la API de YouTube no añade controles a esta rama.
+
+**Cambio acotado:** el monitor seleccionado conserva su imagen y añade debajo la instancia nativa `MediaControls big` con `currentOutput` y `outputId` de la misma salida supervisada. Área de 64 px fuera del lienzo recortado, siempre visible para fondos video/player, sin depender de hover. Se recrea al cambiar destino/medio para evitar arrastrar duración/estado de otro clip; se oculta para salida vacía, imagen, Biblia o stage. No se añade motor, polling propio, cambios de selección principal, ni se habilitan clics en todos los espejos. No se modifica el transporte YouTube ya validado ni el audio.
+
+**Validación:** revisión de la ruta MainLayout → PreviewOutput y del contrato de MediaControls → VideoPlayer/videoSync por outputId. CI del nuevo commit y aceptación Windows pendientes. Pruebas existentes de CI conservadas; esta integración visual requiere comprobar el panel real. En Windows: Controlar Primario con YouTube, Multimedia e Himnario muestra pausa/reanudar, slider y ±10 s; ambos paneles reflejan el mismo estado. Controlar secundaria con otro clip afecta sólo esa sesión; grupo compartido obedece junto, audio sólo Primario. Cambiar destino/contenido, borrar, desconectar y volver a Vista previa normal no deja controles obsoletos. Revisar ancho reducido del panel. No declarar estos escenarios aceptados sin prueba.
+
+**Continuidad:** conservar aceptación de pausa una/varias pantallas del operador y mantener pendiente el panel central hasta prueba de esta entrega. No avanzar de módulo. Backlog M1-03/04/05/06/07, H1, T1, F1 intacto; PR #2 draft, sin tocar main.
+
+---
+
 # Arquitectura objetivo — multipantalla
 
 **Estado: diseño preliminar, no implementado.**

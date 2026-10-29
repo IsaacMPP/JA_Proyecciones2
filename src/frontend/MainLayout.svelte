@@ -9,6 +9,7 @@
     import Top from "./components/main/Top.svelte"
     import Preview from "./components/output/preview/Preview.svelte"
     import PreviewOutput from "./components/output/preview/PreviewOutput.svelte"
+    import MediaControls from "./components/output/tools/MediaControls.svelte"
     import JAGlobalDestinationDialog from "./components/output/tools/JAGlobalDestinationDialog.svelte"
     import { jaControlledOutputId } from "./utils/jaControlledOutput"
     import SettingsTabs from "./components/settings/SettingsTabs.svelte"
@@ -20,6 +21,10 @@
     import Timeline from "./components/timeline/Timeline.svelte"
     import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, outputs, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
+
+    $: selectedOutput = $outputs[$jaControlledOutputId]
+    $: selectedBackground = selectedOutput?.out?.background
+    $: selectedHasTransport = !selectedOutput?.stageOutput && (selectedBackground?.type === "video" || selectedBackground?.type === "player")
 
     let selectedCanvasWidth = 0
     let selectedCanvasHeight = 0
@@ -70,7 +75,26 @@
                     <LazyLoad component={() => import("./components/show/focus/FocusMode.svelte")} show={$focusMode} />
                 {:else}
                     {#if $jaControlledOutputId && $outputs[$jaControlledOutputId]?.enabled && $outputs[$jaControlledOutputId]?.active}
-                        <div class="jaSelectedCenter"><div class="jaSelectedCaption">Supervisando: {$outputs[$jaControlledOutputId]?.name || $jaControlledOutputId}<button type="button" on:click={() => jaControlledOutputId.set("")}>Vista previa normal</button></div><div class="jaSelectedCanvas" bind:clientWidth={selectedCanvasWidth} bind:clientHeight={selectedCanvasHeight}><div class="jaSelectedFrame" style:width={selectedFrameWidth + "px"} style:height={selectedFrameHeight + "px"}><PreviewOutput outputId={$jaControlledOutputId} /></div></div></div>
+                        <div class="jaSelectedCenter">
+                            <div class="jaSelectedCaption">
+                                Supervisando: {selectedOutput?.name || $jaControlledOutputId}
+                                <button type="button" on:click={() => jaControlledOutputId.set("")}>Vista previa normal</button>
+                            </div>
+                            <div class="jaSelectedCanvas" bind:clientWidth={selectedCanvasWidth} bind:clientHeight={selectedCanvasHeight}>
+                                <div class="jaSelectedFrame" style:width={selectedFrameWidth + "px"} style:height={selectedFrameHeight + "px"}>
+                                    <PreviewOutput outputId={$jaControlledOutputId} />
+                                </div>
+                            </div>
+                            {#if selectedHasTransport}
+                                <!-- Reuse the output transport, not the mirrored video's local controls.
+                                     The explicit destination preserves independent/shared JA sessions. -->
+                                <div class="jaSelectedTransport">
+                                    {#key $jaControlledOutputId + ":" + (selectedBackground?.path || selectedBackground?.id || "")}
+                                        <MediaControls currentOutput={selectedOutput} outputId={$jaControlledOutputId} big />
+                                    {/key}
+                                </div>
+                            {/if}
+                        </div>
                     {:else}<Show />{/if}
                 {/if}
             {:else if page === "edit"}
@@ -147,6 +171,7 @@
 .jaSelectedCaption button{background:var(--primary);color:var(--text);padding:5px;border:1px solid var(--primary-lighter)}
 .jaSelectedCanvas{flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px;box-sizing:border-box}
 .jaSelectedFrame{flex:0 0 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.jaSelectedTransport{position:relative;flex:0 0 64px;min-height:64px;width:100%}
 .jaSelectedFrame :global(.previewOutput){width:100%;height:100%;max-height:100%;max-width:100%;object-fit:contain}
 
     .column,
