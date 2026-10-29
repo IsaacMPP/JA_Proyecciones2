@@ -149,7 +149,7 @@
         if (!selected.length) return
         const firstOutput = $outputs[selected[0]]
         const style = getMediaStyle($media[path], $styles[firstOutput.style || ""])
-        sendToJAOutputs("background", { path, type, loop, muted, startAt: 0, ...style, ignoreLayer: videoType === "foreground" }, selected)
+        sendToJAOutputs("background", { path, type, loop, muted, startAt: 0, ...style, ignoreLayer: videoType === "foreground" }, selected, { replaceScripture: true })
     }
 
     function dblclick(e: any) {

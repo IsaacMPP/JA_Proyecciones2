@@ -13,7 +13,7 @@
     import { clone, keysToID, sortFilenames } from "../../helpers/array"
     import { splitPath } from "../../helpers/get"
     import { countFolderMediaItems, getExtension, getFileName, getMediaLayerType, getMediaStyle, getMediaType, isMediaExtension, removeExtension } from "../../helpers/media"
-    import { getFirstActiveOutput, setOutput } from "../../helpers/output"
+    import { clearTemporaryScriptureOnJAOutputs, getFirstActiveOutput, getJAMainOutput, setOutput } from "../../helpers/output"
     import FloatingInputs from "../../input/FloatingInputs.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialZoom from "../../inputs/MaterialZoom.svelte"
@@ -141,7 +141,11 @@
     function clickInput(e: any, item: any, type: string) {
         if ($outLocked || e.ctrlKey || e.metaKey) return
         if (currentOutput?.out?.background?.id === item.id) clearBackground()
-        else setOutput("background", { name: item.name, id: item.id, cameraGroup: item.group || item.cameraGroup, type })
+        else {
+            const main = getJAMainOutput()
+            if (main) clearTemporaryScriptureOnJAOutputs([main.id])
+            setOutput("background", { name: item.name, id: item.id, cameraGroup: item.group || item.cameraGroup, type })
+        }
     }
 
     let onlineTab = $drawerTabsData.media?.openedSubSubTab?.online || "youtube"

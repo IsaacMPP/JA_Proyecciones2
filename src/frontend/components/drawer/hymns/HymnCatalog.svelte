@@ -7,7 +7,7 @@
     import JADestinationChooser from "../../output/tools/JADestinationChooser.svelte"
     import { isPathInJACollection } from "../../../utils/jaHymnPaths"
     import { getMediaStyle } from "../../helpers/media"
-    import { getFirstActiveOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
+    import { clearTemporaryScriptureOnJAOutputs, getFirstActiveOutput, sendToJAOutputs, setOutput } from "../../helpers/output"
     import { activeEdit, activeShow, media, outLocked, outputs, styles } from "../../../stores"
 
     let searches: Record<string, string> = {}
@@ -50,6 +50,7 @@
         const output = savedPrimary ? ($outputs[savedPrimary]?.enabled && $outputs[savedPrimary]?.active ? { ...$outputs[savedPrimary], id: savedPrimary } : null) : activeCount > 1 ? null : getFirstActiveOutput($outputs)
         if (!output) return
         const mediaStyle = getMediaStyle($media[video.path], $styles[output.style || ""])
+        clearTemporaryScriptureOnJAOutputs([output.id])
         setOutput("background", { path: video.path, type: "video", loop: false, startAt: 0, ...mediaStyle, muted: false }, false, output.id)
     }
     function sendToSelected(video: typeof shown[number], ids: string[]) {
@@ -57,7 +58,7 @@
         const selected = ids.filter((id) => $outputs[id]?.enabled && $outputs[id]?.active)
         if (!selected.length) return
         const style = getMediaStyle($media[video.path], $styles[$outputs[selected[0]].style || ""])
-        sendToJAOutputs("background", { path: video.path, type: "video", loop: false, startAt: 0, ...style, muted: false }, selected)
+        sendToJAOutputs("background", { path: video.path, type: "video", loop: false, startAt: 0, ...style, muted: false }, selected, { replaceScripture: true })
     }
     onMount(() => { void updateCatalog() })
 </script>

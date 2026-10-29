@@ -10,7 +10,7 @@
     import Icon from "../helpers/Icon.svelte"
     import T from "../helpers/T.svelte"
     import { addVideoMarker, enableSubtitle, encodeFilePath, getExtension, getFileName, getMediaLayerType, removeExtension } from "../helpers/media"
-    import { getFirstActiveOutput, setOutput } from "../helpers/output"
+    import { clearTemporaryScriptureOnJAOutputs, getFirstActiveOutput, getJAMainOutput, setOutput } from "../helpers/output"
     import { joinTime, secondsToTime } from "../helpers/time"
     import FloatingInputs from "../input/FloatingInputs.svelte"
     import HiddenInput from "../inputs/HiddenInput.svelte"
@@ -209,8 +209,11 @@
         const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
         if (primaryId) {
             if (!$outputs[primaryId]?.enabled || !$outputs[primaryId]?.active) return
+            clearTemporaryScriptureOnJAOutputs([primaryId])
             setOutput("background", bg, false, primaryId)
         } else {
+            const onlyOutput = getJAMainOutput()
+            if (onlyOutput) clearTemporaryScriptureOnJAOutputs([onlyOutput.id])
             setOutput("background", bg)
         }
     }

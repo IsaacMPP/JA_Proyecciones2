@@ -6,7 +6,7 @@
     import Image from "../../drawer/media/Image.svelte"
     import Icon from "../../helpers/Icon.svelte"
     import { getMedia, getMediaLayerType, getMediaStyle } from "../../helpers/media"
-    import { getActiveOutputs, getCurrentStyle, setOutput } from "../../helpers/output"
+    import { clearTemporaryScriptureOnJAOutputs, getActiveOutputs, getCurrentStyle, getJAMainOutput, setOutput } from "../../helpers/output"
     import HoverButton from "../../inputs/HoverButton.svelte"
     import { clearSlide } from "../../output/clear"
     import Center from "../../system/Center.svelte"
@@ -72,8 +72,13 @@
                         const primaryId = typeof localStorage === "undefined" ? "" : localStorage.getItem("ja-main-projector") || ""
                         if (primaryId) {
                             if (!$outputs[primaryId]?.enabled || !$outputs[primaryId]?.active) return
+                            clearTemporaryScriptureOnJAOutputs([primaryId])
                             setOutput("background", { path: mediaPath, ...mediaStyle }, false, primaryId)
-                        } else setOutput("background", { path: mediaPath, ...mediaStyle })
+                        } else {
+                            const onlyOutput = getJAMainOutput()
+                            if (onlyOutput) clearTemporaryScriptureOnJAOutputs([onlyOutput.id])
+                            setOutput("background", { path: mediaPath, ...mediaStyle })
+                        }
                     }}
                 >
                     {#if mediaStyle.fit === "blur"}
