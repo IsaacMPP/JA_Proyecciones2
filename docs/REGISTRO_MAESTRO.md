@@ -6,6 +6,13 @@ Por solicitud expresa del propietario, después de cada modificación o entrega 
 
 ---
 
+## 2026-10-30 — Diagnóstico seguro de error en preparación RV1909
+
+Actions #41097868170 (HEAD 241e677) falló tras aprobar 24/24 pruebas, **antes de compilar**, porque el ZIP público de eBible RV1909 llegó con SHA-256 f0b20b2473b3ed30dcee584b2311b6a1db27b32e714f1a2b0e97d01ba179f284 en lugar del hash de ZIP fijo c901a31a89421eafa54e82a0a2ad94962c6889e3c5556c2a0834529789c4ac76. No es evidencia de regresión de Presentaciones. Se mantienen intactos todos los controles. No se ha aceptado nuevo ZIP ni levantado verificación de integridad.
+
+Se añade flujo independiente de auditoría en Ubuntu `ja-rv1909-source-audit.yml`, que lista la huella de las entradas internas VPL y su estructura desde el sitio fuente sin compilar ni publicar. Objetivo: identificar una huella del contenido real estable pese a metadatos variables de ZIP; comparar con edición de dominio público y preservar verificaciones canónicas antes de habilitar nuevas compilaciones. Siguiente tarea: revisar resultado y corregir `build_rv1909.py` basándose en contenido validado; ejecutar CI y verificar artefacto. PR #2 draft, main intacta, pendientes M1-03/04/05/06/07, H1, T1, F1.
+
+
 ## 2026-10-30 — M1-03: restaurar panel central al volver a Presentaciones
 
 **Evidencia Windows:** el operador muestra la presentación Hola seleccionada en el catálogo y el centro en Supervisando: Primario tras proyectar un video. El parche previo de Abrir sólo cubría el menú contextual. ShowButton devolvía temprano si el show ya estaba activo; Drawer y TopButton tampoco salían de supervisión.
