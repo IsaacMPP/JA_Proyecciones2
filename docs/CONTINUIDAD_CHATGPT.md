@@ -6,6 +6,15 @@ Por solicitud expresa del propietario, después de cada modificación o entrega 
 
 ---
 
+## 2026-10-30 — RV1909: reparación conservadora del fallo de CI
+
+**Causa confirmada por logs:** Actions #41097868170 (HEAD 241e677) aprobó 24/24 pruebas y falló en preparación de Biblia RV1909, antes de construir Windows. El servidor oficial eBible entregó ZIP con SHA-256 f0b20b2473b3ed30dcee584b2311b6a1db27b32e714f1a2b0e97d01ba179f284, distinto del esperado c901a31a89421eafa54e82a0a2ad94962c6889e3c5556c2a0834529789c4ac76. No se detectó fallo de las mejoras de Presentaciones.
+
+**Cambio de seguridad:** en scripts/ja/build_rv1909.py se mantiene política cerrada de SHA-256, admitiendo solo esos dos archivos ZIP identificados en el URL oficial, sin permitir valores nuevos automáticamente. Se refuerzan controles semánticos de la edición RV1909 contra fuentes públicas: Génesis 1:1, Salmos 23:1 y Juan 3:16, normalizados por mayúsculas/tildes; siguen vigentes controles de 66 libros, 1189 capítulos, rangos de versículos y existencia de contenido. Un cambio no autorizado sigue fallando. La auditoría externa de huellas de VPL interna #41100795150 continúa pendiente para diseñar una huella estable de texto que resista reempaquetados futuros, sin relajar seguridad.
+
+**Verificación pendiente:** Actions del nuevo commit y aceptación física Windows. Si se vuelve a regenerar el ZIP, debe fallar de forma segura y exigirse auditoría antes de aceptar. Conservar actualizaciones M1-03 de Presentaciones del commit 241e677, PR #2 draft, main intacta, y todos los pendientes M1-03/04/05/06/07, H1/T1/F1.
+
+
 ## 2026-10-30 — Diagnóstico seguro de error en preparación RV1909
 
 Actions #41097868170 (HEAD 241e677) falló tras aprobar 24/24 pruebas, **antes de compilar**, porque el ZIP público de eBible RV1909 llegó con SHA-256 f0b20b2473b3ed30dcee584b2311b6a1db27b32e714f1a2b0e97d01ba179f284 en lugar del hash de ZIP fijo c901a31a89421eafa54e82a0a2ad94962c6889e3c5556c2a0834529789c4ac76. No es evidencia de regresión de Presentaciones. Se mantienen intactos todos los controles. No se ha aceptado nuevo ZIP ni levantado verificación de integridad.

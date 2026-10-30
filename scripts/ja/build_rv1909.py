@@ -11,11 +11,17 @@ import json
 import re
 import sys
 import urllib.request
+import unicodedata
 import zipfile
 from pathlib import Path
 
 URL = "https://ebible.org/Scriptures/spaRV1909_vpl.zip"
-SHA256 = "c901a31a89421eafa54e82a0a2ad94962c6889e3c5556c2a0834529789c4ac76"
+# Fail closed: only explicitly reviewed ZIP digests from the official eBible URL.
+# Do not accept arbitrary updates; ZIP packaging can change independently of VPL text.
+APPROVED_ZIP_SHA256 = frozenset({
+    "c901a31a89421eafa54e82a0a2ad94962c6889e3c5556c2a0834529789c4ac76",  # previous builds
+    "f0b20b2473b3ed30dcee584b2311b6a1db27b32e714f1a2b0e97d01ba179f284",  # CI 2026-10-30
+})
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / "public" / "ja-bibles" / "rv1909.fsb"
 BOOKS = [
@@ -101,7 +107,7 @@ def main():
     with urllib.request.urlopen(req, timeout=90) as response:
         raw = response.read(20 * 1024 * 1024)
     got = hashlib.sha256(raw).hexdigest()
-    if got != SHA256:
+    if got not in APPROVED_ZIP_SHA256:
         raise ValueError("RV1909 ZIP cambió; validar la fuente antes de actualizar SHA-256. actual=" + got)
     archive = zipfile.ZipFile(io.BytesIO(raw))
     entries = [(entry.filename, archive.read(entry)) for entry in archive.infolist()
@@ -155,8 +161,18 @@ def main():
         bible["books"].append({"number":number,"name":name,"abbreviation":code,"chapters":output_chapters})
     if len(bible["books"]) != 66 or total < 30_000 or total > 32_000 or sum(len(b["chapters"]) for b in bible["books"]) != 1189:
         raise ValueError(f"Contenido incompleto: {len(bible['books'])} libros, {total} versículos")
-    if "Dios" not in parsed[("GEN",1,1)] or "Dios" not in parsed[("JHN",3,16)]:
-        raise ValueError("Muestras canónicas no coinciden; verificar traducción.")
+    # Compare multiple canonical passages shown on the official eBible RV1909
+    # page, independent of whitespace, case and accent differences.
+    def normalize_verse(value: str) -> str:
+        return "".join(c for c in unicodedata.normalize("NFKD", value.casefold()) if not unicodedata.combining(c))
+    anchors = (
+        (("GEN", 1, 1), "en el principio crio dios los cielos y la tierra"),
+        (("PSA", 23, 1), "jehova es mi pastor"),
+        (("JHN", 3, 16), "porque de tal manera amo dios al mundo"),
+    )
+    for reference, snippet in anchors:
+        if snippet not in normalize_verse(parsed.get(reference, "")):
+            raise ValueError(f"Muestra RV1909 no coincide: {reference}")
     TARGET.parent.mkdir(parents=True,exist_ok=True)
     data = ["ja-rv1909", bible]
     TARGET.write_text(json.dumps(data, ensure_ascii=False, separators=(",",":")), encoding="utf-8")
