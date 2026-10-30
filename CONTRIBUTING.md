@@ -1,3 +1,7 @@
+## Regla permanente de continuidad — 2026-10-29
+
+Por solicitud expresa del propietario, después de cada modificación o entrega del proyecto, incluir en la respuesta un prompt actualizado, autocontenido y listo para copiar en un chat nuevo, sin esperar a que el usuario lo pida ni a agotar la conversación. Resumir objetivo, repositorio, rama, PR, HEAD conocido, último cambio funcional, CI con enlace y estado realmente verificado, aceptación Windows, pendientes y siguiente paso concreto. Incluir las reglas de conservación, lectura de documentos maestros y verificación de GitHub antes de actuar. Si CI sigue en curso o falta validación física, decirlo explícitamente; no presentar pruebas pendientes como aprobadas. Conservar todo el backlog y no reiniciar el desarrollo. Actualizar también la documentación maestra para que la continuidad no dependa de la memoria de un chat.
+
 # Reglas obligatorias de desarrollo
 
 1. Antes de cualquier modificación: consultar GitHub, rama, último commit, PR, ejecuciones de Actions y leer `docs/CONTINUIDAD_CHATGPT.md`, `docs/JA_MASTER.md`, `docs/REGISTRO_MAESTRO.md` y `docs/RUTA_CRITICA_ENTREGAS.md`.
