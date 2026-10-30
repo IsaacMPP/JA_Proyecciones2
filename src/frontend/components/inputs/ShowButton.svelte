@@ -3,6 +3,7 @@
     import { AudioPlayer } from "../../audio/audioPlayer"
     import { activeEdit, activeFocus, activePage, activeProject, activeShow, categories, editingProjectTemplate, effects, focusMode, globalTags, media, notFound, outLocked, outputs, overlayCategories, overlays, playerVideos, playingAudio, projects, projectTemplates, refreshEditSlide, shows, showsCache, special, styles, textCache } from "../../stores"
     import { translateText } from "../../utils/language"
+    import { restoreJAPresentationWorkspace } from "../../utils/jaControlledOutput"
     import { getAccess } from "../../utils/profile"
     import { customIconsColors } from "../../values/customIcons"
     import { history, historyAwait } from "../helpers/history"
@@ -99,7 +100,10 @@
     let editActive = false
     function click(e: ClickEvent) {
         const { ctrl, shift, target } = e.detail
-        if (editActive || ctrl || shift || isActive || target.closest("input")) return
+        if (editActive || ctrl || shift || target.closest("input")) return
+        // Restore central diapositivas even when this show is already the active selection.
+        if (type === "show" && $activePage === "show" && !$focusMode) restoreJAPresentationWorkspace()
+        if (isActive) return
 
         // set active show
         let pos = index

@@ -1,3 +1,11 @@
+## 2026-10-30 — M1-03: restaurar panel central al volver a Presentaciones
+
+**Evidencia Windows:** el operador muestra la presentación Hola seleccionada en el catálogo y el centro en Supervisando: Primario tras proyectar un video. El parche previo de Abrir sólo cubría el menú contextual. ShowButton devolvía temprano si el show ya estaba activo; Drawer y TopButton tampoco salían de supervisión.
+
+**Corrección:** nueva función restoreJAPresentationWorkspace en jaControlledOutput.ts que limpia sólo el monitor elegido para supervisión. Se conecta al clic en Presentaciones del drawer (incluso si es la pestaña activa), a ShowButton para cualquier presentación incluyendo la ya seleccionada, al botón superior Presentación y a la acción contextual Abrir. No modifica outputs, slide, background, audio, reproducción, selección principal, grupos ni controles manuales de Controlar.
+
+**Pruebas y aceptación:** prueba jaControlledOutput.test.ts añadida a CI para restaurar desde Primario/iPad e idempotencia. CI de este nuevo cambio y ensayo Windows pendientes. Probar video de Himnario/Multimedia/YouTube en Primario -> Controlar -> Presentaciones -> Hola, incluso con Hola ya seleccionada. Deben reaparecer diapositivas, conservarse reproducción y audio principal y no variar las otras salidas. Volver a Controlar debe funcionar; flechas y Enviar a… se deben conservar. Mantener PR #2 draft, no tocar main, preservar M1-03/04/05/06/07, H1, T1 y F1. Último CI anterior confirmado verde #40930709811 del commit f337ead.
+
 ## 2026-10-29 — M1-03: presentaciones con capa reversible, «Enviar a…» y navegación independiente
 
 **Validación previa del operador:** «Abrir» ya funciona tras `333a96d` (CI #40925757434 verde). Reporta texto de presentación sobre videos/imágenes, valora esa composición pero solicita opción para mostrar solo el contenido, envío explícito a otros monitores y flechas como Biblia.

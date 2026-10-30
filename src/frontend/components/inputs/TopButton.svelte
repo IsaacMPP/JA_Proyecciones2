@@ -2,6 +2,7 @@
     import type { TopViews } from "../../../types/Tabs"
     import { activeEdit, activePage, activeShow, dictionary, editHistory, labelsDisabled, shows, special } from "../../stores"
     import { translateText } from "../../utils/language"
+    import { restoreJAPresentationWorkspace } from "../../utils/jaControlledOutput"
     import Icon from "../helpers/Icon.svelte"
     import T from "../helpers/T.svelte"
     import MaterialButton from "./MaterialButton.svelte"
@@ -15,6 +16,7 @@
     const keys = { show: 1, edit: 2, stage: 3, draw: 4, settings: 5 }
 
     function openPage() {
+        if (id === "show") restoreJAPresentationWorkspace()
         activePage.set(id)
 
         if (id === "edit") openActiveShow()

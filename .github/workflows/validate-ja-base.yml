@@ -27,7 +27,7 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
       - name: Probar migración segura de videos juveniles
-        run: npx vitest run --config config/testing/vitest.config.ts src/electron/data/jaYouthOnlineMigration.test.ts src/frontend/components/drawer/player/youtubeAudio.test.ts src/frontend/utils/jaOnlinePreviewOutput.test.ts src/frontend/components/drawer/player/youtubeTransport.test.ts src/frontend/utils/jaPresentationNavigation.test.ts
+        run: npx vitest run --config config/testing/vitest.config.ts src/electron/data/jaYouthOnlineMigration.test.ts src/frontend/components/drawer/player/youtubeAudio.test.ts src/frontend/utils/jaOnlinePreviewOutput.test.ts src/frontend/components/drawer/player/youtubeTransport.test.ts src/frontend/utils/jaPresentationNavigation.test.ts src/frontend/utils/jaControlledOutput.test.ts
       - name: Preparar Biblia española offline de dominio público
         run: python scripts/ja/build_rv1909.py
       - name: Comprobar integridad de Biblia RV1909

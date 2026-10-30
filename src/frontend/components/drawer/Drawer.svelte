@@ -3,6 +3,7 @@
     import type { DrawerTabIds } from "../../../types/Tabs"
     import { activeDrawerTab, activeEdit, activePage, activePopup, activeProject, activeShow, activeTriggerFunction, dictionary, drawer, drawerOpenedInEdit, drawerTabsData, focusMode, labelsDisabled, mediaOptions, os, previousShow, projects, quickTextCache, scriptureSettings, selected, showsCache } from "../../stores"
     import { DEFAULT_DRAWER_HEIGHT, DEFAULT_WIDTH, MENU_BAR_HEIGHT } from "../../utils/common"
+    import { restoreJAPresentationWorkspace } from "../../utils/jaControlledOutput"
     import { startResizing, stopResizing } from "../../utils/cursor"
     import { translateText } from "../../utils/language"
     import { getAccess } from "../../utils/profile"
@@ -132,6 +133,8 @@
     $: activeTab = $activeDrawerTab
     function openDrawerTab(tab: { id: string; name: string; icon: string }) {
         const newId = tab.id as DrawerTabIds
+        // Even a tab already selected must restore the show workspace after supervising media.
+        if (newId === "shows" && $activePage === "show" && !$focusMode) restoreJAPresentationWorkspace()
         if ($activeDrawerTab === newId) return
 
         // open visually immediately

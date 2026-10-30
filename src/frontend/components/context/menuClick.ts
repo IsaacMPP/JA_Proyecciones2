@@ -90,7 +90,7 @@ import {
     variables
 } from "../../stores"
 import { escapeRegExp, hideDisplay, isOutputWindow, newToast, triggerFunction, wait } from "../../utils/common"
-import { jaControlledOutputId } from "../../utils/jaControlledOutput"
+import { restoreJAPresentationWorkspace } from "../../utils/jaControlledOutput"
 import { setExampleEffects, setExampleOverlays, setExampleTemplates } from "../../utils/createData"
 import { translateText } from "../../utils/language"
 import { confirmCustom } from "../../utils/popup"
@@ -1635,7 +1635,7 @@ const clickActions = {
 
             // "Abrir" requests the show editor/preview, not the controlled output mirror.
             // Leave output playback and the operator-selected primary untouched.
-            jaControlledOutputId.set("")
+            restoreJAPresentationWorkspace()
             activePage.set("show")
             openShow(showId)
             return
